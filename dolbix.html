@@ -303,7 +303,7 @@
       width: 30px;
       height: 310px;
       margin-left: 0px;
-      margin-top: 50px; /* Adjusted to align with timeline */
+      margin-top: 50px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -311,12 +311,35 @@
       box-sizing: border-box;
     }
 
-    .arrow-image-4 img {
+    .css-arrow-4 {
       width: 100%;
       height: 100%;
-      object-fit: fill;
       display: block;
       position: relative;
+    }
+
+    .css-arrow-4::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 16px;
+      height: calc(100% - 20px);
+      background: #4f6883;
+    }
+
+    .css-arrow-4::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 15px solid transparent;
+      border-right: 15px solid transparent;
+      border-top: 20px solid #4f6883;
     }
 
     .timeline-years-4 {
@@ -344,6 +367,21 @@
       position: relative;
       box-sizing: border-box;
       width: 100%;
+    }
+
+    .year-item-4::before {
+      content: '';
+      position: absolute;
+      left: -22px; /* Adjusted to align with center of 16px wide arrow body: -15px (half container width) - 8px (half arrow width) = -23px */
+      top: 50%;
+      transform: translateY(-50%);
+      width: var(--bullet-size, 10px); /* Adjustable bullet size */
+      height: var(--bullet-size, 8px);
+      background-color: white;
+      border-radius: 50%;
+      border: 1px solid white;
+      box-sizing: border-box;
+      z-index: 2;
     }
 
     .year-item-4:last-child {
@@ -399,12 +437,12 @@
 
         /* Specific chart container overrides */
         .chart-container-4 .chart canvas {
-            max-width: 400px;
+            max-width: 1000px;
             max-height: 400px;
         }
 
         .chart-container-7 .chart canvas {
-            max-width: 200px;
+            max-width: 800px;
             max-height: 200px;
         }
 
@@ -416,6 +454,11 @@
         .chart-container-11 .chart canvas {
             max-width: 400px;
             max-height: 200px;
+        }
+        
+        .chart-container-13 .chart canvas {
+            max-width: 600px;
+            max-height: 220px;
         }
         
 
@@ -662,7 +705,7 @@
 
     .arrow-container-9 {
       position: absolute;
-      top: -10px;
+      top: -30px;
       left: 50%;
       transform: translateX(-50%);
       width: 250px;
@@ -816,6 +859,22 @@
             pointer-events: none;
         }
 
+        /* Red highlight wrapper for table rows */
+        .table-row-highlight-wrapper {
+            position: absolute;
+            top: 50%;    /* Center vertically */
+            left: -20px;  /* Extend left beyond table - adjustable */
+            width: 950px; /* Fixed width to match table width (90% of slide width ~900px + extensions) */
+            height: calc(90%);
+            transform: translateY(-50%); /* Center vertically */
+            border: 5px dashed #ff0000;
+            background-color: transparent; /* No background to keep row content visible */
+            z-index: 10;
+            pointer-events: none;
+            box-sizing: border-box;
+        }
+
+
         .category-sections-container {
             width: 77%;
             display: flex;
@@ -924,7 +983,7 @@
 
         
         .chart-container-4 {
-            max-width: 600px;
+            max-width: 1000px;
             margin: 0 auto;
             position: relative;
         }
@@ -936,7 +995,7 @@
         }
         
         .chart-container-7 {
-            max-width: 1000px;
+            max-width: 1039px;
             margin: 0 auto;
             position: relative;
         }
@@ -1135,6 +1194,40 @@
       max-width: 350px;
     }
 
+    .line-heading{
+      font-family: 'Meiryo', sans-serif;
+      font-size: 14px;
+      font-weight: bold;
+      color: #4a4a4a;
+      position: relative;
+      margin-top: 60px;
+      padding-bottom: 1px;
+      padding-left: 22px;
+      text-align: left;
+      margin-left: 60px;
+      width: 200px;
+    }
+
+    .line-heading::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 10px;
+      right: -680px;
+      height: 1.5px;
+      background: #98adc3;
+    }
+
+    .line-heading::before {
+      content: '';
+      position: absolute;
+      bottom: 0px;
+      left: 0;
+      width: 14px;
+      height: 18px;
+      background: #98adc3;
+    }
+
     .source-note {
       font-family: 'Meiryo UI', sans-serif;
       font-size: 10px;
@@ -1158,12 +1251,12 @@
 </head>
 <body>
 
-<div class="slide">
+<div class="slide"> <!-- Slide 1 -->
     <img src="dobimg/dobmain.png" alt="Dolbix Consulting Inc Main Image">
     <div class="slide-text">Company Research</div>
 </div>
 
-<div class="slide">
+<div class="slide"> <!-- Slide 2 -->
     <div class="slide-content-0">
         <div class="slide-heading">本資料の構成</div>
         <div class="slide-body">
@@ -1195,7 +1288,7 @@
     </div>
 </div>
 
-<div class="slide">
+<div class="slide">  <!-- Slide 3 -->
   <div class="slide-content-1">
     <div class="slide-heading-1" style="margin-bottom: -15px;">子会社</div>
     <div class="subsidiary-blocks">
@@ -1255,7 +1348,7 @@
         <div class="timeline-heading-4">沿革</div>
         <div class="timeline-container-4">
                     <div class="arrow-image-4">
-                        <img src="dobimg/arrow.png" alt="Timeline Arrow">
+                        <div class="css-arrow-4"></div>
                     </div>
                     <div class="timeline-years-4">
                         <div class="year-item-4" style="margin-bottom: 5px;">XX年</div>
@@ -1280,80 +1373,103 @@
   <div class="source-note">出所：XX</div>
   <div class="footer">
     <span>Strictly Confidential | © DOLBIX CONSULTING Inc.</span>
-    <span>6</span>
+    <span>3</span>
   </div>
 </div>
 
 
-<div class="slide">
+<div class="slide"> <!-- Slide 4 -->
     <div class="slide-content-1">
-        <div class="slide-heading-1">主要株主</div>
+        <!-- Heading updated -->
+        <div class="slide-heading-1">主要株主 (Major Shareholders - Ownership Summary)</div>
         
-            <div class="pie-heading">主要株主</div>
-            <div class="chart-container-4">
-                    <div class="chart">
-                        <canvas 
-                            class="chartjs-chart" 
-                            id="pieChart" 
-                            width="400" 
-                            height="400"
-                            data-chart='{
-                                "type": "pie",
-                                "data": {
-                                    "labels": ["42.2%", "8.4%", "6.8%", "5.6%", "4.1%", "1.2%", "1.0%", "30.7%"],
-                                    "datasets": [{
-                                        "data": [42.2, 8.4, 6.8, 5.6, 4.1, 1.2, 1.0, 30.7],
-                                        "backgroundColor": [
-                                            "#4A90E2",
-                                            "#5BA3F5", 
-                                            "#9dd1eb",
-                                            "#8A7CA8",
-                                            "#0c701a",
-                                            "#de7310",
-                                            "#121b87",
-                                            "#6b1d2b"
-                                        ],
-                                        "borderColor": "#ffffff",
-                                        "borderWidth": 3
-                                    }]
+        <!-- Sub-heading -->
+        <div class="pie-heading">Top Holders</div>
+        <div class="chart-container-4" style="margin-top: 15px;">
+            <div class="chart">
+                <canvas 
+                    class="chartjs-chart" 
+                    id="pieChart" 
+                    width="400" 
+                    height="400"
+                    data-chart='{
+                        "type": "pie",
+                        "data": {
+                            "labels": [
+                                "Effissimo Capital Management Pte Ltd (5.1%)",
+                                "NEXT FUNDS TOPIX ETF (2.9%)",
+                                "The Vanguard Group, Inc. (2.8%)",
+                                "Nomura Asset Management Co., Ltd. (2.7%)",
+                                "Tachibana Securities Co., Ltd. (2.3%)",
+                                "Sumitomo Mitsui Trust Asset Mgmt (2.3%)",
+                                "Nomura Holdings Inc. (1.8%)",
+                                "Nikko Asset Management Co., Ltd. (1.4%)",
+                                "Listed Index Fund TOPIX (1.4%)",
+                                "Daiwa Asset Management Co., Ltd. (1.3%)",
+                                "Others (77.0%)"
+                            ],
+                            "datasets": [{
+                                "data": [5.1, 2.9, 2.8, 2.7, 2.3, 2.3, 1.8, 1.4, 1.4, 1.3, 77.0],
+                                "backgroundColor": [
+                                    "#4A90E2",
+                                    "#5BA3F5",
+                                    "#9dd1eb",
+                                    "#8A7CA8",
+                                    "#0c701a",
+                                    "#de7310",
+                                    "#121b87",
+                                    "#6b1d2b",
+                                    "#b5651d",
+                                    "#3b7d4f",
+                                    "#888888"
+                                ],
+                                "borderColor": "#ffffff",
+                                "borderWidth": 3
+                            }]
+                        },
+                        "options": {
+                            "responsive": true,
+                            "maintainAspectRatio": true,
+                            "plugins": {
+                                "legend": {
+                                    "display": false
                                 },
-                                "options": {
-                                    "responsive": true,
-                                    "maintainAspectRatio": true,
-                                    "plugins": {
-                                        "legend": {
-                                            "display": false
-                                        },
-                                        "tooltip": {
-                                            "enabled": false
-                                        },
-                                        "datalabels": {
-                                            "display": true,
-                                            "color": "#ffffff",
-                                            "font": {
-                                                "family": "Segoe UI",
-                                                "size": 14,
-                                                "weight": "normal"
-                                            },
-                                            "anchor": "end",
-                                            "align": "start",
-                                            "offset": 10,
-                                            "formatter": "function(value, context) { return context.chart.data.labels[context.dataIndex]; }"
-                                        }
+                                "tooltip": {
+                                    "enabled": false
+                                },
+                                "datalabels": {
+                                    "display": true,
+                                    "color": "#000",
+                                    "font": {
+                                        "family": "Segoe UI",
+                                        "size": 10,
+                                        "weight": "normal"
                                     },
-                                    "rotation": 0,
-                                    "circumference": 360,
-                                    "cutout": 0,
-                                    "layout": {
-                                        "padding": 20
-                                    }
+                                    "anchor": "end",
+                                    "align": "start",
+                                    "offset": 10,
+                                    "formatter": "function(value, context) { return context.chart.data.labels[context.dataIndex]; }"
                                 }
-                            }'>
-                        </canvas>
-                    </div>
+                            },
+                            "rotation": 0,
+                            "circumference": 360,
+                            "cutout": 0,
+                            "layout": {
+                                "padding": {
+                                    "top": 0,
+                                    "bottom": 0,
+                                    "left": 0,
+                                    "right": 0
+                                }
+                            }
+                        }
+                    }'>
+                </canvas>
             </div>
+        </div>
     </div>
-    <div class="source-note">出所：XX</div>
+    <!-- Source updated -->
+    <div class="source-note">出所：S&P CapIQ</div>
     <div class="footer">
         <span>Strictly Confidential | © DOLBIX CONSULTING Inc.</span>
         <span>4</span>
@@ -1361,7 +1477,7 @@
 </div>
 
 
-<div class="slide">
+<div class="slide"> <!-- Slide 5 -->
     <div class="slide-content-1">
         <div class="slide-heading-1">子会社</div>
         <div class="pie-heading" style="margin-top: 80px;">子会社a</div>
@@ -1424,7 +1540,7 @@
 
 
 
-<div class="slide">
+<div class="slide"> <!-- Slide 6 -->
   <div class="slide-content-1">
     <div class="slide-heading-1" style="margin-bottom: -15px;">子会社</div>
     <div class="subsidiary-blocks">
@@ -1577,7 +1693,7 @@
   </div>
 </div>
 
-<div class="slide">
+<div class="slide"> <!-- Slide 7 -->
     <div class="slide-content-1">
         <div class="slide-heading-1">事業セグメント</div>
         
@@ -1608,6 +1724,7 @@
                 <tr style="height: 25px;">
                 <td class="label" style="text-align: left;">SegementD：○％</td>
                 <td class="value">Segement Description</td>
+                </tr>
             </tbody>
             </table>
             
@@ -1617,12 +1734,12 @@
                     <div class="chart-group-heading-7" style="color: white; background-color: #89c3ab;">調整データ（※除外セグメント）</div>
                     <div class="chart-pair-7">
                         <div class="chart-container-7">
-                            <div class="chart" style="position: relative; width: 180px; height: 180px;">
+                            <div class="chart" style="position: relative; width: 250px; height: 200px;">
                                 <canvas 
                                     class="chartjs-chart" 
                                     id="pieChart1" 
-                                    width="400" 
-                                    height="400"
+                                    width="250"
+                                    height="200"
                                     data-chart='{
                                         "type": "pie",
                                         "data": {
@@ -1641,8 +1758,8 @@
                                             }]
                                         },
                                         "options": {
-                                            "responsive": true,
-                                            "maintainAspectRatio": true,
+                                            "responsive": false,
+                                            "maintainAspectRatio": false,
                                             "plugins": {
                                                 "legend": {
                                                     "display": false
@@ -1655,7 +1772,7 @@
                                                     "color": "#333333",
                                                     "font": {
                                                         "family": "Arial",
-                                                        "size": 8,
+                                                        "size": 7,
                                                         "weight": "normal"
                                                     },
                                                     "clamp": false,
@@ -1666,7 +1783,12 @@
                                             "circumference": 360,
                                             "cutout": 0,
                                             "layout": {
-                                                "padding": 20
+                                                "padding": {
+                                                    "top": 25,
+                                                    "bottom": 25,
+                                                    "left": 25,
+                                                    "right": 25
+                                                }
                                             }
                                         }
                                     }'>
@@ -1678,12 +1800,12 @@
                         <div class="arrow-7"></div>
                         
                         <div class="chart-container-7">
-                            <div class="chart" style="position: relative; width: 200px; height: 200px;">
+                            <div class="chart" style="position: relative; width: 250px; height: 200px;">
                                 <canvas 
                                     class="chartjs-chart" 
                                     id="pieChart2" 
-                                    width="400" 
-                                    height="400"
+                                    width="250" 
+                                    height="200"
                                     data-chart='{
                                         "type": "pie",
                                         "data": {
@@ -1701,8 +1823,8 @@
                                             }]
                                         },
                                         "options": {
-                                            "responsive": true,
-                                            "maintainAspectRatio": true,
+                                            "responsive": false,
+                                            "maintainAspectRatio": false,
                                             "plugins": {
                                                 "legend": {
                                                     "display": false
@@ -1715,7 +1837,7 @@
                                                     "color": "#333333",
                                                     "font": {
                                                         "family": "Arial",
-                                                        "size": 8,
+                                                        "size": 7,
                                                         "weight": "normal"
                                                     },
                                                     "anchor": "end",
@@ -1728,7 +1850,12 @@
                                             "circumference": 360,
                                             "cutout": 0,
                                             "layout": {
-                                                "padding": 20
+                                                "padding": {
+                                                    "top": 15,
+                                                    "bottom": 15,
+                                                    "left": 15,
+                                                    "right": 15
+                                                }
                                             }
                                         }
                                     }'>
@@ -1744,12 +1871,12 @@
                     <div class="chart-group-heading-7" style="color: white; background-color: #89c3ab;">調整データ（※除外セグメント）</div>
                     <div class="chart-pair-7">
                         <div class="chart-container-7">
-                            <div class="chart" style="position: relative; width: 180px; height: 180px;">
+                            <div class="chart" style="position: relative; width: 250px; height: 200px;">
                                 <canvas 
                                     class="chartjs-chart" 
                                     id="pieChart3" 
-                                    width="400" 
-                                    height="400"
+                                    width="250" 
+                                    height="200"
                                     data-chart='{
                                         "type": "pie",
                                         "data": {
@@ -1766,8 +1893,8 @@
                                             }]
                                         },
                                         "options": {
-                                            "responsive": true,
-                                            "maintainAspectRatio": true,
+                                            "responsive": false,
+                                            "maintainAspectRatio": false,
                                             "plugins": {
                                                 "legend": {
                                                     "display": false
@@ -1780,7 +1907,7 @@
                                                     "color": "#333333",
                                                     "font": {
                                                         "family": "Arial",
-                                                        "size": 8,
+                                                        "size": 7,
                                                         "weight": "normal"
                                                     },
                                                     "anchor": "end",
@@ -1793,7 +1920,12 @@
                                             "circumference": 360,
                                             "cutout": 0,
                                             "layout": {
-                                                "padding": 20
+                                                "padding": {
+                                                    "top": 25,
+                                                    "bottom": 25,
+                                                    "left": 25,
+                                                    "right": 25
+                                                }
                                             }
                                         }
                                     }'>
@@ -1805,12 +1937,12 @@
                         <div class="arrow-7"></div>
                         
                         <div class="chart-container-7">
-                            <div class="chart" style="position: relative; width: 200px; height: 200px;">
+                            <div class="chart" style="position: relative; width: 250px; height: 200px;">
                                 <canvas 
                                     class="chartjs-chart" 
                                     id="pieChart4" 
-                                    width="400" 
-                                    height="400"
+                                    width="250" 
+                                    height="200"
                                     data-chart='{
                                         "type": "pie",
                                         "data": {
@@ -1827,8 +1959,8 @@
                                             }]
                                         },
                                         "options": {
-                                            "responsive": true,
-                                            "maintainAspectRatio": true,
+                                            "responsive": false,
+                                            "maintainAspectRatio": false,
                                             "plugins": {
                                                 "legend": {
                                                     "display": false
@@ -1841,7 +1973,7 @@
                                                     "color": "#333333",
                                                     "font": {
                                                         "family": "Arial",
-                                                        "size": 8,
+                                                        "size": 7,
                                                         "weight": "normal"
                                                     },
                                                     "anchor": "end",
@@ -1854,7 +1986,12 @@
                                             "circumference": 360,
                                             "cutout": 0,
                                             "layout": {
-                                                "padding": 20
+                                                "padding": {
+                                                    "top": 15,
+                                                    "bottom": 15,
+                                                    "left": 15,
+                                                    "right": 15 
+                                                }
                                             }
                                         }
                                     }'>
@@ -1874,10 +2011,10 @@
     </div>
 </div>
 
-<div class="slide">
+<div class="slide"> <!-- Slide 8 -->
     <div class="slide-content-1">
         <div class="slide-heading-1">子会社</div>
-        <div class="pie-heading" style="margin-top: 80px; left: -10px; margin-bottom: -10px;">子会社a</div>
+        <div class="pie-heading" style="margin-top: 40px; left: -10px; margin-bottom: -10px;">子会社a</div>
 
         <table class="info-table-8">
             <thead>
@@ -1932,8 +2069,11 @@
                 <td class="value" style="width: 150px;"></td>
                 <td class="value" style="width: 150px;"></td>
                 </tr>
-                <tr class="red-highlight" style="height: 5px;">
-                  <td class="label" style="text-align: left; width: 300px;">ネット有利子負債(除く現預金・短期性有価証券)</td>
+                <tr class="red-highlight" style="height: 5px; position: relative;">
+                  <td class="label" style="text-align: left; width: 200px; position: relative;">
+                    ネット有利子負債(除く現預金・短期性有価証券)
+                    <div class="table-row-highlight-wrapper"></div>
+                  </td>
                   <td class="unit" style="width: 75px;">百万円</td>
                   <td class="value" style="width: 150px;"></td>
                   <td class="value" style="width: 150px;"></td>
@@ -1953,15 +2093,21 @@
                   <td class="value" style="width: 150px;"></td>
                   <td class="value" style="width: 150px;"></td>
                 </tr>
-                <tr class="red-highlight" style="height: 5px;">
-                  <td class="label" style="text-align: left; width: 300px;">ROE</td>
+                <tr class="red-highlight" style="height: 5px; position: relative;">
+                  <td class="label" style="text-align: left; width: 300px; position: relative;">
+                    ROE
+                    <div class="table-row-highlight-wrapper"></div>
+                  </td>
                   <td class="unit" style="width: 75px;">%</td>
                   <td class="value" style="width: 150px;"></td>
                   <td class="value" style="width: 150px;"></td>
                   <td class="value" style="width: 150px;"></td>
                 </tr>
-                <tr class="red-highlight" style="height: 5px;">
-                  <td class="label" style="text-align: left; width: 300px;">株主資本比率</td>
+                <tr class="red-highlight" style="height: 5px; position: relative;">
+                  <td class="label" style="text-align: left; width: 300px; position: relative;">
+                    株主資本比率
+                    <div class="table-row-highlight-wrapper"></div>
+                  </td>
                   <td class="unit" style="width: 75px;">%</td>
                   <td class="value" style="width: 150px;"></td>
                   <td class="value" style="width: 150px;"></td>
@@ -2009,8 +2155,11 @@
                   <td class="value" style="width: 150px;"></td>
                   <td class="value" style="width: 150px;"></td>
                 </tr>
-                <tr class="blue-highlight" style="height: 5px;">
-                  <td class="label" style="text-align: left; width: 300px;">一人当たりの売上高</td>
+                <tr style="height: 5px; position: relative;">
+                  <td class="label" style="text-align: left; width: 300px; position: relative;">
+                    一人当たりの売上高
+                    <div class="table-row-highlight-wrapper" style="border: 2px dashed #0066ff;"></div>
+                  </td>
                   <td class="unit" style="width: 75px;">千円</td>
                   <td class="value" style="width: 150px;"></td>
                   <td class="value" style="width: 150px;"></td>
@@ -2027,7 +2176,7 @@
     </div>
 </div>
 
-<div class="slide">
+<div class="slide"> <!-- Slide 9 -->
         <div class="slide-content-1">
             <div class="slide-heading-1" style="margin-bottom: -15px;">業績の推移</div>
             <div class="subsidiary-blocks">
@@ -2036,7 +2185,8 @@
                     <div class="chart-container">
                         <div class="chart-with-arrow">
                             <div class="arrow-container-9">
-                                <div class="arrow-9 arrow-right-9">
+                                                              
+                                                               <div class="arrow-9 arrow-right-9">
                                     売上高CAGR(19/3期-21/3期)+8.2%
                                 </div>
                             </div>
@@ -2055,8 +2205,8 @@
                 "backgroundColor": ["#2c4a6b", "#2c4a6b", "#2c4a6b"],
                 "borderColor": "#ffffff",
                 "borderWidth": 1,
-                "categoryPercentage": 0.4,
-                "barPercentage": 0.8
+                "categoryPercentage": 0.6,
+                "barPercentage": 0.5
             }]
         },
         "options": {
@@ -2086,7 +2236,10 @@
                 "y": {
                     "beginAtZero": true,
                     "max": 300,
-                    "display": false
+                    "display": false,
+                    "grid": {
+                        "display": false
+                    }
                 },
                 "x": {
                     "display": true,
@@ -2145,8 +2298,8 @@
                 "backgroundColor": ["#4A90E2", "#4A90E2", "#4A90E2"],
                 "borderColor": "#ffffff",
                 "borderWidth": 1,
-                "categoryPercentage": 0.4,
-                "barPercentage": 0.8
+                "categoryPercentage": 0.6,
+                "barPercentage": 0.5
             }]
         },
         "options": {
@@ -2177,7 +2330,11 @@
                 "y": {
                     "beginAtZero": true,
                     "max": 20,
-                    "display": false
+                    "min": 0,
+                    "display": false,
+                    "grid": {
+                        "display": false
+                    }
                 },
                 "x": {
                     "display": true,
@@ -2219,7 +2376,9 @@
         </div>
     </div>
 
-   <div class="slide">
+  
+    
+  <div class="slide">
         <div class="slide-content-1">
             <div class="slide-heading-1">成長ビジョン（FY22決算資料より）</div>
 
@@ -2293,7 +2452,7 @@
         </div>
     </div>
 
-       <div class="slide">
+    <div class="slide">
         <div class="slide-content-1">
             <div class="slide-heading-1">中期経営計画（FY22決算資料より）</div>
 
@@ -2384,7 +2543,7 @@
                                     <canvas
                                         class="chartjs-chart"
                                         id="planChart"
-                                        width="350"
+                                        width="350" 
                                         height="200"
                                         data-chart='{
                                             "type": "bar",
@@ -2394,7 +2553,9 @@
                                                     "data": [2621, 2880],
                                                     "backgroundColor": ["rgba(245,206,126,0.7)", "rgba(245,206,126,1)"],
                                                     "borderColor": "#ffffff",
-                                                    "borderWidth": 1
+                                                    "borderWidth": 1,
+                                                    "categoryPercentage": 0.9,
+                                                    "barPercentage": 0.4
                                                 }]
                                             },
                                             "options": {
@@ -2434,7 +2595,13 @@
                                                     },
                                                     "x": {
                                                         "display": true,
-                                                        "ticks": {"font": {"size": 9}, "color": "#666", "maxRotation": 0},
+                                                        "ticks": {
+                                                            "font": {"size": 8},
+                                                            "color": "#666",
+                                                            "maxRotation": 0,
+                                                            "minRotation": 0,
+                                                            "callback": "function(value, index, values) { return this.getLabelForValue(value).split(\"\\n\"); }"
+                                                        },
                                                         "grid": {"display": false}
                                                     }
                                                 },
@@ -2472,7 +2639,9 @@
                                                     "data": [2421, 3051],
                                                     "backgroundColor": ["rgba(245,206,126,0.7)", "rgba(245,206,126,1)"],
                                                     "borderColor": "#ffffff",
-                                                    "borderWidth": 1
+                                                    "borderWidth": 1,
+                                                    "categoryPercentage": 0.9,
+                                                    "barPercentage": 0.4
                                                 }]
                                             },
                                             "options": {
@@ -2512,7 +2681,13 @@
                                                     },
                                                     "x": {
                                                         "display": true,
-                                                        "ticks": {"font": {"size": 9}, "color": "#666", "maxRotation": 0},
+                                                        "ticks": {
+                                                            "font": {"size": 8},
+                                                            "color": "#666",
+                                                            "maxRotation": 0,
+                                                            "minRotation": 0,
+                                                            "callback": "function(value, index, values) { return this.getLabelForValue(value).split(\"\\n\"); }"
+                                                        },
                                                         "grid": {"display": false}
                                                     }
                                                 },
@@ -2536,6 +2711,139 @@
         </div>
     </div>
 
+    <div class="slide">
+    <div class="slide-content-1">
+        <div class="slide-heading-1">足許の時価総額の推移と想定投資金額</div>
+        <div class="line-heading" style="margin-top: 80px;">過去6か月間の時価総額の推移</div>
+        
+        <div class="chart-container-13" style="max-width: 800px; margin: 20px auto;">
+            <div class="chart">
+                <canvas 
+                    class="chartjs-chart"
+                    id="marketCapChart" 
+                    width="800" 
+                    height="300"
+                    data-chart='{
+                        "type": "line",
+                        "data": {
+                            "labels": ["12/9/2021", "1/9/2022", "2/9/2022", "3/9/2022", "4/9/2022", "5/9/2022"],
+                            "datasets": [{
+                                "label": "時価総額(自己株数調整後)",
+                                "data": [310, 360, 340, 370, 360, 350],
+                                "borderColor": "#666666",
+                                "backgroundColor": "transparent",
+                                "borderWidth": 2,
+                                "fill": false,
+                                "tension": 0.1,
+                                "pointRadius": 0,
+                                "pointHoverRadius": 0
+                            }]
+                        },
+                        "options": {
+                            "responsive": true,
+                            "maintainAspectRatio": true,
+                            "plugins": {
+                                "legend": {
+                                    "display": true,
+                                    "position": "bottom",
+                                    "labels": {
+                                        "color": "#666666",
+                                        "font": {
+                                            "size": 12,
+                                            "family": "Meiryo UI"
+                                        }
+                                    }
+                                },
+                                "tooltip": {
+                                    "enabled": false
+                                },
+                                "datalabels": {
+                                    "display": false
+                                }
+                            },
+                            "scales": {
+                                "y": {
+                                    "display": true,
+                                    "min": 250,
+                                    "max": 450,
+                                    "ticks": {
+                                        "stepSize": 50,
+                                        "color": "#888888",
+                                        "font": {
+                                            "size": 10,
+                                            "family": "Meiryo UI"
+                                        }
+                                    },
+                                    "grid": {
+                                        "display": false
+                                    },
+                                    "border": {
+                                        "display": false
+                                    }
+                                },
+                                "x": {
+                                    "display": true,
+                                    "ticks": {
+                                        "color": "#888888",
+                                        "font": {
+                                            "size": 10,
+                                            "family": "Meiryo UI"
+                                        }
+                                    },
+                                    "grid": {
+                                        "display": false
+                                    },
+                                    "border": {
+                                        "display": true,
+                                        "color": "#666666"
+                                    }
+                                }
+                            },
+                            "layout": {
+                                "padding": {
+                                    "top": 0,
+                                    "bottom": 0,
+                                    "left": 10,
+                                    "right": 30
+                                }
+                            }
+                        }
+                    }'>
+                </canvas>
+            </div>
+        </div>
+
+        <div class="line-heading" style="margin-top: -20px;">初期的な想定投資金額</div>
+
+        <div class="investment-visualization" style="display: flex; align-items: center; justify-content: center; margin: 30px auto; max-width: 700px;">
+            <div class="investment-container" style="width: 200px; text-align: center;">
+                <div class="box-header" style="background-color: #34429e; color: white; padding: 4px 8px; font-family: 'Meiryo', sans-serif; font-size: 12px; font-weight: bold; height: 16px; line-height: 16px;">時価総額(6か月平均)</div>
+                <div class="investment-box" style="background-color: white; border: 1px solid #34429e; padding: 6px; height: 30px; display: flex; align-items: center; justify-content: center; font-family: 'Meiryo', sans-serif; font-size: 14px; font-weight: bold; color: #333; margin-top: 5px;">
+                    XXX億円
+                </div>
+            </div>
+
+            <div class="arrow-with-text" style="margin: 0 30px; display: flex; flex-direction: column; align-items: center;">
+                <div class="premium-text" style="font-family: 'Meiryo UI', sans-serif; font-size: 12px; color: #666; margin-bottom: 10px; white-space: nowrap; text-align: center;">プレミアムO%(仮)<br>加味</div>
+                <div class="triangle-arrow" style="width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-bottom: 20px solid #ccc; transform: rotate(90deg);"></div>
+            </div>
+
+            <div class="investment-container" style="width: 200px; text-align: center;">
+                <div class="box-header" style="background-color: #34429e; color: white; padding: 4px 8px; font-family: 'Meiryo', sans-serif; font-size: 12px; font-weight: bold; height: 16px; line-height: 16px;">想定投資金額</div>
+                <div class="investment-box" style="background-color: white; border: 1px solid #34429e; padding: 6px; height: 30px; display: flex; align-items: center; justify-content: center; font-family: 'Meiryo', sans-serif; font-size: 14px; font-weight: bold; color: #333; margin-top: 5px;">
+                    XXX億円
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="source-note">出所：XX</div>
+    <div class="footer">
+        <span>Strictly Confidential | © DOLBIX CONSULTING Inc.</span>
+        <span>13</span>
+    </div>
+</div>
+
       <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Register the datalabels plugin
@@ -2558,12 +2866,35 @@
                     chartData.options.plugins.datalabels.formatter = new Function('value', 'context', 'return ' + funcBody);
                 }
                 
+                // Handle x-axis tick callback for multi-line labels
+                if (chartData.options && 
+                    chartData.options.scales && 
+                    chartData.options.scales.x && 
+                    chartData.options.scales.x.ticks &&
+                    chartData.options.scales.x.ticks.callback &&
+                    typeof chartData.options.scales.x.ticks.callback === 'string') {
+                    
+                    chartData.options.scales.x.ticks.callback = function(value, index, values) {
+                        return this.getLabelForValue(value).split('\n');
+                    };
+                }
+                
                 // Create the chart
                 const chartInstance = new Chart(canvas, chartData);
                 chartInstances[canvas.id] = chartInstance;
             });
 
             // Function to calculate dynamic arrow positioning and rotation
+            // ARROW POSITIONING LOGIC EXPLANATION:
+            // 1. CHART AREA CALCULATION: Gets the drawable area of the chart (excluding padding/margins)
+            // 2. BAR POSITIONING: Calculates each bar's center position and width within the chart area
+            // 3. BAR HEIGHT CALCULATION: Normalizes data values to pixel heights within the chart
+            // 4. ARROW START/END POINTS: 
+            //    - Start: Top-right corner of the left bar
+            //    - End: Top-left corner of the right bar
+            // 5. DISTANCE & ANGLE: Uses Pythagorean theorem and trigonometry to calculate arrow length and rotation
+            // 6. ARROW SIZE: Fixed height (12px) with width = distance between bars
+            // 7. TEXT POSITIONING: Places text at arrow midpoint with perpendicular offset for visibility
             function updateDynamicArrows() {
                 document.querySelectorAll('.dynamic-growth-arrow').forEach(arrow => {
                     const chartId = arrow.getAttribute('data-chart-id');
@@ -2580,9 +2911,10 @@
                         const maxValue = chart.config.options.scales.y.max || Math.max(...data);
                         
                         // Calculate bar positions and dimensions
+                        // BAR WIDTH CALCULATION: Total chart width divided by number of bars
                         const barCount = data.length;
                         const barWidth = (chartArea.right - chartArea.left) / barCount;
-                        const barActualWidth = barWidth * 0.8; // Account for bar spacing
+                        const barActualWidth = barWidth * (chart.config.data.datasets[0].barPercentage || 0.8) * (chart.config.data.datasets[0].categoryPercentage || 0.9);
                         
                         // Calculate normalized bar heights (0 to 1)
                         const leftBarNormalized = (data[0] - minValue) / (maxValue - minValue);
@@ -2609,17 +2941,26 @@
                         const endX = rightBarCenterX - (barActualWidth * 0.5);
                         const endY = rightBarTop;
                         
-                        // Calculate arrow properties
+                        // Calculate arrow properties using geometry
+                        // DISTANCE: Pythagorean theorem √(x² + y²)
                         const deltaX = endX - startX;
                         const deltaY = endY - startY;
                         const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                        const reducedDistance = distance * 0.7; // Reduce arrow length to 70%
+                        
+                        // Calculate arrow start position (centered on the slant path)
+                        const arrowStartX = startX + (deltaX * 0.15); // Start 15% along the path
+                        const arrowStartY = startY + (deltaY * 0.15);
+                        
+                        // ROTATION ANGLE: Arctangent of rise/run, converted to degrees
                         const angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
                         
                         // Update arrow styling with polygon clip-path
+                        // ARROW SIZE: Width = reduced distance, Height = 12px (fixed)
                         arrow.style.position = 'absolute';
-                        arrow.style.left = startX + 'px';
-                        arrow.style.top = startY + 'px';
-                        arrow.style.width = distance + 'px';
+                        arrow.style.left = arrowStartX + 'px';
+                        arrow.style.top = arrowStartY + 'px';
+                        arrow.style.width = reducedDistance + 'px';
                         arrow.style.height = '12px';
                         arrow.style.background = '#f9a56c';
                         arrow.style.clipPath = 'polygon(0 30%, 75% 30%, 75% 10%, 100% 50%, 75% 90%, 75% 70%, 0 70%)';
@@ -2630,8 +2971,8 @@
                         // Position text at arrow midpoint with offset
                         const textElement = arrow.parentElement.querySelector('.dynamic-growth-text');
                         if (textElement) {
-                            const arrowMidX = startX + (deltaX * 0.5);
-                            const arrowMidY = startY + (deltaY * 0.5);
+                            const arrowMidX = arrowStartX + (reducedDistance * Math.cos(angle * Math.PI / 180) * 0.5);
+                            const arrowMidY = arrowStartY + (reducedDistance * Math.sin(angle * Math.PI / 180) * 0.5);
                             
                             // Calculate perpendicular offset for text positioning
                             const perpAngle = (angle - 90) * Math.PI / 180;

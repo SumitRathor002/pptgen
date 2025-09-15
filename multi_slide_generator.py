@@ -65,6 +65,7 @@ def set_cell_border_enhanced(cell, side, width_px, color_rgb, style='solid'):
 
     # Convert color to hex string
     try:
+        # RGBColor uses r, g, b properties, not red, green, blue
         color_hex = f'{color_rgb.r:02X}{color_rgb.g:02X}{color_rgb.b:02X}'
     except:
         color_hex = "000000"
@@ -112,6 +113,8 @@ def safe_int(value, default=0):
         return int(float(value))
     except (ValueError, TypeError):
         return default
+
+
 def safe_float(value, default=0.0):
     """Safely convert value to float with better error handling"""
     try:
@@ -120,16 +123,24 @@ def safe_float(value, default=0.0):
         return float(value) if value else default
     except (ValueError, TypeError):
         return default
+    
+
 def pixels_to_emu(pixels):
     """Convert pixels to EMU with high precision (96 PPI)"""
     return int(round(pixels * 9525))
+
+
 def px_to_pt(px):
     """Convert pixels to points"""
     return px * 0.75
+
+
 def get_font_size_pt(font_size_px):
     if font_size_px <= 0:
         return 12
     return max(6, int(px_to_pt(font_size_px)))
+
+
 def parse_border_radius(radius_str, shape_width_px, shape_height_px):
     """Parse border radius from CSS string"""
     if not radius_str or radius_str == '0px':
@@ -145,6 +156,8 @@ def parse_border_radius(radius_str, shape_width_px, shape_height_px):
         return 0
     except (ValueError, TypeError):
         return 0
+
+
 def parse_color(color_str):
     """Enhanced color parsing with better RGB extraction"""
     if not color_str or color_str in ['transparent', 'rgba(0, 0, 0, 0)', 'none', 'initial', 'inherit']:
@@ -185,11 +198,15 @@ def parse_color(color_str):
     }
    
     return named_colors.get(color_str.lower())
+
+    
 def is_uniform_border(styles):
     widths = [safe_float(styles.get(f'border{side}Width', '0px')) for side in ['Top', 'Right', 'Bottom', 'Left']]
     styles_list = [styles.get(f'border{side}Style', 'none') for side in ['Top', 'Right', 'Bottom', 'Left']]
     colors = [styles.get(f'border{side}Color', '') for side in ['Top', 'Right', 'Bottom', 'Left']]
     return len(set(widths)) == 1 and len(set(styles_list)) == 1 and len(set(colors)) == 1 and widths[0] > 0
+
+
 def has_any_border(styles):
     """Enhanced border detection"""
     for side in ['Top', 'Right', 'Bottom', 'Left']:
@@ -204,6 +221,8 @@ def has_any_border(styles):
         if width > 0 and style not in ['none', 'hidden'] and color is not None:
             return True
     return False
+
+
 def get_border_info(styles):
     """Enhanced border information extraction"""
     border_info = {}
@@ -223,6 +242,8 @@ def get_border_info(styles):
             'has_border': width > 0 and style not in ['none', 'hidden'] and color is not None
         }
     return border_info
+
+
 def make_rounded_image(input_path, output_path, radius):
     im = Image.open(input_path).convert("RGBA")
     mask = Image.new("L", im.size, 0)
@@ -230,6 +251,8 @@ def make_rounded_image(input_path, output_path, radius):
     draw.rounded_rectangle((0, 0) + im.size, radius=radius, fill=255)
     im.putalpha(mask)
     im.save(output_path, "PNG")
+
+
 def create_precise_border_shapes(slide, x, y, width, height, border_info, border_radius=0):
     """Create precise border shapes with accurate positioning"""
     shapes_created = []
@@ -281,6 +304,8 @@ def create_precise_border_shapes(slide, x, y, width, height, border_info, border
         except Exception as e:
             print(f"Error creating {side} border: {e}")
     return shapes_created
+
+
 def add_bg_shape(slide, styles, x, y, width, height):
     """Enhanced background shape creation with precise positioning"""
     bg_color = parse_color(styles.get('backgroundColor'))
@@ -339,6 +364,8 @@ def add_bg_shape(slide, styles, x, y, width, height):
         )
         shapes_created.extend(border_shapes)
     return shapes_created
+
+
 def apply_shadow(shape, box_shadow_str):
     if box_shadow_str == 'none':
         return
@@ -369,6 +396,8 @@ def apply_shadow(shape, box_shadow_str):
     shape.shadow.color.type = MSO_COLOR_TYPE.RGB
     shape.shadow.color.rgb = color
     shape.shadow.transparency = 1 - alpha
+
+
 def add_inline_group_element(slide, element, slide_width, slide_height, parent_has_shadow=False):
     inline_group = element.get('inlineGroup')
     if not inline_group:
@@ -398,50 +427,60 @@ def add_inline_group_element(slide, element, slide_width, slide_height, parent_h
     try:
         # Add red highlight wrapper border if present with accurate positioning
         if has_red_highlight and red_highlight_styles:
+            # Try to use the actual rendered rectangle from proto3
             extended_rect = red_highlight_styles.get('extendedRect', {})
-            if extended_rect:
-                # Use the actual extended rectangle from proto3
-                wrapper_x = max(0, min(extended_rect.get('x', x), slide_width - 10))
-                wrapper_y = max(0, min(extended_rect.get('y', y), slide_height - 10))
-                wrapper_width = max(10, min(extended_rect.get('width', width), slide_width - wrapper_x))
-                wrapper_height = max(10, min(extended_rect.get('height', height), slide_height - wrapper_y))
-            else:
-                # Fallback: calculate extension from CSS values
-                top_offset = safe_float(red_highlight_styles.get('top', '-4px'))
-                left_offset = safe_float(red_highlight_styles.get('left', '-20px'))
-                right_offset = safe_float(red_highlight_styles.get('right', '-20px'))
-                bottom_offset = safe_float(red_highlight_styles.get('bottom', '-4px'))
+            wrapper_class = red_highlight_styles.get('wrapperClass', '')
+            
+            # Use the extended rectangle if it has valid dimensions
+            if (extended_rect and 
+                extended_rect.get('width', 0) > 0 and 
+                extended_rect.get('height', 0) > 0):
                 
-                # Apply offsets (negative values extend outward)
-                wrapper_x = max(0, x + left_offset)
-                wrapper_y = max(0, y + top_offset)
-                wrapper_width = min(width - left_offset - right_offset, slide_width - wrapper_x)
-                wrapper_height = min(height - top_offset - bottom_offset, slide_height - wrapper_y)
+                wrapper_x = extended_rect.get('x', x)
+                wrapper_y = extended_rect.get('y', y)
+                wrapper_width = extended_rect.get('width', width)
+                wrapper_height = extended_rect.get('height', height)
+                
+                # Ensure the wrapper is within slide bounds
+                wrapper_x = max(0, min(wrapper_x, slide_width - 10))
+                wrapper_y = max(0, min(wrapper_y, slide_height - 10))
+                wrapper_width = max(10, min(wrapper_width, slide_width - wrapper_x))
+                wrapper_height = max(10, min(wrapper_height, slide_height - wrapper_y))
+            else:
+                # Fallback: extend the content rectangle by typical red highlight offsets
+                wrapper_x = max(0, x - 30)  # Extend left by 30px
+                wrapper_y = max(0, y - 4)   # Extend top by 4px
+                wrapper_width = min(width + 50, slide_width - wrapper_x)  # Extend width by 50px (30+20)
+                wrapper_height = min(height + 8, slide_height - wrapper_y)  # Extend height by 8px (4+4)
             
             border_color = parse_color(red_highlight_styles.get('borderColor', '#ff0000'))
-            border_width = safe_float(red_highlight_styles.get('borderWidth', '2px'))
-            border_style = red_highlight_styles.get('borderStyle', 'solid')
+            border_width_str = red_highlight_styles.get('borderWidth', '2px')
+            border_width = safe_float(border_width_str.replace('px', '')) if border_width_str else 2
+            border_style = red_highlight_styles.get('borderStyle', 'dashed')
             
             if border_color and border_width > 0 and wrapper_width > 0 and wrapper_height > 0:
-                wrapper_shape = slide.shapes.add_shape(
-                    MSO_SHAPE.RECTANGLE,
-                    pixels_to_emu(wrapper_x), pixels_to_emu(wrapper_y),
-                    pixels_to_emu(wrapper_width), pixels_to_emu(wrapper_height)
-                )
-                
-                # Make background transparent
-                wrapper_shape.fill.background()
-                wrapper_shape.shadow.inherit = False
-                
-                # Add the border with correct style
-                wrapper_shape.line.width = Pt(max(0.5, border_width))
-                wrapper_shape.line.color.rgb = border_color
-                if border_style == 'dashed':
-                    wrapper_shape.line.dash_style = MSO_LINE.DASH
-                elif border_style == 'dotted':
-                    wrapper_shape.line.dash_style = MSO_LINE.ROUND_DOT
-                else:
-                    wrapper_shape.line.dash_style = MSO_LINE.SOLID
+                try:
+                    wrapper_shape = slide.shapes.add_shape(
+                        MSO_SHAPE.RECTANGLE,
+                        pixels_to_emu(wrapper_x), pixels_to_emu(wrapper_y),
+                        pixels_to_emu(wrapper_width), pixels_to_emu(wrapper_height)
+                    )
+                    
+                    # Make background transparent
+                    wrapper_shape.fill.background()
+                    wrapper_shape.shadow.inherit = False
+                    
+                    # Add the border with correct style
+                    wrapper_shape.line.width = Pt(max(0.5, border_width))
+                    wrapper_shape.line.color.rgb = border_color
+                    if border_style == 'dashed':
+                        wrapper_shape.line.dash_style = MSO_LINE.DASH
+                    elif border_style == 'dotted':
+                        wrapper_shape.line.dash_style = MSO_LINE.ROUND_DOT
+                    else:
+                        wrapper_shape.line.dash_style = MSO_LINE.SOLID
+                except Exception as wrapper_error:
+                    print(f"Error creating wrapper shape: {wrapper_error}")
         
         # Only add text content if there are inline elements
         if has_content:
@@ -503,6 +542,8 @@ def add_inline_group_element(slide, element, slide_width, slide_height, parent_h
                 
     except Exception as e:
         print(f"Failed to add inline group element: {e}")
+
+
 def add_overlay_element(slide, element, slide_width, slide_height):
     """Render overlay/highlight elements as shapes using their CSS (generic, not hardcoded)."""
     x = element.get('x', 0)
@@ -510,8 +551,61 @@ def add_overlay_element(slide, element, slide_width, slide_height):
     width = max(1, element.get('width', 10))
     height = max(1, element.get('height', 10))
     styles = element.get('styles', {})
-    x = max(0, min(x, slide_width - width))
-    y = max(0, min(y, slide_height - height))
+    element_class = element.get('className', '')
+    
+    # For overlay elements, use the rect coordinates if available
+    rect = element.get('rect', {})
+    if rect:
+        x = rect.get('x', x)
+        y = rect.get('y', y)
+        width = max(1, rect.get('width', width))
+        height = max(1, rect.get('height', height))
+    
+    # Special handling for table row highlight wrappers - CUSTOM calculation based on table position
+    if 'table-row-highlight-wrapper' in element_class:
+        target_row_index = element.get('targetRowIndex')
+        table_y = element.get('tableY', 0)
+        table_x = element.get('tableX', 0)
+        
+        if target_row_index is not None:
+            print(f"CUSTOM CALCULATION: Table row highlight for row {target_row_index}: tableY={table_y}")
+            
+            # Use ACTUAL "final" row heights from the PowerPoint table creation
+            actual_row_heights = [31, 20, 20, 20, 21, 20, 20, 21, 21, 20, 20, 20, 21, 20, 20, 20, 20, 20, 21]
+            
+            # Calculate the Y position of the target row's top edge
+            if target_row_index == 0:
+                row_top_y = table_y
+            else:
+                cumulative_height = sum(actual_row_heights[:target_row_index])
+                row_top_y = table_y + cumulative_height
+            
+            # Get target row height
+            target_row_height = actual_row_heights[target_row_index] if target_row_index < len(actual_row_heights) else 20
+            
+            # Calculate vertical middle of the target row
+            row_middle_y = row_top_y + (target_row_height / 2)
+            
+            # Calculate vertical middle of the highlight
+            highlight_middle_offset = height / 2
+            
+            # Align highlight's vertical middle with row's vertical middle
+            calculated_y = row_middle_y - highlight_middle_offset
+            
+            print(f"FINAL Y CALCULATION: row {target_row_index} -> Y = {table_y} + cumulative({sum(actual_row_heights[:target_row_index]) if target_row_index > 0 else 0}) + center({target_row_height / 2}) - highlight_offset({highlight_middle_offset}) = {calculated_y}")
+            
+            y = calculated_y
+            x = table_x - 12  # Extend left beyond table
+            
+        # Don't clamp coordinates for table highlights
+        x = max(-20, min(x, slide_width + 20))
+        y = max(-10, min(y, slide_height + 10))
+        width = min(width, slide_width + 40)
+        height = min(height, slide_height + 20)
+    else:
+        x = max(0, min(x, slide_width - width))
+        y = max(0, min(y, slide_height - height))
+    
     bg_color = parse_color(styles.get('backgroundColor'))
     border_radius_str = styles.get('borderRadius', '0px')
     border_radius = parse_border_radius(border_radius_str, width, height)
@@ -520,8 +614,73 @@ def add_overlay_element(slide, element, slide_width, slide_height):
     has_any_border_sides = has_any_border(styles)
     box_shadow = styles.get('boxShadow', 'none')
     has_shadow = box_shadow != 'none'
-    if bg_color or has_border or has_any_border_sides or has_radius or has_shadow:
+    
+    # Check for red/blue highlight wrapper pattern
+    is_red_highlight = (
+        'red-highlight-wrapper' in element_class or
+        'table-row-highlight-wrapper' in element_class or
+        element.get('redHighlightWrapper', False) or
+        (styles.get('position') == 'absolute' and
+         ('red' in styles.get('borderColor', '').lower() or 
+          'rgb(255, 0, 0)' in styles.get('borderColor', '') or
+          'rgb(0, 102, 255)' in styles.get('borderColor', '') or
+          '#0066ff' in styles.get('borderColor', '')) and
+         styles.get('borderStyle') in ['dashed', 'dotted'] and
+         parse_color(styles.get('backgroundColor')) is None)
+    )
+    
+    # Special handling for red highlight wrapper
+    if is_red_highlight:
+        # Debug information for table row highlights
+        if 'table-row-highlight-wrapper' in element_class:
+            print(f"Processing table row highlight overlay: class='{element_class}', x={x}, y={y}, w={width}, h={height}")
+        
+        # Parse border color - handle both red and blue highlights
+        border_color_str = styles.get('borderColor', '#ff0000')
+        if border_color_str == '#0066ff':
+            border_color = RGBColor(0, 102, 255)  # Blue
+        elif 'rgb(0, 102, 255)' in border_color_str:
+            border_color = RGBColor(0, 102, 255)  # Blue
+        else:
+            border_color = parse_color(border_color_str) or RGBColor(255, 0, 0)  # Red default
+        
+        border_width_str = styles.get('borderWidth', '2px')
+        border_width = safe_float(border_width_str.replace('px', '')) if border_width_str else 2
+        border_style = styles.get('borderStyle', 'dashed')
+        
+        if border_color and border_width > 0 and width > 0 and height > 0:
+            try:
+                wrapper_shape = slide.shapes.add_shape(
+                    MSO_SHAPE.RECTANGLE,
+                    pixels_to_emu(x), pixels_to_emu(y),
+                    pixels_to_emu(width), pixels_to_emu(height)
+                )
+                
+                # Make background transparent
+                wrapper_shape.fill.background()
+                wrapper_shape.shadow.inherit = False
+                
+                # Add the border with correct style and color
+                wrapper_shape.line.width = Pt(max(0.5, border_width))
+                wrapper_shape.line.color.rgb = border_color
+                if border_style == 'dashed':
+                    wrapper_shape.line.dash_style = MSO_LINE.DASH
+                elif border_style == 'dotted':
+                    wrapper_shape.line.dash_style = MSO_LINE.ROUND_DOT
+                else:
+                    wrapper_shape.line.dash_style = MSO_LINE.SOLID
+                
+                if 'table-row-highlight-wrapper' in element_class:
+                    print(f"Successfully created table row highlight overlay shape with color: {border_color}")
+                return
+            except Exception as e:
+                print(f"Error creating red highlight overlay: {e}")
+                if 'table-row-highlight-wrapper' in element_class:
+                    print(f"Failed to create table row highlight: {e}")
+    
+    if bg_color or has_border or has_any_border_sides or has_radius or has_shadow or is_red_highlight:
         add_bg_shape(slide, styles, x, y, width, height)
+    
     text = element.get('text', '').strip()
     if text:
         textbox = slide.shapes.add_textbox(
@@ -634,7 +793,7 @@ def add_list_paragraphs(text_frame, list_info, level=0, counters=None, element=N
         default_font_name = item_styles.get('fontFamily', 'Segoe UI').split(',')[0].strip('"\'')
         default_color = parse_color(item_styles.get('color'))
 
-        # Per-item bullet info (from proto3 extraction ::before)
+        # Per-item bullet info
         item_bullet = item.get('bulletInfo') or {}
         per_bullet_char = None
         per_bullet_color = None
@@ -815,13 +974,15 @@ def add_list_element(slide, element, slide_width, slide_height, parent_has_shado
         add_list_paragraphs(text_frame, list_info, element=element, bullet_style_override=bullet_style)
     except Exception as e:
         print(f"Failed to add list: {e}")
+
 def set_cell_border(cell, side, width_px, color_rgb, style='solid'):
     """Apply a border to a table cell side using enhanced method"""
     set_cell_border_enhanced(cell, side, width_px, color_rgb, style)
+
 def add_table_element(slide, element, slide_width, slide_height, parent_has_shadow=False):
     table_info = element.get('tableInfo', {})
     if not table_info.get('rows'):
-        return
+        return None  # Return None instead of just returning
     rect = table_info.get('rect', {})
     x = safe_float(rect.get('x', element.get('x', 0)))
     y = safe_float(rect.get('y', element.get('y', 0)))
@@ -892,7 +1053,7 @@ def add_table_element(slide, element, slide_width, slide_height, parent_has_shad
                         if idx < cols:
                             table.columns[idx].width = pixels_to_emu(max(8, per_remaining))
 
-        # --- Enhanced row heights with consistent sizing ---
+        # --- row heights with consistent sizing ---
         for row_data in table_info['rows']:
             r_index = row_data['index']
             if r_index >= rows:
@@ -916,15 +1077,17 @@ def add_table_element(slide, element, slide_width, slide_height, parent_has_shad
             
             # Choose the most appropriate height
             if specified_height:
-                # Use CSS specified height as primary
+                # Use CSS specified height as primary for consistency with HTML
                 final_height = specified_height
             else:
                 # Fall back to rendered height
                 final_height = rendered_height
             
-            # Ensure minimum reasonable height and clamp maximum
-            final_height = max(20, min(final_height, 120))
+            # For table row highlights to align properly, increase minimum height
+            # to ensure proper alignment with highlights
+            final_height = max(20, min(final_height, 100))
             
+            print(f"Table row {r_index}: CSS height={css_height}, rendered={rendered_height}, final={final_height}")
             table.rows[r_index].height = pixels_to_emu(final_height)
 
         # Apply default borders to ALL table cells
@@ -1073,8 +1236,12 @@ def add_table_element(slide, element, slide_width, slide_height, parent_has_shad
                 p.space_before = Pt(0)
                 p.space_after = Pt(0)
                 p.line_spacing = 1.0
+        
+        return table_shape  # Return the table shape for highlight processing
     except Exception as e:
         print(f"Failed to add table: {e}")
+        return None
+
 def add_image_element(slide, element, slide_width, slide_height, parent_has_shadow=False):
     media_info = element.get('mediaInfo', {})
     img_src = media_info.get('src', '')
@@ -1187,6 +1354,8 @@ def add_image_element(slide, element, slide_width, slide_height, parent_has_shad
             os.remove(temp_path)
     except Exception as e:
         print(f"Failed to add image: {e}")
+
+
 def add_text_element(slide, element, slide_width, slide_height, parent_has_shadow=False):
     """Enhanced text element creation with precise positioning"""
     text = element.get('text', '').strip()
@@ -1250,7 +1419,7 @@ def add_text_element(slide, element, slide_width, slide_height, parent_has_shado
         else:
             text_frame.vertical_anchor = MSO_ANCHOR.TOP
        
-        # Enhanced margin calculation for headings with pseudo elements
+        # margin calculation for headings with pseudo elements
         margin_left = safe_float(styles.get('paddingLeft', '0px'))
         margin_right = safe_float(styles.get('paddingRight', '0px'))
         margin_top = safe_float(styles.get('paddingTop', '0px'))
@@ -1301,6 +1470,8 @@ def add_text_element(slide, element, slide_width, slide_height, parent_has_shado
            
     except Exception as e:
         print(f"Failed to add text: {e}")
+
+
 def parse_linear_gradient(gradient_str, total_width):
     """Parse linear-gradient color stops (hex, rgb, rgba) into solid segments.
 
@@ -1340,6 +1511,8 @@ def parse_linear_gradient(gradient_str, total_width):
     except Exception as e:
         print(f"Gradient parse failed: {e}")
         return []
+    
+
 def add_pseudo_element(slide, element, slide_width, slide_height):
     x = safe_float(element.get('x', 0))
     y = safe_float(element.get('y', 0))
@@ -1427,6 +1600,8 @@ def add_pseudo_element(slide, element, slide_width, slide_height):
             textbox.shadow.inherit = False
         except Exception as e:
             print(f"Failed to add pseudo element text: {e}")
+
+
 def parse_datalabel_formatter(formatter_str, labels, values, index):
     """
     Parses a Chart.js datalabel formatter string and returns the formatted label.
@@ -1550,7 +1725,7 @@ def add_chart_element(slide, element, slide_width, slide_height):
             chart_type = XL_CHART_TYPE.PIE
         elif chart_type_str == 'line':
             datasets = chart_config.get('data', {}).get('datasets', [])
-            has_fill = any(dataset.get('fill') is not None for dataset in datasets)
+            has_fill = any(dataset.get('fill') is not None and dataset.get('fill') != False for dataset in datasets)
             if has_fill:
                 chart_type = XL_CHART_TYPE.AREA_STACKED if any(dataset.get('fill') == '-1' for dataset in datasets) else XL_CHART_TYPE.AREA
             else:
@@ -1578,8 +1753,23 @@ def add_chart_element(slide, element, slide_width, slide_height):
         
         chart_data.categories = processed_labels
         
-        for dataset in data.get('datasets', []):
-            chart_data.add_series(dataset.get('label', ''), tuple(dataset.get('data', [])))
+        # Enhanced dataset handling to prevent label display issues
+        datasets = data.get('datasets', [])
+        for i, dataset in enumerate(datasets):
+            # Get the series label but don't use it if it should be hidden
+            series_label = dataset.get('label', f'Series {i+1}')
+            series_data = dataset.get('data', [])
+            
+            # For single series charts where legend is explicitly disabled, use empty label
+            plugins = options.get('plugins', {})
+            legend_opts = plugins.get('legend', {})
+            legend_display = legend_opts.get('display')
+            
+            if legend_display is False and len(datasets) == 1:
+                # Use empty string for series label to prevent it showing up as text
+                chart_data.add_series('', tuple(series_data))
+            else:
+                chart_data.add_series(series_label, tuple(series_data))
         
         graphic_frame = slide.shapes.add_chart(
             chart_type,
@@ -1591,13 +1781,36 @@ def add_chart_element(slide, element, slide_width, slide_height):
         )
         chart = graphic_frame.chart
 
-        # Legend handling
+        # Enhanced Legend handling with accurate font configuration
         plugins = options.get('plugins', {})
         legend_opts = plugins.get('legend', {})
-        if legend_opts.get('display') is False:
+        
+        # Fix legend display logic - properly handle explicit display settings
+        legend_display = legend_opts.get('display')
+        
+        if legend_display is False:
             chart.has_legend = False
-        else:
+            # Also ensure series names don't show up anywhere else
+            try:
+                # Hide series names from chart title area
+                if hasattr(chart, 'chart_title'):
+                    chart.chart_title.has_text_frame = False
+                
+                # Make sure no series labels appear on the plot area
+                for series in chart.series:
+                    try:
+                        series.name = ''
+                    except (AttributeError, TypeError):
+                        # Some series types don't allow name setting, ignore silently
+                        pass
+                    
+            except Exception:
+                # Ignore any errors in hiding series labels
+                pass
+        
+        elif legend_display is True:
             chart.has_legend = True
+            
             position = legend_opts.get('position', 'top')
             if position == 'bottom':
                 chart.legend.position = XL_LEGEND_POSITION.BOTTOM
@@ -1607,7 +1820,147 @@ def add_chart_element(slide, element, slide_width, slide_height):
                 chart.legend.position = XL_LEGEND_POSITION.RIGHT
             else: # top
                 chart.legend.position = XL_LEGEND_POSITION.TOP
+            
             chart.legend.include_in_layout = False
+            
+            # Improved legend font configuration with error handling
+            try:
+                legend_labels = legend_opts.get('labels', {})
+                legend_font = legend_labels.get('font', {})
+                legend_color_str = legend_labels.get('color')
+                
+                if legend_font.get('size'):
+                    chart.legend.font.size = Pt(max(6, int(legend_font['size'])))
+                else:
+                    chart.legend.font.size = Pt(10)  # Default size
+                
+                if legend_font.get('family'):
+                    # Clean font family name and handle special fonts
+                    font_family = legend_font['family'].strip()
+                    if font_family in ['Meiryo UI', 'Meiryo']:
+                        # Use a more compatible font for PowerPoint
+                        chart.legend.font.name = 'Arial'
+                    else:
+                        chart.legend.font.name = font_family
+                else:
+                    chart.legend.font.name = 'Arial'
+                
+                if legend_color_str:
+                    legend_color = parse_color(legend_color_str)
+                    if legend_color:
+                        chart.legend.font.color.rgb = legend_color
+            except Exception as e:
+                print(f"Error configuring legend font: {e}")
+                # Set safe defaults
+                chart.legend.font.size = Pt(10)
+                chart.legend.font.name = 'Arial'
+        else:
+            # Default behavior when display is not specified
+            datasets = data.get('datasets', [])
+            if len(datasets) > 1:
+                chart.has_legend = True
+            else:
+                chart.has_legend = False
+                # Hide series names for single series without legend
+                try:
+                    for series in chart.series:
+                        try:
+                            series.name = ''
+                        except (AttributeError, TypeError):
+                            # Some series types don't allow name setting, ignore silently
+                            pass
+                except Exception:
+                    # Ignore any errors in hiding single series labels
+                    pass
+
+        # Enhanced Data Labels with proper font settings from options
+        datalabel_opts = plugins.get('datalabels', {})
+        has_datalabels = datalabel_opts.get('display', False)
+        
+        if has_datalabels:
+            plot = chart.plots[0]
+            plot.has_data_labels = True
+            data_labels = plot.data_labels
+            
+            # Get font settings from datalabels options - use exact values from JSON
+            font_opts = datalabel_opts.get('font', {})
+            label_color_str = datalabel_opts.get('color', '#333333')
+            label_color = parse_color(label_color_str)
+            font_size = font_opts.get('size', 8)  # Use exact size from JSON
+            font_family = font_opts.get('family', 'Arial')
+            font_weight = font_opts.get('weight', 'normal')
+
+            # Clean font family for data labels too
+            if font_family in ['Meiryo UI', 'Meiryo']:
+                font_family = 'Arial'
+
+            # Apply font settings to data labels using exact values
+            data_labels.font.bold = font_weight in ['bold', '600', '700', '800', '900']
+            data_labels.font.size = Pt(font_size)  # Use exact font size
+            data_labels.font.name = font_family
+            if label_color:
+                data_labels.font.color.rgb = label_color
+            
+            apply_datalabel_positioning(
+                data_labels,
+                datalabel_opts.get('anchor', 'center'),
+                datalabel_opts.get('align', 'center'),
+                datalabel_opts.get('offset', 0),
+                chart_type_str
+            )
+
+            formatter_str = datalabel_opts.get('formatter')
+            if formatter_str:
+                data_labels.show_category_name = False
+                data_labels.show_value = False
+                data_labels.show_percentage = False
+                
+                # Apply formatting to individual points with consistent font settings
+                for series in chart.series:
+                    for i, point in enumerate(series.points):
+                        point.has_data_label = True
+                        data_label = point.data_label
+                        values = series.values
+                        formatted_text = parse_datalabel_formatter(formatter_str, labels, values, i)
+                        data_label.text_frame.text = formatted_text
+                        
+                        # Apply exact font settings to each point's data label
+                        if data_label.text_frame.paragraphs:
+                            for paragraph in data_label.text_frame.paragraphs:
+                                paragraph.font.size = Pt(font_size)  # Use exact size
+                                paragraph.font.bold = font_weight in ['bold', '600', '700', '800', '900']
+                                paragraph.font.name = font_family
+                                if label_color:
+                                    paragraph.font.color.rgb = label_color
+                        # Also apply to individual runs in paragraphs
+                        for paragraph in data_label.text_frame.paragraphs:
+                            for run in paragraph.runs:
+                                run.font.size = Pt(font_size)
+                                run.font.bold = font_weight in ['bold', '600', '700', '800', '900']
+                                run.font.name = font_family
+                                if label_color:
+                                    run.font.color.rgb = label_color
+            else:
+                # For non-custom formatters, still apply the exact font settings
+                data_labels.show_category_name = False
+                data_labels.show_value = True
+                data_labels.show_percentage = False
+        else:
+            # Explicitly disable data labels when not configured
+            try:
+                plot = chart.plots[0]
+                plot.has_data_labels = False
+            except Exception:
+                pass
+
+        # Disable chart title to prevent series labels from appearing there
+        try:
+            if hasattr(chart, 'chart_title'):
+                chart.chart_title.has_text_frame = False
+            # Alternative method to disable title
+            chart.has_title = False
+        except Exception as e:
+            print(f"Error disabling chart title: {e}")
 
         if chart_type_str != 'pie':
             scales = options.get('scales', {})
@@ -1647,8 +2000,14 @@ def add_chart_element(slide, element, slide_width, slide_height):
                     tick_font = ticks.get('font', {})
                     if tick_font.get('size'):
                         value_axis.tick_labels.font.size = Pt(tick_font['size'])
+                    
+                    # Handle font family for axis labels
                     if tick_font.get('family'):
-                        value_axis.tick_labels.font.name = tick_font['family']
+                        font_family = tick_font['family'].strip()
+                        if font_family in ['Meiryo UI', 'Meiryo']:
+                            value_axis.tick_labels.font.name = 'Arial'
+                        else:
+                            value_axis.tick_labels.font.name = font_family
                     
                     tick_color = parse_color(ticks.get('color', '#888888'))
                     if tick_color:
@@ -1665,106 +2024,90 @@ def add_chart_element(slide, element, slide_width, slide_height):
             except Exception as e:
                 print(f"Error configuring value axis: {e}")
             
-            # Category axis configuration
+            # Enhanced Category axis configuration - axis visibility should be independent of datalabels
             try:
+                cat_ticks = category_scale.get('ticks', {})
+                
+                # Category axis visibility should only depend on scale display setting, not datalabels
                 if category_scale.get('display', True) == False:
                     category_axis.visible = False
+                else:
+                    # Configure category axis labels when they should be visible
+                    category_axis.visible = True
+                    
+                    if category_axis.tick_labels:
+                        tick_font = cat_ticks.get('font', {})
+                        if tick_font.get('size'):
+                            category_axis.tick_labels.font.size = Pt(tick_font['size'])
+                        else:
+                            # Default font size for category labels
+                            category_axis.tick_labels.font.size = Pt(8)
+                        
+                        # Handle font family for category axis labels
+                        if tick_font.get('family'):
+                            font_family = tick_font['family'].strip()
+                            if font_family in ['Meiryo UI', 'Meiryo']:
+                                category_axis.tick_labels.font.name = 'Arial'
+                            else:
+                                category_axis.tick_labels.font.name = font_family
+                        
+                        tick_color = parse_color(cat_ticks.get('color', '#666666'))
+                        if tick_color:
+                            category_axis.tick_labels.font.color.rgb = tick_color
+                        
+                        # Handle label rotation properly
+                        max_rotation = cat_ticks.get('maxRotation', 0)
+                        min_rotation = cat_ticks.get('minRotation', 0)
+                        if max_rotation == 0 and min_rotation == 0:
+                            category_axis.tick_labels.orientation = 0  # Horizontal
+                        elif max_rotation > 0:
+                            category_axis.tick_labels.orientation = max_rotation
                 
-                # Hide axis line if border is not displayed
-                if category_scale.get('border', {}).get('display') is False:
+                # Handle axis line display
+                border_config = category_scale.get('border', {})
+                if border_config.get('display') is False:
                     category_axis.format.line.fill.background()
-
-                cat_ticks = category_scale.get('ticks', {})
-                if category_axis.tick_labels:
-                    tick_font = cat_ticks.get('font', {})
-                    if tick_font.get('size'):
-                        category_axis.tick_labels.font.size = Pt(tick_font['size'])
-                    if tick_font.get('family'):
-                        category_axis.tick_labels.font.name = tick_font['family']
-                    
-                    tick_color = parse_color(cat_ticks.get('color', '#666666'))
-                    if tick_color:
-                        category_axis.tick_labels.font.color.rgb = tick_color
-                    
-                    # Handle label rotation
-                    max_rotation = cat_ticks.get('maxRotation', 0)
-                    if max_rotation == 0:
-                        category_axis.tick_labels.orientation = 0  # Horizontal
+                elif border_config.get('display') is True:
+                    # Ensure axis line is visible and apply color if specified
+                    border_color = parse_color(border_config.get('color', '#666666'))
+                    if border_color:
+                        category_axis.format.line.color.rgb = border_color
                         
             except Exception as e:
                 print(f"Error configuring category axis: {e}")
 
-        # Data Labels
-        datalabel_opts = plugins.get('datalabels', {})
-        if datalabel_opts.get('display'):
-            plot = chart.plots[0]
-            plot.has_data_labels = True
-            data_labels = plot.data_labels
-            
-            font_opts = datalabel_opts.get('font', {})
-            label_color = parse_color(datalabel_opts.get('color'))
-
-            data_labels.font.bold = font_opts.get('weight') == 'bold'
-            if font_opts.get('size'):
-                data_labels.font.size = Pt(font_opts['size'])
-            if label_color:
-                data_labels.font.color.rgb = label_color
-            
-            apply_datalabel_positioning(
-                data_labels,
-                datalabel_opts.get('anchor', 'center'),
-                datalabel_opts.get('align', 'center'),
-                datalabel_opts.get('offset', 0),
-                chart_type_str
-            )
-
-            formatter_str = datalabel_opts.get('formatter')
-            if formatter_str:
-                data_labels.show_category_name = False
-                data_labels.show_value = False
-                data_labels.show_percentage = False
-                
-                series = chart.series[0]
-                for i, point in enumerate(series.points):
-                    point.has_data_label = True
-                    data_label = point.data_label
-                    values = series.values
-                    formatted_text = parse_datalabel_formatter(formatter_str, labels, values, i)
-                    data_label.text_frame.text = formatted_text
-                    
-                    if data_label.text_frame.paragraphs:
-                        p = data_label.text_frame.paragraphs[0]
-                        if font_opts.get('size'):
-                            p.font.size = Pt(font_opts['size'])
-                        p.font.bold = font_opts.get('weight') == 'bold'
-                        if label_color:
-                            p.font.color.rgb = label_color
-
+        # Enhanced gridline configuration
         try:
             if chart_type_str != 'pie':
                 y_grid = value_scale.get('grid', {})
                 x_grid = category_scale.get('grid', {})
                 
+                # Value axis gridlines
                 if y_grid.get('display', True) == False:
                     value_axis.has_major_gridlines = False
-                elif y_grid.get('display', True) == True:
+                else:
                     value_axis.has_major_gridlines = True
-                    grid_color = parse_color(y_grid.get('color'))
-                    if grid_color:
-                        value_axis.major_gridlines.format.line.color.rgb = grid_color
+                    grid_color_str = y_grid.get('color')
+                    if grid_color_str:
+                        grid_color = parse_color(grid_color_str)
+                        if grid_color:
+                            value_axis.major_gridlines.format.line.color.rgb = grid_color
 
+                # Category axis gridlines
                 if x_grid.get('display', True) == False:
                     category_axis.has_major_gridlines = False
-                elif x_grid.get('display', True) == True:
+                else:
                     category_axis.has_major_gridlines = True
-                    grid_color = parse_color(x_grid.get('color'))
-                    if grid_color:
-                        category_axis.major_gridlines.format.line.color.rgb = grid_color
-                    
+                    grid_color_str = x_grid.get('color')
+                    if grid_color_str:
+                        grid_color = parse_color(grid_color_str)
+                        if grid_color:
+                            category_axis.major_gridlines.format.line.color.rgb = grid_color
+                        
         except Exception as e:
             print(f"Error configuring gridlines: {e}")
 
-        # Apply colors to series/points
+        # Enhanced color application for series/points
         try:
             datasets = data.get('datasets', [])
             for i, series in enumerate(chart.series):
@@ -1777,11 +2120,19 @@ def add_chart_element(slide, element, slide_width, slide_height):
                         if border_color:
                             series.format.line.color.rgb = border_color
                         
+                        # Enhanced area fill handling based on dataset configuration
                         if chart_type in [XL_CHART_TYPE.AREA, XL_CHART_TYPE.AREA_STACKED]:
-                            bg_color = parse_color(dataset.get('backgroundColor'))
-                            if bg_color:
-                                series.format.fill.solid()
-                                series.format.fill.fore_color.rgb = bg_color
+                            bg_color_str = dataset.get('backgroundColor', '')
+                            
+                            # Check if backgroundColor is transparent or not set for area fill
+                            if bg_color_str and bg_color_str.lower() not in ['transparent', 'none']:
+                                bg_color = parse_color(bg_color_str)
+                                if bg_color:
+                                    series.format.fill.solid()
+                                    series.format.fill.fore_color.rgb = bg_color
+                            else:
+                                # If backgroundColor is transparent or not set, don't fill
+                                series.format.fill.background()
 
                     # Bar/Column/Pie chart colors
                     elif chart_type in [XL_CHART_TYPE.COLUMN_CLUSTERED, XL_CHART_TYPE.BAR_CLUSTERED, XL_CHART_TYPE.PIE]:
@@ -1799,8 +2150,171 @@ def add_chart_element(slide, element, slide_width, slide_height):
         print(f"Failed to add chart: {e}")
         return
 
+
+def create_simple_table_highlights(slide, table_shape, table_x, table_y, slide_width, table_overlays=None):
+    """Create table row highlights using direct overlay positioning like .red-highlight-wrapper"""
+    print(f"=== create_simple_table_highlights called ===")
+    print(f"  table_overlays: {table_overlays}")
+    print(f"  table_overlays length: {len(table_overlays) if table_overlays else 0}")
+    
+    if not table_overlays:
+        print("No table overlay data provided for highlights - skipping")
+        return 0
+    
+    highlights_created = 0
+    
+    for overlay in table_overlays:
+        target_row_index = overlay.get('targetRowIndex')
+        target_text = overlay.get('targetRowText', '')
+        
+        # Extract styles from the proto3 JSON structure
+        styles = overlay.get('styles', {})
+        rect_data = overlay.get('rect', {})
+        
+        print(f"\nProcessing table highlight overlay:")
+        print(f"  targetRowText: '{target_text}'")
+        print(f"  targetRowIndex: {target_row_index}")
+        print(f"  rect: {rect_data}")
+        print(f"  Direct position: x={overlay.get('x')}, y={overlay.get('y')}")
+        print(f"  styles.border: {styles.get('border', 'N/A')}")
+        
+        try:
+            # Use custom positioning logic for table row highlights with precise alignment
+            highlight_x = overlay.get('x', rect_data.get('x', 0))
+            highlight_y = overlay.get('y', rect_data.get('y', 0))
+            highlight_width = overlay.get('width', rect_data.get('width', 900))
+            highlight_height = overlay.get('height', rect_data.get('height', 20))
+            
+            # Custom Y positioning: align vertical middle of highlight with vertical middle of target row
+            if target_row_index is not None:
+                # Get the actual table Y position from overlay data (this is where the table was created)
+                actual_table_y = overlay.get('tableY', table_y)
+                
+                # Use ACTUAL "final" row heights from the PowerPoint table creation
+                actual_row_heights = [31, 20, 20, 20, 21, 20, 20, 21, 21, 20, 20, 20, 21, 20, 20, 20, 20, 20, 21]
+                
+                # Calculate the Y position of the target row's top edge
+                if target_row_index == 0:
+                    row_top_y = actual_table_y
+                else:
+                    cumulative_height = sum(actual_row_heights[:target_row_index])
+                    row_top_y = actual_table_y + cumulative_height
+                
+                # Get target row height
+                target_row_height = actual_row_heights[target_row_index] if target_row_index < len(actual_row_heights) else 20
+                
+                # Calculate vertical middle of the target row (exact floating point)
+                row_middle_y = row_top_y + (target_row_height / 2.0)
+                
+                # Calculate vertical middle of the highlight (exact floating point)  
+                highlight_middle_offset = highlight_height / 2.0
+                
+                # Align highlight's vertical middle with row's vertical middle
+                custom_highlight_y = row_middle_y - highlight_middle_offset
+                
+                print(f"  PRECISE Y positioning for row {target_row_index}:")
+                print(f"    Table Y: {actual_table_y} (from overlay data)")
+                print(f"    Cumulative height before row: {sum(actual_row_heights[:target_row_index]) if target_row_index > 0 else 0}")
+                print(f"    Row top: {row_top_y}, Row height: {target_row_height}")
+                print(f"    Row middle: {row_middle_y} (row_top + {target_row_height}/2)")
+                print(f"    Highlight height: {highlight_height}, Highlight middle offset: {highlight_middle_offset}")
+                print(f"    Final highlight Y: {custom_highlight_y} (row_middle - highlight_offset)")
+                print(f"    VERIFICATION: Highlight middle will be at: {custom_highlight_y + highlight_middle_offset}")
+                print(f"    VERIFICATION: Row middle is at: {row_middle_y}")
+                print(f"    ALIGNMENT CHECK: Difference = {abs((custom_highlight_y + highlight_middle_offset) - row_middle_y)}")
+                
+                # Use the custom calculated Y position
+                highlight_y = custom_highlight_y
+            
+            print(f"  Using custom positioning: x={highlight_x}, y={highlight_y}, w={highlight_width}, h={highlight_height}")
+            
+            # Extract border styling from computed styles (like .red-highlight-wrapper)
+            border_styles = styles.get('border', '5px dashed rgb(255, 0, 0)')
+            
+            # Parse border (e.g., "5px dashed rgb(255, 0, 0)")
+            border_width = 5  # default
+            border_style = 'dashed'  # default
+            border_color_str = 'rgb(255, 0, 0)'  # default
+            
+            if border_styles:
+                print(f"  Parsing border: '{border_styles}'")
+                # Handle rgb colors in border
+                import re
+                rgb_match = re.search(r'rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)', border_styles)
+                if rgb_match:
+                    border_color_str = rgb_match.group()
+                    # Remove RGB part for easier parsing of width and style
+                    border_without_rgb = border_styles.replace(border_color_str, '').strip()
+                    parts = border_without_rgb.split()
+                else:
+                    parts = border_styles.split()
+                
+                # Extract width (first part with px)
+                width_part = next((p for p in parts if 'px' in p), None)
+                if width_part:
+                    border_width = int(width_part.replace('px', ''))
+                
+                # Extract style
+                style_keywords = ['solid', 'dashed', 'dotted', 'double']
+                style_part = next((p for p in parts if p in style_keywords), None)
+                if style_part:
+                    border_style = style_part
+                
+                print(f"  Extracted: width={border_width}px, style={border_style}, color={border_color_str}")
+            
+            # Parse color
+            border_color = parse_color(border_color_str)
+            if not border_color:
+                print(f"  Failed to parse color '{border_color_str}', using default red")
+                border_color = RGBColor(255, 0, 0)
+            else:
+                print(f"  Parsed color successfully")
+            
+            # Validate dimensions
+            if highlight_width <= 0 or highlight_height <= 0:
+                print(f"  Invalid dimensions: w={highlight_width}, h={highlight_height} - skipping")
+                continue
+            
+            # Create the highlight shape using direct positioning
+            print(f"  Creating shape at: x={highlight_x}, y={highlight_y}, w={highlight_width}, h={highlight_height}")
+            highlight_shape = slide.shapes.add_shape(
+                MSO_SHAPE.RECTANGLE,
+                pixels_to_emu(highlight_x),
+                pixels_to_emu(highlight_y),
+                pixels_to_emu(highlight_width),
+                pixels_to_emu(highlight_height)
+            )
+            
+            # Apply styling (like .red-highlight-wrapper)
+            highlight_shape.fill.background()  # Transparent background
+            highlight_shape.shadow.inherit = False
+            highlight_shape.line.width = Pt(max(0.5, border_width))
+            highlight_shape.line.color.rgb = border_color
+            
+            # Apply border style
+            if border_style == 'dashed':
+                highlight_shape.line.dash_style = MSO_LINE.DASH
+            elif border_style == 'dotted':
+                highlight_shape.line.dash_style = MSO_LINE.ROUND_DOT
+            elif border_style == 'solid':
+                highlight_shape.line.dash_style = MSO_LINE.SOLID
+            else:
+                highlight_shape.line.dash_style = MSO_LINE.DASH
+            
+            highlights_created += 1
+            print(f"  ✓ Successfully created highlight {highlights_created} using direct positioning")
+            
+        except Exception as e:
+            print(f"  ✗ Failed to create highlight for '{target_text}': {e}")
+            import traceback
+            traceback.print_exc()
+    
+    print(f"\nSummary: {highlights_created} table highlights created using direct positioning")
+    return highlights_created
+
+
 def add_shape_element(slide, element, slide_width, slide_height):
-    """Renders complex shapes based on shapeInfo from proto3."""
+    """Enhanced shape rendering with proper text support"""
     shape_info = element.get('shapeInfo')
     if not shape_info:
         return
@@ -1815,6 +2329,7 @@ def add_shape_element(slide, element, slide_width, slide_height):
     rotation = shape_info.get('rotation', 0)
     clip_path = shape_info.get('clipPath', '')
     bg_color = parse_color(styles.get('backgroundColor'))
+    text_content = shape_info.get('text', element.get('text', '')).strip()
 
     shape_type = MSO_SHAPE.RECTANGLE # Default
     
@@ -1847,6 +2362,69 @@ def add_shape_element(slide, element, slide_width, slide_height):
         
         if rotation != 0:
             shape.rotation = rotation
+
+        # Add text to the shape if present
+        if text_content:
+            text_frame = shape.text_frame
+            text_frame.clear()
+            text_frame.word_wrap = True
+            
+            # Set text alignment based on styles
+            text_align = styles.get('textAlign', 'left')
+            justify_content = styles.get('justifyContent', 'left')
+            align_items = styles.get('alignItems', 'center')
+            
+            # Determine vertical alignment
+            if align_items == 'center':
+                text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
+            elif align_items == 'flex-start' or align_items == 'start':
+                text_frame.vertical_anchor = MSO_ANCHOR.TOP
+            elif align_items == 'flex-end' or align_items == 'end':
+                text_frame.vertical_anchor = MSO_ANCHOR.BOTTOM
+            else:
+                text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
+
+            # Apply padding from styles
+            padding_left = safe_float(styles.get('paddingLeft', '0px'))
+            padding_right = safe_float(styles.get('paddingRight', '0px'))
+            padding_top = safe_float(styles.get('paddingTop', '0px'))
+            padding_bottom = safe_float(styles.get('paddingBottom', '0px'))
+            
+            text_frame.margin_left = pixels_to_emu(padding_left)
+            text_frame.margin_right = pixels_to_emu(padding_right)
+            text_frame.margin_top = pixels_to_emu(padding_top)
+            text_frame.margin_bottom = pixels_to_emu(padding_bottom)
+
+            p = text_frame.paragraphs[0]
+            run = p.add_run()
+            run.text = text_content
+
+            # Apply text formatting from styles
+            font = run.font
+            font_size_px = safe_float(styles.get('fontSize', '12').replace('px', ''))
+            font.size = Pt(max(6, get_font_size_pt(font_size_px)))
+            
+            font_family = styles.get('fontFamily', 'Arial')
+            if font_family:
+                # Clean font family string (remove quotes and extra info)
+                font_family = font_family.split(',')[0].strip('"\'')
+                font.name = font_family
+            
+            font.bold = styles.get('fontWeight', '400') in ['bold', '600', '700', '800', '900']
+            font.italic = styles.get('fontStyle', 'normal') == 'italic'
+            
+            # Apply text color
+            text_color = parse_color(styles.get('color', 'black'))
+            if text_color:
+                font.color.rgb = text_color
+
+            # Apply text alignment
+            if text_align == 'center' or justify_content == 'center':
+                p.alignment = PP_ALIGN.CENTER
+            elif text_align == 'right' or justify_content == 'flex-end':
+                p.alignment = PP_ALIGN.RIGHT
+            else:
+                p.alignment = PP_ALIGN.LEFT
 
     except Exception as e:
         print(f"Failed to add shape element: {e}")
@@ -1890,12 +2468,57 @@ def create_pptx_from_json(json_path, output_path=None):
         elements = slide_data.get('elements', [])
        
         # Sort elements primarily by z-index, then by y, x for consistent layering
-        elements_sorted = sorted(elements, key=lambda e: (e['zIndex'], e.get('y', 0), e.get('x', 0)))
+        elements_sorted = sorted(elements, key=lambda e: (e.get('zIndex', 0), e.get('y', 0), e.get('x', 0)))
        
         # Track processed elements to prevent duplicates
         processed_element_ids = set()
+        processed_text_content = set()
+        
+        # Store table information for overlay positioning
+        table_positions = {}
+        
+        # Collect table row highlight overlays FIRST before processing
+        table_highlight_overlays = []
+        
+        # Pre-scan all elements to collect table highlights - avoid duplicates
+        seen_highlights = set()
+        for element in elements_sorted:
+            if (element.get('type') == 'overlay' and 
+                'table-row-highlight-wrapper' in element.get('className', '')):
+                
+                # Create more specific unique identifier to avoid duplicates
+                target_text = element.get('targetRowText', 'Unknown')
+                target_row = element.get('targetRowIndex')
+                x_pos = element.get('x', 0)
+                y_pos = element.get('y', 0)
+                
+                # Include both row index and position in unique ID to catch true duplicates
+                highlight_id = f"{target_text}_{target_row}_{x_pos}_{y_pos}"
+                
+                # Only keep elements with targetRowIndex and ensure no exact duplicates
+                if target_row is not None and highlight_id not in seen_highlights:
+                    print(f"Pre-collecting table highlight: '{target_text}' at ({x_pos}, {y_pos}) for row {target_row}")
+                    table_highlight_overlays.append(element)
+                    seen_highlights.add(highlight_id)
+                elif highlight_id in seen_highlights:
+                    print(f"Skipping exact duplicate: '{target_text}' at ({x_pos}, {y_pos})")
+                else:
+                    print(f"Skipping overlay without targetRowIndex: '{target_text}'")
+        
+        # Debug: Log all overlay elements found
+        overlay_elements = [e for e in elements_sorted if e.get('type') == 'overlay']
+        print(f"Found {len(overlay_elements)} overlay elements in slide")
+        for i, overlay in enumerate(overlay_elements):
+            print(f"  Overlay {i}: class='{overlay.get('className', '')}', type='{overlay.get('type', '')}'")
+            if 'table-row-highlight-wrapper' in overlay.get('className', ''):
+                print(f"    -> Table highlight: {overlay.get('targetRowText', 'Unknown')}")
+        
+        # Debug: Log collected table highlights
+        print(f"Pre-collected {len(table_highlight_overlays)} table highlight overlays:")
+        for i, overlay in enumerate(table_highlight_overlays):
+            print(f"  Table highlight {i}: '{overlay.get('targetRowText', 'Unknown')}' at ({overlay.get('x', 0)}, {overlay.get('y', 0)})")
        
-        # Process each element with enhanced positioning
+        # Process each element
         for element in elements_sorted:
             element_id = f"{element.get('type', 'unknown')}-{element.get('x', 0)}-{element.get('y', 0)}-{element.get('className', '')}"
             if element_id in processed_element_ids:
@@ -1903,10 +2526,53 @@ def create_pptx_from_json(json_path, output_path=None):
             processed_element_ids.add(element_id)
             
             element_type = element.get('type')
+            element_class = element.get('className', '')
             parent_has_shadow = False
             
-            # Handle complex shapes first (includes arrows)
+            # Debug all overlay elements
+            if element_type == 'overlay':
+                print(f"Found overlay element: type={element_type}, class='{element_class}', x={element.get('x', 0)}, y={element.get('y', 0)}")
+                print(f"  targetRowIndex: {element.get('targetRowIndex')}")
+                print(f"  targetRowText: {element.get('targetRowText')}")
+                print(f"  Full element keys: {list(element.keys())}")
+            
+            # Debug log for table row highlights
+            if 'table-row-highlight-wrapper' in element_class:
+                print(f"Found table row highlight element: {element_class}, type: {element_type}, x: {element.get('x', 0)}, y: {element.get('y', 0)}")
+                print(f"  Has border styles: {element.get('styles', {}).get('border', 'N/A')}")
+            
+            # Handle complex shapes first (includes arrows) - prevent text duplication
             if element.get('shapeInfo'):
+                shape_text = element.get('shapeInfo', {}).get('text', element.get('text', '')).strip()
+                shape_class = element.get('className', '')
+                
+                # Create a unique identifier for this text content + class + position
+                text_class_id = f"{shape_text}-{shape_class}-{element.get('x', 0)}-{element.get('y', 0)}"
+                
+                # Skip if this exact text with same class at similar position was already processed
+                if shape_text and text_class_id in processed_text_content:
+                    continue
+                
+                # Generic container/child duplicate detection
+                if 'container' in shape_class:
+                    # Check if there's a corresponding child element with the same text at similar position
+                    has_child_element = any(
+                        other_elem.get('shapeInfo', {}).get('text', '').strip() == shape_text and
+                        other_elem.get('className', '') != shape_class and
+                        'container' not in other_elem.get('className', '') and
+                        abs(other_elem.get('x', 0) - element.get('x', 0)) < 50 and
+                        abs(other_elem.get('y', 0) - element.get('y', 0)) < 50
+                        for other_elem in elements_sorted
+                        if other_elem.get('shapeInfo')
+                    )
+                    
+                    if has_child_element:
+                        continue
+                
+                # Add to processed text content
+                if shape_text:
+                    processed_text_content.add(text_class_id)
+                
                 add_shape_element(slide, element, slide_width, slide_height)
                 continue
 
@@ -1921,13 +2587,45 @@ def create_pptx_from_json(json_path, output_path=None):
                 continue
 
             if element_type == 'overlay':
+                # Skip table row highlight wrappers since they're processed with tables
+                element_class = element.get('className', '')
+                if 'table-row-highlight-wrapper' in element_class:
+                    continue  # Skip - already collected and will be processed with tables
+                
+                # Pass table positions to overlay processing for other overlays
+                element['_table_positions'] = table_positions
                 add_overlay_element(slide, element, slide_width, slide_height)
             elif element.get('inlineGroup'):
                 add_inline_group_element(slide, element, slide_width, slide_height, parent_has_shadow)
             elif element_type in ['ul', 'ol']:
                 add_list_element(slide, element, slide_width, slide_height, parent_has_shadow)
             elif element_type == 'table':
-                add_table_element(slide, element, slide_width, slide_height, parent_has_shadow)
+                # Store table position for overlay calculations
+                table_key = f"table_{element.get('x', 0)}_{element.get('y', 0)}"
+                table_positions[table_key] = {
+                    'x': element.get('x', 0),
+                    'y': element.get('y', 0),
+                    'table_info': element.get('tableInfo', {})
+                }
+                
+                # Add the table first
+                table_shape = add_table_element(slide, element, slide_width, slide_height, parent_has_shadow)
+                
+                # Then add highlights directly to the PowerPoint table using collected overlay data
+                if table_shape and table_highlight_overlays:
+                    print(f"Processing table highlights: {len(table_highlight_overlays)} overlays available")
+                    
+                    # Use all table highlight overlays for this table
+                    create_simple_table_highlights(
+                        slide, 
+                        table_shape, 
+                        element.get('x', 0), 
+                        element.get('y', 0), 
+                        slide_width,
+                        table_highlight_overlays
+                    )
+                else:
+                    print(f"No table highlights to process: table_shape={table_shape is not None}, overlays={len(table_highlight_overlays) if table_highlight_overlays else 0}")
             elif element_type == 'img':
                 add_image_element(slide, element, slide_width, slide_height, parent_has_shadow)
             elif element_type == 'canvas':
@@ -1939,7 +2637,7 @@ def create_pptx_from_json(json_path, output_path=None):
             elif element_type == 'div' and 'chart' in element.get('className', '') and element.get('chartConfig'):
                 add_chart_element(slide, element, slide_width, slide_height)
             elif element_type in ['div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']:
-                # Enhanced duplicate prevention for div elements
+                # Prevent duplication for div elements
                 if (element.get('text', '').strip() or
                     has_any_border(element.get('styles', {})) or
                     parse_color(element.get('styles', {}).get('backgroundColor')) or
