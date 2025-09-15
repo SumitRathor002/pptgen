@@ -225,91 +225,6 @@ async function extractSlideData(htmlFilePath, outputPath) {
                 return true;
             }
 
-            function detectRedHighlightWrapper(container, slideContainer) {
-                // Look for red highlight wrapper child elements
-                const redHighlightWrappers = Array.from(container.children).filter(child => {
-                    const childClass = child.className || '';
-                    const childStyles = window.getComputedStyle(child);
-                    
-                    // Check for red highlight wrapper pattern
-                    return (
-                        childClass.includes('red-highlight-wrapper') ||
-                        childClass.includes('table-row-highlight-wrapper') ||
-                        (childStyles.position === 'absolute' &&
-                         childStyles.borderColor.includes('255, 0, 0') && // Red border
-                         (childStyles.borderStyle === 'dashed' || childStyles.borderStyle === 'dotted') &&
-                         childStyles.backgroundColor === 'rgba(0, 0, 0, 0)') // Transparent background
-                    );
-                });
-                
-                if (redHighlightWrappers.length === 0) {
-                    return null;
-                }
-                
-                const wrapper = redHighlightWrappers[0];
-                const wrapperStyles = window.getComputedStyle(wrapper);
-                const containerRect = container.getBoundingClientRect();
-                const slideRect = slideContainer.getBoundingClientRect();
-                
-                // Get the actual wrapper rectangle (it should already be positioned correctly)
-                const wrapperRect = wrapper.getBoundingClientRect();
-                
-                // Handle table row highlight wrappers with fixed width
-                if (wrapper.className.includes('table-row-highlight-wrapper')) {
-                    // For table row highlights, find the parent row and table
-                    const parentCell = wrapper.closest('td');
-                    const parentRow = wrapper.closest('tr');
-                    const parentTable = wrapper.closest('table');
-                    
-                    if (parentRow && parentTable) {
-                        const rowRect = parentRow.getBoundingClientRect();
-                        const tableRect = parentTable.getBoundingClientRect();
-                        
-                        // Use table-based positioning for row highlights - extend across full table width
-                        const extendedRect = {
-                            x: Math.round(tableRect.left - slideRect.left - 12), // Left extension beyond table
-                            y: Math.round(rowRect.top - slideRect.top - 3), // Top extension above row
-                            width: Math.round(tableRect.width + 24), // Full table width + extensions
-                            height: Math.round(rowRect.height + 6) // Row height + extensions
-                        };
-                        
-                        console.log(`Table row highlight - Table: x=${tableRect.left}, y=${tableRect.top}, w=${tableRect.width}, Row: y=${rowRect.top}, h=${rowRect.height}`);
-                        console.log(`Extended rect: x=${extendedRect.x}, y=${extendedRect.y}, w=${extendedRect.width}, h=${extendedRect.height}`);
-                        
-                        return {
-                            hasRedHighlight: true,
-                            extendedRect: extendedRect,
-                            borderColor: wrapperStyles.borderColor,
-                            borderWidth: wrapperStyles.borderWidth,
-                            borderStyle: wrapperStyles.borderStyle,
-                            wrapperClass: wrapper.className
-                        };
-                    }
-                }
-                
-                // Use the wrapper's actual rendered position and size relative to slide
-                const extendedRect = {
-                    x: Math.round(wrapperRect.left - slideRect.left),
-                    y: Math.round(wrapperRect.top - slideRect.top),
-                    width: Math.round(wrapperRect.width),
-                    height: Math.round(wrapperRect.height)
-                };
-                
-                // Validate that the rectangle makes sense
-                if (extendedRect.width <= 0 || extendedRect.height <= 0) {
-                    return null;
-                }
-                
-                return {
-                    hasRedHighlight: true,
-                    extendedRect: extendedRect,
-                    borderColor: wrapperStyles.borderColor,
-                    borderWidth: wrapperStyles.borderWidth,
-                    borderStyle: wrapperStyles.borderStyle,
-                    wrapperClass: wrapper.className
-                };
-            }
-
             function shouldExtractInlineGroup(element, processedTextElements) {
                 const elementId = getElementId(element);
                 if (processedTextElements.has(elementId)) {
@@ -328,37 +243,20 @@ async function extractSlideData(htmlFilePath, outputPath) {
                     return ['strong', 'b', 'em', 'i', 'u', 'mark', 'span'].includes(childTag);
                 });
                 
-                // Check for red highlight wrapper
-                const hasRedHighlightWrapper = Array.from(element.children).some(child => {
-                    const childClass = child.className || '';
-                    const childStyles = window.getComputedStyle(child);
-                    return (
-                        childClass.includes('red-highlight-wrapper') ||
-                        childClass.includes('table-row-highlight-wrapper') ||
-                        (childStyles.position === 'absolute' &&
-                         childStyles.borderColor.includes('255, 0, 0') &&
-                         (childStyles.borderStyle === 'dashed' || childStyles.borderStyle === 'dotted'))
-                    );
-                });
-                
-                if (!hasInlineFormatting && !hasRedHighlightWrapper) return false;
+                if (!hasInlineFormatting) return false;
                 
                 const structuredChildren = Array.from(element.children).filter(child => {
                     const childTag = child.tagName.toLowerCase();
-                    const childClass = child.className || '';
-                    return ['div', 'ul', 'ol', 'table', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(childTag) &&
-                           !childClass.includes('red-highlight-wrapper');
+                    return ['div', 'ul', 'ol', 'table', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(childTag);
                 });
-               
+              
                 if (structuredChildren.length > 0) {
                     return false;
                 }
                 
                 const nonInlineChildren = Array.from(element.children).filter(child => {
                     const childTag = child.tagName.toLowerCase();
-                    const childClass = child.className || '';
-                    return !['strong', 'b', 'em', 'i', 'u', 'mark', 'span', 'br', 'div'].includes(childTag) ||
-                           (childTag === 'div' && !childClass.includes('red-highlight-wrapper'));
+                    return !['strong', 'b', 'em', 'i', 'u', 'mark', 'span', 'br', 'div'].includes(childTag);
                 });
                 
                 if (nonInlineChildren.length > 0) {
@@ -378,10 +276,7 @@ async function extractSlideData(htmlFilePath, outputPath) {
                     return ['strong', 'b', 'em', 'i', 'u', 'mark', 'span'].includes(childTag);
                 });
                 
-                // Check for red highlight wrapper
-                const redHighlightInfo = detectRedHighlightWrapper(container, slideContainer);
-                
-                if (!hasInlineFormatting && !redHighlightInfo) return null;
+                if (!hasInlineFormatting) return null;
                 
                 const rect = container.getBoundingClientRect();
                 const slideRect = slideContainer.getBoundingClientRect();
@@ -399,11 +294,6 @@ async function extractSlideData(htmlFilePath, outputPath) {
                         fullText += text;
                     } else if (node.nodeType === Node.ELEMENT_NODE) {
                         const childTag = node.tagName.toLowerCase();
-                        
-                        // Skip red highlight wrapper elements - they're handled separately
-                        if (node.className && (node.className.includes('red-highlight-wrapper') || node.className.includes('table-row-highlight-wrapper'))) {
-                            return;
-                        }
                         
                         if (['strong', 'b', 'em', 'i', 'u', 'mark', 'span'].includes(childTag)) {
                             let text = node.textContent;
@@ -435,7 +325,7 @@ async function extractSlideData(htmlFilePath, outputPath) {
                     walkNodes(node);
                 }
                 const filteredInline = inlineElements.filter(el => el.text.trim() !== '' || el.type === 'br');
-                if (filteredInline.length > 0 || redHighlightInfo) {
+                if (filteredInline.length > 0) {
                     if (filteredInline[0] && filteredInline[0].type === 'text') {
                         filteredInline[0].text = filteredInline[0].text.replace(/^\s+/, '');
                     }
@@ -455,12 +345,6 @@ async function extractSlideData(htmlFilePath, outputPath) {
                         },
                         styles: extractComprehensiveStyles(container)
                     };
-                    
-                    // Add red highlight information if present
-                    if (redHighlightInfo) {
-                        result.hasRedHighlight = true;
-                        result.redHighlightStyles = redHighlightInfo;
-                    }
                     
                     return result;
                 }
@@ -914,71 +798,10 @@ async function extractSlideData(htmlFilePath, outputPath) {
 
             function extractOverlayInfo(element, slideContainer) {
                 const styles = window.getComputedStyle(element);
-                const elementClass = element.className || '';
                 const rect = element.getBoundingClientRect();
                 const slideRect = slideContainer.getBoundingClientRect();
                 
-                // Special handling for red highlight wrappers
-                if (elementClass.includes('red-highlight-wrapper') || elementClass.includes('table-row-highlight-wrapper')) {
-                    // Find the parent list item or table row
-                    const parentLi = element.closest('li');
-                    const parentRow = element.closest('tr');
-                    
-                    if (parentLi) {
-                        const parentRect = parentLi.getBoundingClientRect();
-                        
-                        // Calculate the extended wrapper position based on CSS positioning
-                        const top = safeFloat(styles.top) || -4;
-                        const left = safeFloat(styles.left) || -30;
-                        const right = safeFloat(styles.right) || -20;
-                        const bottom = safeFloat(styles.bottom) || -4;
-                        
-                        // Calculate wrapper dimensions relative to parent li
-                        const wrapperRect = {
-                            x: Math.round(parentRect.left - slideRect.left + left),
-                            y: Math.round(parentRect.top - slideRect.top + top),
-                            width: Math.round(parentRect.width - left - right),
-                            height: Math.round(parentRect.height - top - bottom)
-                        };
-                        
-                        return {
-                            type: 'overlay',
-                            rect: wrapperRect,
-                            styles: extractComprehensiveStyles(element),
-                            className: element.className || '',
-                            zIndex: parseInt(styles.zIndex) || 0,
-                            pointerEvents: styles.pointerEvents
-                        };
-                    } else if (parentRow) {
-                        // Handle table row highlight wrapper
-                        const parentTable = element.closest('table');
-                        if (parentTable) {
-                            const rowRect = parentRow.getBoundingClientRect();
-                            const tableRect = parentTable.getBoundingClientRect();
-                            
-                            // Calculate wrapper dimensions based on table and row
-                            const wrapperRect = {
-                                x: Math.round(tableRect.left - slideRect.left - 12),
-                                y: Math.round(rowRect.top - slideRect.top - 3),
-                                width: Math.round(tableRect.width + 24),
-                                height: Math.round(rowRect.height + 6)
-                            };
-                            
-                            console.log(`Overlay table row highlight - Row: ${rowRect.top}, Table: ${tableRect.left}, Extended: x=${wrapperRect.x}, y=${wrapperRect.y}, w=${wrapperRect.width}, h=${wrapperRect.height}`);
-                            
-                            return {
-                                type: 'overlay',
-                                rect: wrapperRect,
-                                styles: extractComprehensiveStyles(element),
-                                className: element.className || '',
-                                zIndex: parseInt(styles.zIndex) || 0,
-                                pointerEvents: styles.pointerEvents
-                            };
-                        }
-                    }
-                }
-                
-                // Standard overlay handling
+                // Standard overlay handling only
                 if (styles.borderStyle === 'none' && styles.backgroundColor === 'rgba(0, 0, 0, 0)' && !styles.boxShadow) return null;
                 
                 return {
@@ -1102,27 +925,14 @@ async function extractSlideData(htmlFilePath, outputPath) {
                 );
                 const hasZ = parseInt(styles.zIndex) > 0;
                 const tag = element.tagName.toLowerCase();
-                const elementClass = element.className || '';
                 const isContentTag = [
                     'li', 'p', 'span', 'strong', 'b', 'em', 'i', 'u', 'mark'
                 ].includes(tag);
                 
-                // Check for red highlight wrapper pattern
-                const isRedHighlightWrapper = (
-                    elementClass.includes('red-highlight-wrapper') ||
-                    elementClass.includes('table-row-highlight-wrapper') ||
-                    elementClass.includes('table-row-highlight-wrapper') ||
-                    (position === 'absolute' &&
-                     styles.borderColor.includes('255, 0, 0') && // Red border
-                     (styles.borderStyle === 'dashed' || styles.borderStyle === 'dotted') &&
-                     styles.backgroundColor === 'rgba(0, 0, 0, 0)') // Transparent background
-                );
-                
                 return (
                     ((position === 'absolute' || position === 'fixed' || position === 'relative') &&
                      (hasBorder || styles.pointerEvents === 'none') &&
-                     !isContentTag) ||
-                    isRedHighlightWrapper
+                     !isContentTag)
                 );
             }
 
@@ -1146,9 +956,8 @@ async function extractSlideData(htmlFilePath, outputPath) {
                 const isFooter = (
                     element.className.includes('footer') ||
                     element.tagName.toLowerCase() === 'footer' ||
-                    (styles.display === 'flex' && 
-                     (styles.justifyContent === 'center' || styles.justifyContent === 'space-between') &&
-                     styles.alignItems === 'center')
+                    (styles.position === 'absolute' && 
+                     styles.display === 'flex')
                 );
                 
                 if (!isFooter) return null;
@@ -1157,64 +966,77 @@ async function extractSlideData(htmlFilePath, outputPath) {
                 const slideRect = slideContainer.getBoundingClientRect();
                 const footerElements = [];
                 
-                // Get all child elements (spans, images, etc.)
+                // Get direct child elements
                 const children = Array.from(element.children);
                 
-                if (children.length === 0) {
-                    // If no children, check for direct text content
-                    const text = element.textContent ? element.textContent.trim() : '';
-                    if (text) {
-                        footerElements.push({
-                            type: 'text',
-                            text: text,
-                            x: Math.round((footerRect.left - slideRect.left) * 10) / 10,
-                            y: Math.round((footerRect.top - slideRect.top) * 10) / 10,
-                            width: Math.round(footerRect.width * 10) / 10,
-                            height: Math.round(footerRect.height * 10) / 10,
-                            styles: extractComprehensiveStyles(element),
-                            className: element.className || '',
-                            originalIndex: 0
-                        });
-                    }
-                } else {
-                    // Process all child elements
-                    children.forEach((child, index) => {
-                        const childRect = child.getBoundingClientRect();
-                        const childStyles = extractComprehensiveStyles(child);
-                        const tagName = child.tagName.toLowerCase();
-                        
-                        const elementData = {
-                            type: tagName,
-                            x: Math.round((childRect.left - slideRect.left) * 10) / 10,
-                            y: Math.round((childRect.top - slideRect.top) * 10) / 10,
-                            width: Math.round(childRect.width * 10) / 10,
-                            height: Math.round(childRect.height * 10) / 10,
-                            styles: childStyles,
-                            className: child.className || '',
-                            originalIndex: index
-                        };
-                        
-                        // Handle different element types
-                        if (tagName === 'img') {
-                            elementData.mediaInfo = {
-                                src: child.src || '',
-                                alt: child.alt || '',
-                                naturalWidth: child.naturalWidth || 0,
-                                naturalHeight: child.naturalHeight || 0,
-                                currentWidth: Math.round(childRect.width * 10) / 10,
-                                currentHeight: Math.round(childRect.height * 10) / 10
-                            };
+                if (children.length === 0) return null;
+                
+                const justifyContent = styles.justifyContent;
+                
+                children.forEach((child, index) => {
+                    const childRect = child.getBoundingClientRect();
+                    const childStyles = extractComprehensiveStyles(child);
+                    const childTag = child.tagName.toLowerCase();
+                    
+                    let targetX = childRect.left - slideRect.left;
+                    let targetY = childRect.top - slideRect.top;
+                    
+                    // Handle different justify-content values
+                    if (justifyContent === 'space-between' && children.length >= 2) {
+                        if (index === 0) {
+                            // First element: position at left edge of footer
+                            targetX = footerRect.left - slideRect.left;
+                        } else if (index === children.length - 1) {
+                            // Last element: position at right edge of footer
+                            targetX = footerRect.right - slideRect.left - childRect.width;
                         } else {
-                            // For text elements (span, div, etc.)
-                            const text = child.textContent ? child.textContent.trim() : '';
-                            if (text) {
-                                elementData.text = text;
-                            }
+                            // Middle elements: distribute evenly
+                            const totalSpace = footerRect.width - children.reduce((sum, el) => sum + el.getBoundingClientRect().width, 0);
+                            const spaceBetween = totalSpace / (children.length - 1);
+                            targetX = footerRect.left - slideRect.left + index * spaceBetween + 
+                                     children.slice(0, index).reduce((sum, el) => sum + el.getBoundingClientRect().width, 0);
                         }
-                        
-                        footerElements.push(elementData);
-                    });
-                }
+                    } else if (justifyContent === 'center') {
+                        // For center alignment, keep the actual rendered position
+                        targetX = childRect.left - slideRect.left;
+                    } else if (justifyContent === 'flex-start' || justifyContent === 'start') {
+                        // Left aligned
+                        targetX = footerRect.left - slideRect.left + 
+                                 children.slice(0, index).reduce((sum, el) => sum + el.getBoundingClientRect().width, 0);
+                    } else if (justifyContent === 'flex-end' || justifyContent === 'end') {
+                        // Right aligned
+                        const totalChildrenWidth = children.reduce((sum, el) => sum + el.getBoundingClientRect().width, 0);
+                        targetX = footerRect.right - slideRect.left - totalChildrenWidth +
+                                 children.slice(0, index).reduce((sum, el) => sum + el.getBoundingClientRect().width, 0);
+                    }
+                    
+                    const elementData = {
+                        type: childTag,
+                        x: Math.round(targetX * 10) / 10,
+                        y: Math.round(targetY * 10) / 10,
+                        width: Math.round(childRect.width * 10) / 10,
+                        height: Math.round(childRect.height * 10) / 10,
+                        styles: childStyles,
+                        className: child.className || '',
+                        originalIndex: index
+                    };
+                    
+                    // Add specific properties based on element type
+                    if (childTag === 'img') {
+                        elementData.mediaInfo = {
+                            src: child.src || '',
+                            alt: child.alt || '',
+                            naturalWidth: child.naturalWidth || 0,
+                            naturalHeight: child.naturalHeight || 0,
+                            currentWidth: childRect.width,
+                            currentHeight: childRect.height
+                        };
+                    } else {
+                        elementData.text = child.textContent.trim();
+                    }
+                    
+                    footerElements.push(elementData);
+                });
                 
                 return {
                     type: 'footer',
@@ -1226,9 +1048,7 @@ async function extractSlideData(htmlFilePath, outputPath) {
                         height: Math.round(footerRect.height * 10) / 10
                     },
                     containerStyles: extractComprehensiveStyles(element),
-                    justifyContent: styles.justifyContent,
-                    alignItems: styles.alignItems,
-                    flexDirection: styles.flexDirection || 'row'
+                    justifyContent: justifyContent
                 };
             }
 
@@ -1255,133 +1075,11 @@ async function extractSlideData(htmlFilePath, outputPath) {
                 });
                 const overlayElements = [];
                 
-                // First, scan for table row highlights with improved accuracy and original CSS extraction
-                const foundHighlights = new Set();
-                slideElement.querySelectorAll('.table-row-highlight-wrapper').forEach(wrapper => {
-                    const parentCell = wrapper.closest('td');
-                    const parentRow = wrapper.closest('tr');
-                    const parentTable = wrapper.closest('table');
-                    
-                    if (parentRow && parentTable && parentCell) {
-                        // Get the text from the first cell to identify the row
-                        const firstCell = parentRow.querySelector('td');
-                        const rowText = firstCell ? firstCell.textContent.trim() : '';
-                        
-                        // Only process if this is one of the target highlight rows and we haven't seen it
-                        const targetTexts = [
-                            'ネット有利子負債(除く現預金・短期性有価証券)',
-                            'ROE',
-                            '株主資本比率',
-                            '一人当たりの売上高'
-                        ];
-                        
-                        if (!targetTexts.includes(rowText) || foundHighlights.has(rowText)) {
-                            return; // Skip this highlight
-                        }
-                        
-                        foundHighlights.add(rowText); // Mark as found
-                        
-                        const wrapperStyles = window.getComputedStyle(wrapper);
-                        const tableRect = parentTable.getBoundingClientRect();
-                        const rowRect = parentRow.getBoundingClientRect();
-                        const slideRect = slideElement.getBoundingClientRect();
-                        
-                        // Get row index within the table
-                        const rowIndex = Array.from(parentTable.rows).indexOf(parentRow);
-                        
-                        // Extract styles exactly like .red-highlight-wrapper - use getComputedStyle and inline styles
-                        const computedStyles = window.getComputedStyle(wrapper);
-                        
-                        // Get inline styles directly from element's style attribute
-                        const inlineStyle = wrapper.getAttribute('style') || '';
-                        
-                        // Create styles object with the exact same structure as .red-highlight-wrapper
-                        const extractedStyles = {
-                            position: computedStyles.position,
-                            top: computedStyles.top,
-                            left: computedStyles.left,
-                            right: computedStyles.right,
-                            bottom: computedStyles.bottom,
-                            width: computedStyles.width,
-                            height: computedStyles.height,
-                            border: computedStyles.border,
-                            borderWidth: computedStyles.borderWidth,
-                            borderStyle: computedStyles.borderStyle,
-                            borderColor: computedStyles.borderColor,
-                            backgroundColor: computedStyles.backgroundColor,
-                            zIndex: computedStyles.zIndex,
-                            pointerEvents: computedStyles.pointerEvents,
-                            boxSizing: computedStyles.boxSizing
-                        };
-                        
-                        // Calculate relative position within the slide (like .red-highlight-wrapper)
-                        const parentCellRect = parentCell.getBoundingClientRect();
-                        
-                        // Use wrapper's actual computed position relative to the slide
-                        const wrapperRect = wrapper.getBoundingClientRect();
-                        const relativeX = wrapperRect.left - slideRect.left;
-                        const relativeY = wrapperRect.top - slideRect.top;
-                        const relativeWidth = wrapperRect.width;
-                        const relativeHeight = wrapperRect.height;
-                        
-                        // Determine color based on the specific row
-                        let borderColor = extractedStyles.borderColor;
-                        if (rowText === '一人当たりの売上高') {
-                            // Override for blue highlight (like in HTML)
-                            borderColor = 'rgb(0, 102, 255)';
-                            extractedStyles.border = extractedStyles.border.replace(/rgb\([^)]+\)/, borderColor);
-                        }
-                        
-                        console.log(`Found table row highlight: "${rowText}" at rowIndex=${rowIndex}`);
-                        console.log(`Wrapper position: x=${relativeX}, y=${relativeY}, w=${relativeWidth}, h=${relativeHeight}`);
-                        console.log(`Computed styles:`, extractedStyles);
-                        
-                        const overlayInfo = {
-                            type: 'overlay',
-                            className: 'table-row-highlight-wrapper',
-                            x: relativeX,
-                            y: relativeY,
-                            width: relativeWidth,
-                            height: relativeHeight,
-                            targetRowIndex: rowIndex,
-                            targetRowText: rowText,
-                            tableY: tableRect.top - slideRect.top,
-                            tableX: tableRect.left - slideRect.left,
-                            tableWidth: tableRect.width,
-                            tableHeight: tableRect.height,
-                            rowY: rowRect.top - slideRect.top,
-                            rowHeight: rowRect.height,
-                            parentCellX: parentCellRect.left - slideRect.left,
-                            parentCellY: parentCellRect.top - slideRect.top,
-                            parentCellWidth: parentCellRect.width,
-                            parentCellHeight: parentCellRect.height,
-                            zIndex: parseInt(extractedStyles.zIndex) || 10,
-                            styles: extractedStyles, // Use the complete computed styles
-                            rect: {
-                                x: relativeX,
-                                y: relativeY,
-                                width: relativeWidth,
-                                height: relativeHeight
-                            }
-                        };
-                        
-                        overlayElements.push(overlayInfo);
-                        
-                        // Mark this wrapper as processed to avoid duplicate processing
-                        processedElements.add(getElementId(wrapper));
-                        processedElements.add(getElementId(parentCell));
-                    }
-                });
-                
-                console.log(`Found ${foundHighlights.size} unique table row highlights (expected 4)`);
-                
-                // Then process other overlay elements
-                
+                // Process overlay elements
                 elementsToProcess.forEach(element => {
                     if (isOverlayElement(element)) {
                         const overlayInfo = extractOverlayInfo(element, slideElement);
                         if (overlayInfo) {
-                            console.log(`Found overlay element: ${element.className}, type: ${overlayInfo.type}`);
                             overlayElements.push(overlayInfo);
                         }
                         processedElements.add(getElementId(element));
@@ -1679,7 +1377,7 @@ async function extractSlideData(htmlFilePath, outputPath) {
     }
 }
 
-const htmlFilePath = 'input.html';
+const htmlFilePath = 'dolbix.html';
 const outputPath = 'slides_data.json';
 extractSlideData(htmlFilePath, outputPath).catch(err => {
     console.error('Error:', err);

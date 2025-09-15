@@ -199,7 +199,7 @@ def parse_color(color_str):
    
     return named_colors.get(color_str.lower())
 
-    
+
 def is_uniform_border(styles):
     widths = [safe_float(styles.get(f'border{side}Width', '0px')) for side in ['Top', 'Right', 'Bottom', 'Left']]
     styles_list = [styles.get(f'border{side}Style', 'none') for side in ['Top', 'Right', 'Bottom', 'Left']]
@@ -404,13 +404,10 @@ def add_inline_group_element(slide, element, slide_width, slide_height, parent_h
         return
     inline_elements = inline_group.get('inlineElements', [])
     if not inline_elements:
-        # Check if this is just a red highlight wrapper without text
-        has_red_highlight = inline_group.get('hasRedHighlight', False)
-        if not has_red_highlight:
-            return
+        return
     
     has_content = any(elem.get('text', '').strip() for elem in inline_elements)
-    if not has_content and not inline_group.get('hasRedHighlight', False):
+    if not has_content:
         return
     
     group_rect = inline_group.get('groupRect', {})
@@ -420,68 +417,7 @@ def add_inline_group_element(slide, element, slide_width, slide_height, parent_h
     height = max(10, min(group_rect.get('height', 20), slide_height - y))
     styles = inline_group.get('styles', {})
     
-    # Enhanced red highlight wrapper handling
-    has_red_highlight = inline_group.get('hasRedHighlight', False)
-    red_highlight_styles = inline_group.get('redHighlightStyles', {})
-    
     try:
-        # Add red highlight wrapper border if present with accurate positioning
-        if has_red_highlight and red_highlight_styles:
-            # Try to use the actual rendered rectangle from proto3
-            extended_rect = red_highlight_styles.get('extendedRect', {})
-            wrapper_class = red_highlight_styles.get('wrapperClass', '')
-            
-            # Use the extended rectangle if it has valid dimensions
-            if (extended_rect and 
-                extended_rect.get('width', 0) > 0 and 
-                extended_rect.get('height', 0) > 0):
-                
-                wrapper_x = extended_rect.get('x', x)
-                wrapper_y = extended_rect.get('y', y)
-                wrapper_width = extended_rect.get('width', width)
-                wrapper_height = extended_rect.get('height', height)
-                
-                # Ensure the wrapper is within slide bounds
-                wrapper_x = max(0, min(wrapper_x, slide_width - 10))
-                wrapper_y = max(0, min(wrapper_y, slide_height - 10))
-                wrapper_width = max(10, min(wrapper_width, slide_width - wrapper_x))
-                wrapper_height = max(10, min(wrapper_height, slide_height - wrapper_y))
-            else:
-                # Fallback: extend the content rectangle by typical red highlight offsets
-                wrapper_x = max(0, x - 30)  # Extend left by 30px
-                wrapper_y = max(0, y - 4)   # Extend top by 4px
-                wrapper_width = min(width + 50, slide_width - wrapper_x)  # Extend width by 50px (30+20)
-                wrapper_height = min(height + 8, slide_height - wrapper_y)  # Extend height by 8px (4+4)
-            
-            border_color = parse_color(red_highlight_styles.get('borderColor', '#ff0000'))
-            border_width_str = red_highlight_styles.get('borderWidth', '2px')
-            border_width = safe_float(border_width_str.replace('px', '')) if border_width_str else 2
-            border_style = red_highlight_styles.get('borderStyle', 'dashed')
-            
-            if border_color and border_width > 0 and wrapper_width > 0 and wrapper_height > 0:
-                try:
-                    wrapper_shape = slide.shapes.add_shape(
-                        MSO_SHAPE.RECTANGLE,
-                        pixels_to_emu(wrapper_x), pixels_to_emu(wrapper_y),
-                        pixels_to_emu(wrapper_width), pixels_to_emu(wrapper_height)
-                    )
-                    
-                    # Make background transparent
-                    wrapper_shape.fill.background()
-                    wrapper_shape.shadow.inherit = False
-                    
-                    # Add the border with correct style
-                    wrapper_shape.line.width = Pt(max(0.5, border_width))
-                    wrapper_shape.line.color.rgb = border_color
-                    if border_style == 'dashed':
-                        wrapper_shape.line.dash_style = MSO_LINE.DASH
-                    elif border_style == 'dotted':
-                        wrapper_shape.line.dash_style = MSO_LINE.ROUND_DOT
-                    else:
-                        wrapper_shape.line.dash_style = MSO_LINE.SOLID
-                except Exception as wrapper_error:
-                    print(f"Error creating wrapper shape: {wrapper_error}")
-        
         # Only add text content if there are inline elements
         if has_content:
             # Add regular background shapes
@@ -545,7 +481,7 @@ def add_inline_group_element(slide, element, slide_width, slide_height, parent_h
 
 
 def add_overlay_element(slide, element, slide_width, slide_height):
-    """Render overlay/highlight elements as shapes using their CSS (generic, not hardcoded)."""
+    """Render overlay elements as shapes using their CSS."""
     x = element.get('x', 0)
     y = element.get('y', 0)
     width = max(1, element.get('width', 10))
@@ -561,50 +497,8 @@ def add_overlay_element(slide, element, slide_width, slide_height):
         width = max(1, rect.get('width', width))
         height = max(1, rect.get('height', height))
     
-    # Special handling for table row highlight wrappers - CUSTOM calculation based on table position
-    if 'table-row-highlight-wrapper' in element_class:
-        target_row_index = element.get('targetRowIndex')
-        table_y = element.get('tableY', 0)
-        table_x = element.get('tableX', 0)
-        
-        if target_row_index is not None:
-            print(f"CUSTOM CALCULATION: Table row highlight for row {target_row_index}: tableY={table_y}")
-            
-            # Use ACTUAL "final" row heights from the PowerPoint table creation
-            actual_row_heights = [31, 20, 20, 20, 21, 20, 20, 21, 21, 20, 20, 20, 21, 20, 20, 20, 20, 20, 21]
-            
-            # Calculate the Y position of the target row's top edge
-            if target_row_index == 0:
-                row_top_y = table_y
-            else:
-                cumulative_height = sum(actual_row_heights[:target_row_index])
-                row_top_y = table_y + cumulative_height
-            
-            # Get target row height
-            target_row_height = actual_row_heights[target_row_index] if target_row_index < len(actual_row_heights) else 20
-            
-            # Calculate vertical middle of the target row
-            row_middle_y = row_top_y + (target_row_height / 2)
-            
-            # Calculate vertical middle of the highlight
-            highlight_middle_offset = height / 2
-            
-            # Align highlight's vertical middle with row's vertical middle
-            calculated_y = row_middle_y - highlight_middle_offset
-            
-            print(f"FINAL Y CALCULATION: row {target_row_index} -> Y = {table_y} + cumulative({sum(actual_row_heights[:target_row_index]) if target_row_index > 0 else 0}) + center({target_row_height / 2}) - highlight_offset({highlight_middle_offset}) = {calculated_y}")
-            
-            y = calculated_y
-            x = table_x - 12  # Extend left beyond table
-            
-        # Don't clamp coordinates for table highlights
-        x = max(-20, min(x, slide_width + 20))
-        y = max(-10, min(y, slide_height + 10))
-        width = min(width, slide_width + 40)
-        height = min(height, slide_height + 20)
-    else:
-        x = max(0, min(x, slide_width - width))
-        y = max(0, min(y, slide_height - height))
+    x = max(0, min(x, slide_width - width))
+    y = max(0, min(y, slide_height - height))
     
     bg_color = parse_color(styles.get('backgroundColor'))
     border_radius_str = styles.get('borderRadius', '0px')
@@ -615,70 +509,7 @@ def add_overlay_element(slide, element, slide_width, slide_height):
     box_shadow = styles.get('boxShadow', 'none')
     has_shadow = box_shadow != 'none'
     
-    # Check for red/blue highlight wrapper pattern
-    is_red_highlight = (
-        'red-highlight-wrapper' in element_class or
-        'table-row-highlight-wrapper' in element_class or
-        element.get('redHighlightWrapper', False) or
-        (styles.get('position') == 'absolute' and
-         ('red' in styles.get('borderColor', '').lower() or 
-          'rgb(255, 0, 0)' in styles.get('borderColor', '') or
-          'rgb(0, 102, 255)' in styles.get('borderColor', '') or
-          '#0066ff' in styles.get('borderColor', '')) and
-         styles.get('borderStyle') in ['dashed', 'dotted'] and
-         parse_color(styles.get('backgroundColor')) is None)
-    )
-    
-    # Special handling for red highlight wrapper
-    if is_red_highlight:
-        # Debug information for table row highlights
-        if 'table-row-highlight-wrapper' in element_class:
-            print(f"Processing table row highlight overlay: class='{element_class}', x={x}, y={y}, w={width}, h={height}")
-        
-        # Parse border color - handle both red and blue highlights
-        border_color_str = styles.get('borderColor', '#ff0000')
-        if border_color_str == '#0066ff':
-            border_color = RGBColor(0, 102, 255)  # Blue
-        elif 'rgb(0, 102, 255)' in border_color_str:
-            border_color = RGBColor(0, 102, 255)  # Blue
-        else:
-            border_color = parse_color(border_color_str) or RGBColor(255, 0, 0)  # Red default
-        
-        border_width_str = styles.get('borderWidth', '2px')
-        border_width = safe_float(border_width_str.replace('px', '')) if border_width_str else 2
-        border_style = styles.get('borderStyle', 'dashed')
-        
-        if border_color and border_width > 0 and width > 0 and height > 0:
-            try:
-                wrapper_shape = slide.shapes.add_shape(
-                    MSO_SHAPE.RECTANGLE,
-                    pixels_to_emu(x), pixels_to_emu(y),
-                    pixels_to_emu(width), pixels_to_emu(height)
-                )
-                
-                # Make background transparent
-                wrapper_shape.fill.background()
-                wrapper_shape.shadow.inherit = False
-                
-                # Add the border with correct style and color
-                wrapper_shape.line.width = Pt(max(0.5, border_width))
-                wrapper_shape.line.color.rgb = border_color
-                if border_style == 'dashed':
-                    wrapper_shape.line.dash_style = MSO_LINE.DASH
-                elif border_style == 'dotted':
-                    wrapper_shape.line.dash_style = MSO_LINE.ROUND_DOT
-                else:
-                    wrapper_shape.line.dash_style = MSO_LINE.SOLID
-                
-                if 'table-row-highlight-wrapper' in element_class:
-                    print(f"Successfully created table row highlight overlay shape with color: {border_color}")
-                return
-            except Exception as e:
-                print(f"Error creating red highlight overlay: {e}")
-                if 'table-row-highlight-wrapper' in element_class:
-                    print(f"Failed to create table row highlight: {e}")
-    
-    if bg_color or has_border or has_any_border_sides or has_radius or has_shadow or is_red_highlight:
+    if bg_color or has_border or has_any_border_sides or has_radius or has_shadow:
         add_bg_shape(slide, styles, x, y, width, height)
     
     text = element.get('text', '').strip()
@@ -982,12 +813,14 @@ def set_cell_border(cell, side, width_px, color_rgb, style='solid'):
 def add_table_element(slide, element, slide_width, slide_height, parent_has_shadow=False):
     table_info = element.get('tableInfo', {})
     if not table_info.get('rows'):
-        return None  # Return None instead of just returning
+        return None
+        
     rect = table_info.get('rect', {})
     x = safe_float(rect.get('x', element.get('x', 0)))
     y = safe_float(rect.get('y', element.get('y', 0)))
     width = safe_float(rect.get('width', element.get('width', 100)))
     height = safe_float(rect.get('height', element.get('height', 100)))
+    
     element_class = element.get('className', '')
     styles = table_info.get('styles', {})
     box_shadow = styles.get('boxShadow', 'none')
@@ -1083,8 +916,6 @@ def add_table_element(slide, element, slide_width, slide_height, parent_has_shad
                 # Fall back to rendered height
                 final_height = rendered_height
             
-            # For table row highlights to align properly, increase minimum height
-            # to ensure proper alignment with highlights
             final_height = max(20, min(final_height, 100))
             
             print(f"Table row {r_index}: CSS height={css_height}, rendered={rendered_height}, final={final_height}")
@@ -1237,7 +1068,7 @@ def add_table_element(slide, element, slide_width, slide_height, parent_has_shad
                 p.space_after = Pt(0)
                 p.line_spacing = 1.0
         
-        return table_shape  # Return the table shape for highlight processing
+        return table_shape
     except Exception as e:
         print(f"Failed to add table: {e}")
         return None
@@ -1511,7 +1342,7 @@ def parse_linear_gradient(gradient_str, total_width):
     except Exception as e:
         print(f"Gradient parse failed: {e}")
         return []
-    
+
 
 def add_pseudo_element(slide, element, slide_width, slide_height):
     x = safe_float(element.get('x', 0))
@@ -2151,168 +1982,6 @@ def add_chart_element(slide, element, slide_width, slide_height):
         return
 
 
-def create_simple_table_highlights(slide, table_shape, table_x, table_y, slide_width, table_overlays=None):
-    """Create table row highlights using direct overlay positioning like .red-highlight-wrapper"""
-    print(f"=== create_simple_table_highlights called ===")
-    print(f"  table_overlays: {table_overlays}")
-    print(f"  table_overlays length: {len(table_overlays) if table_overlays else 0}")
-    
-    if not table_overlays:
-        print("No table overlay data provided for highlights - skipping")
-        return 0
-    
-    highlights_created = 0
-    
-    for overlay in table_overlays:
-        target_row_index = overlay.get('targetRowIndex')
-        target_text = overlay.get('targetRowText', '')
-        
-        # Extract styles from the proto3 JSON structure
-        styles = overlay.get('styles', {})
-        rect_data = overlay.get('rect', {})
-        
-        print(f"\nProcessing table highlight overlay:")
-        print(f"  targetRowText: '{target_text}'")
-        print(f"  targetRowIndex: {target_row_index}")
-        print(f"  rect: {rect_data}")
-        print(f"  Direct position: x={overlay.get('x')}, y={overlay.get('y')}")
-        print(f"  styles.border: {styles.get('border', 'N/A')}")
-        
-        try:
-            # Use custom positioning logic for table row highlights with precise alignment
-            highlight_x = overlay.get('x', rect_data.get('x', 0))
-            highlight_y = overlay.get('y', rect_data.get('y', 0))
-            highlight_width = overlay.get('width', rect_data.get('width', 900))
-            highlight_height = overlay.get('height', rect_data.get('height', 20))
-            
-            # Custom Y positioning: align vertical middle of highlight with vertical middle of target row
-            if target_row_index is not None:
-                # Get the actual table Y position from overlay data (this is where the table was created)
-                actual_table_y = overlay.get('tableY', table_y)
-                
-                # Use ACTUAL "final" row heights from the PowerPoint table creation
-                actual_row_heights = [31, 20, 20, 20, 21, 20, 20, 21, 21, 20, 20, 20, 21, 20, 20, 20, 20, 20, 21]
-                
-                # Calculate the Y position of the target row's top edge
-                if target_row_index == 0:
-                    row_top_y = actual_table_y
-                else:
-                    cumulative_height = sum(actual_row_heights[:target_row_index])
-                    row_top_y = actual_table_y + cumulative_height
-                
-                # Get target row height
-                target_row_height = actual_row_heights[target_row_index] if target_row_index < len(actual_row_heights) else 20
-                
-                # Calculate vertical middle of the target row (exact floating point)
-                row_middle_y = row_top_y + (target_row_height / 2.0)
-                
-                # Calculate vertical middle of the highlight (exact floating point)  
-                highlight_middle_offset = highlight_height / 2.0
-                
-                # Align highlight's vertical middle with row's vertical middle
-                custom_highlight_y = row_middle_y - highlight_middle_offset
-                
-                print(f"  PRECISE Y positioning for row {target_row_index}:")
-                print(f"    Table Y: {actual_table_y} (from overlay data)")
-                print(f"    Cumulative height before row: {sum(actual_row_heights[:target_row_index]) if target_row_index > 0 else 0}")
-                print(f"    Row top: {row_top_y}, Row height: {target_row_height}")
-                print(f"    Row middle: {row_middle_y} (row_top + {target_row_height}/2)")
-                print(f"    Highlight height: {highlight_height}, Highlight middle offset: {highlight_middle_offset}")
-                print(f"    Final highlight Y: {custom_highlight_y} (row_middle - highlight_offset)")
-                print(f"    VERIFICATION: Highlight middle will be at: {custom_highlight_y + highlight_middle_offset}")
-                print(f"    VERIFICATION: Row middle is at: {row_middle_y}")
-                print(f"    ALIGNMENT CHECK: Difference = {abs((custom_highlight_y + highlight_middle_offset) - row_middle_y)}")
-                
-                # Use the custom calculated Y position
-                highlight_y = custom_highlight_y
-            
-            print(f"  Using custom positioning: x={highlight_x}, y={highlight_y}, w={highlight_width}, h={highlight_height}")
-            
-            # Extract border styling from computed styles (like .red-highlight-wrapper)
-            border_styles = styles.get('border', '5px dashed rgb(255, 0, 0)')
-            
-            # Parse border (e.g., "5px dashed rgb(255, 0, 0)")
-            border_width = 5  # default
-            border_style = 'dashed'  # default
-            border_color_str = 'rgb(255, 0, 0)'  # default
-            
-            if border_styles:
-                print(f"  Parsing border: '{border_styles}'")
-                # Handle rgb colors in border
-                import re
-                rgb_match = re.search(r'rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)', border_styles)
-                if rgb_match:
-                    border_color_str = rgb_match.group()
-                    # Remove RGB part for easier parsing of width and style
-                    border_without_rgb = border_styles.replace(border_color_str, '').strip()
-                    parts = border_without_rgb.split()
-                else:
-                    parts = border_styles.split()
-                
-                # Extract width (first part with px)
-                width_part = next((p for p in parts if 'px' in p), None)
-                if width_part:
-                    border_width = int(width_part.replace('px', ''))
-                
-                # Extract style
-                style_keywords = ['solid', 'dashed', 'dotted', 'double']
-                style_part = next((p for p in parts if p in style_keywords), None)
-                if style_part:
-                    border_style = style_part
-                
-                print(f"  Extracted: width={border_width}px, style={border_style}, color={border_color_str}")
-            
-            # Parse color
-            border_color = parse_color(border_color_str)
-            if not border_color:
-                print(f"  Failed to parse color '{border_color_str}', using default red")
-                border_color = RGBColor(255, 0, 0)
-            else:
-                print(f"  Parsed color successfully")
-            
-            # Validate dimensions
-            if highlight_width <= 0 or highlight_height <= 0:
-                print(f"  Invalid dimensions: w={highlight_width}, h={highlight_height} - skipping")
-                continue
-            
-            # Create the highlight shape using direct positioning
-            print(f"  Creating shape at: x={highlight_x}, y={highlight_y}, w={highlight_width}, h={highlight_height}")
-            highlight_shape = slide.shapes.add_shape(
-                MSO_SHAPE.RECTANGLE,
-                pixels_to_emu(highlight_x),
-                pixels_to_emu(highlight_y),
-                pixels_to_emu(highlight_width),
-                pixels_to_emu(highlight_height)
-            )
-            
-            # Apply styling (like .red-highlight-wrapper)
-            highlight_shape.fill.background()  # Transparent background
-            highlight_shape.shadow.inherit = False
-            highlight_shape.line.width = Pt(max(0.5, border_width))
-            highlight_shape.line.color.rgb = border_color
-            
-            # Apply border style
-            if border_style == 'dashed':
-                highlight_shape.line.dash_style = MSO_LINE.DASH
-            elif border_style == 'dotted':
-                highlight_shape.line.dash_style = MSO_LINE.ROUND_DOT
-            elif border_style == 'solid':
-                highlight_shape.line.dash_style = MSO_LINE.SOLID
-            else:
-                highlight_shape.line.dash_style = MSO_LINE.DASH
-            
-            highlights_created += 1
-            print(f"  ✓ Successfully created highlight {highlights_created} using direct positioning")
-            
-        except Exception as e:
-            print(f"  ✗ Failed to create highlight for '{target_text}': {e}")
-            import traceback
-            traceback.print_exc()
-    
-    print(f"\nSummary: {highlights_created} table highlights created using direct positioning")
-    return highlights_created
-
-
 def add_shape_element(slide, element, slide_width, slide_height):
     """Enhanced shape rendering with proper text support"""
     shape_info = element.get('shapeInfo')
@@ -2476,47 +2145,6 @@ def create_pptx_from_json(json_path, output_path=None):
         
         # Store table information for overlay positioning
         table_positions = {}
-        
-        # Collect table row highlight overlays FIRST before processing
-        table_highlight_overlays = []
-        
-        # Pre-scan all elements to collect table highlights - avoid duplicates
-        seen_highlights = set()
-        for element in elements_sorted:
-            if (element.get('type') == 'overlay' and 
-                'table-row-highlight-wrapper' in element.get('className', '')):
-                
-                # Create more specific unique identifier to avoid duplicates
-                target_text = element.get('targetRowText', 'Unknown')
-                target_row = element.get('targetRowIndex')
-                x_pos = element.get('x', 0)
-                y_pos = element.get('y', 0)
-                
-                # Include both row index and position in unique ID to catch true duplicates
-                highlight_id = f"{target_text}_{target_row}_{x_pos}_{y_pos}"
-                
-                # Only keep elements with targetRowIndex and ensure no exact duplicates
-                if target_row is not None and highlight_id not in seen_highlights:
-                    print(f"Pre-collecting table highlight: '{target_text}' at ({x_pos}, {y_pos}) for row {target_row}")
-                    table_highlight_overlays.append(element)
-                    seen_highlights.add(highlight_id)
-                elif highlight_id in seen_highlights:
-                    print(f"Skipping exact duplicate: '{target_text}' at ({x_pos}, {y_pos})")
-                else:
-                    print(f"Skipping overlay without targetRowIndex: '{target_text}'")
-        
-        # Debug: Log all overlay elements found
-        overlay_elements = [e for e in elements_sorted if e.get('type') == 'overlay']
-        print(f"Found {len(overlay_elements)} overlay elements in slide")
-        for i, overlay in enumerate(overlay_elements):
-            print(f"  Overlay {i}: class='{overlay.get('className', '')}', type='{overlay.get('type', '')}'")
-            if 'table-row-highlight-wrapper' in overlay.get('className', ''):
-                print(f"    -> Table highlight: {overlay.get('targetRowText', 'Unknown')}")
-        
-        # Debug: Log collected table highlights
-        print(f"Pre-collected {len(table_highlight_overlays)} table highlight overlays:")
-        for i, overlay in enumerate(table_highlight_overlays):
-            print(f"  Table highlight {i}: '{overlay.get('targetRowText', 'Unknown')}' at ({overlay.get('x', 0)}, {overlay.get('y', 0)})")
        
         # Process each element
         for element in elements_sorted:
@@ -2528,19 +2156,7 @@ def create_pptx_from_json(json_path, output_path=None):
             element_type = element.get('type')
             element_class = element.get('className', '')
             parent_has_shadow = False
-            
-            # Debug all overlay elements
-            if element_type == 'overlay':
-                print(f"Found overlay element: type={element_type}, class='{element_class}', x={element.get('x', 0)}, y={element.get('y', 0)}")
-                print(f"  targetRowIndex: {element.get('targetRowIndex')}")
-                print(f"  targetRowText: {element.get('targetRowText')}")
-                print(f"  Full element keys: {list(element.keys())}")
-            
-            # Debug log for table row highlights
-            if 'table-row-highlight-wrapper' in element_class:
-                print(f"Found table row highlight element: {element_class}, type: {element_type}, x: {element.get('x', 0)}, y: {element.get('y', 0)}")
-                print(f"  Has border styles: {element.get('styles', {}).get('border', 'N/A')}")
-            
+
             # Handle complex shapes first (includes arrows) - prevent text duplication
             if element.get('shapeInfo'):
                 shape_text = element.get('shapeInfo', {}).get('text', element.get('text', '')).strip()
@@ -2587,12 +2203,7 @@ def create_pptx_from_json(json_path, output_path=None):
                 continue
 
             if element_type == 'overlay':
-                # Skip table row highlight wrappers since they're processed with tables
-                element_class = element.get('className', '')
-                if 'table-row-highlight-wrapper' in element_class:
-                    continue  # Skip - already collected and will be processed with tables
-                
-                # Pass table positions to overlay processing for other overlays
+                # Pass table positions to overlay processing
                 element['_table_positions'] = table_positions
                 add_overlay_element(slide, element, slide_width, slide_height)
             elif element.get('inlineGroup'):
@@ -2608,24 +2219,8 @@ def create_pptx_from_json(json_path, output_path=None):
                     'table_info': element.get('tableInfo', {})
                 }
                 
-                # Add the table first
-                table_shape = add_table_element(slide, element, slide_width, slide_height, parent_has_shadow)
-                
-                # Then add highlights directly to the PowerPoint table using collected overlay data
-                if table_shape and table_highlight_overlays:
-                    print(f"Processing table highlights: {len(table_highlight_overlays)} overlays available")
-                    
-                    # Use all table highlight overlays for this table
-                    create_simple_table_highlights(
-                        slide, 
-                        table_shape, 
-                        element.get('x', 0), 
-                        element.get('y', 0), 
-                        slide_width,
-                        table_highlight_overlays
-                    )
-                else:
-                    print(f"No table highlights to process: table_shape={table_shape is not None}, overlays={len(table_highlight_overlays) if table_highlight_overlays else 0}")
+                # Add the table
+                add_table_element(slide, element, slide_width, slide_height, parent_has_shadow)
             elif element_type == 'img':
                 add_image_element(slide, element, slide_width, slide_height, parent_has_shadow)
             elif element_type == 'canvas':
