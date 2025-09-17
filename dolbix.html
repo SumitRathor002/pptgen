@@ -167,7 +167,7 @@
       font-weight: bold;
       color: #4a4a4a;
       margin-bottom: 15px;
-      margin-top: 120px;
+      margin-top: 80px;
       position: relative;
       padding-bottom: 4px;
       padding-left: 22px;
@@ -211,7 +211,7 @@
 
     .info-table-4 tr {
       display: table-row;
-      width: 100%;
+      width: 460px;
       box-sizing: border-box;
     }
 
@@ -259,7 +259,7 @@
       font-weight: bold;
       color: #4a4a4a;
       margin-bottom: 15px;
-      margin-top: 120px;
+      margin-top: 80px;
       position: relative;
       padding-bottom: 4px;
       padding-left: 22px;
@@ -305,41 +305,37 @@
       margin-left: 0px;
       margin-top: 50px;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       position: relative;
       box-sizing: border-box;
     }
 
     .css-arrow-4 {
-      width: 100%;
-      height: 100%;
+      width: 16px;
+      height: calc(100% - 20px);
+      background: #4f6883;
       display: block;
       position: relative;
     }
 
-    .css-arrow-4::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 16px;
-      height: calc(100% - 20px);
+    .triangle-arrow-4 {
+      width: 30px;
+      height: 20px;
       background: #4f6883;
+      clip-path: polygon(50% 100%, 0 0, 100% 0);
+      margin-top: 0;
     }
 
-    .css-arrow-4::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 0;
-      height: 0;
-      border-left: 15px solid transparent;
-      border-right: 15px solid transparent;
-      border-top: 20px solid #4f6883;
+    .timeline-list-4 {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
 
     .timeline-years-4 {
@@ -372,7 +368,7 @@
     .year-item-4::before {
       content: '';
       position: absolute;
-      left: -22px; /* Adjusted to align with center of 16px wide arrow body: -15px (half container width) - 8px (half arrow width) = -23px */
+      left: var(--bullet-horizontal-position, -22px); /* Adjustable horizontal position */
       top: 50%;
       transform: translateY(-50%);
       width: var(--bullet-size, 10px); /* Adjustable bullet size */
@@ -381,7 +377,7 @@
       border-radius: 50%;
       border: 1px solid white;
       box-sizing: border-box;
-      z-index: 2;
+      z-index: 3; /* Higher z-index to appear on top of arrow */
     }
 
     .year-item-4:last-child {
@@ -705,7 +701,7 @@
 
     .arrow-container-9 {
       position: absolute;
-      top: -30px;
+      top: -70px;
       left: 50%;
       transform: translateX(-50%);
       width: 250px;
@@ -845,35 +841,6 @@
             color: #28a745;
             font-size: 14px;
         }
-
-        /* Red highlight wrapper - overlay only, extends beyond li boundaries */
-        .main-content .red-highlight-wrapper {
-            position: absolute;
-            top: -4px;    /* Extend above li */
-            left: -30px;  /* Extend left beyond li - adjustable */
-            right: -20px; /* Extend right beyond li - adjustable */
-            bottom: -4px; /* Extend below li */
-            border: 2px dashed #ff0000;
-            background-color: transparent; /* No background to keep li content visible */
-            z-index: 10;
-            pointer-events: none;
-        }
-
-        /* Red highlight wrapper for table rows */
-        .table-row-highlight-wrapper {
-            position: absolute;
-            top: 50%;    /* Center vertically */
-            left: -20px;  /* Extend left beyond table - adjustable */
-            width: 950px; /* Fixed width to match table width (90% of slide width ~900px + extensions) */
-            height: calc(90%);
-            transform: translateY(-50%); /* Center vertically */
-            border: 5px dashed #ff0000;
-            background-color: transparent; /* No background to keep row content visible */
-            z-index: 10;
-            pointer-events: none;
-            box-sizing: border-box;
-        }
-
 
         .category-sections-container {
             width: 77%;
@@ -1055,7 +1022,7 @@
             position: absolute;
             right: -25px;
             top: 15px;
-            height: calc(100% - 30px);
+            height: calc(50%);
             font-size: 8px;
             color: #333;
             font-weight: bold;
@@ -1158,12 +1125,11 @@
     }
 
     .chevron-arrow {
-        width: 20px;
-        height: 20px;
-        border-style: solid;
-        border-color: #ff4444;
-        border-width: 4px 4px 0 0;
-        transform: rotate(45deg);
+      width: 20px;
+      height: 20px;
+      background: #ff4444;
+      clip-path: polygon(75% 0%, 100% 50%, 75% 100%, 21% 100%, 54% 50%, 19% 0);
+      border: none;
     }
 
     .dynamic-growth-arrow {
@@ -1192,6 +1158,14 @@
       position: relative;
       width: 100%;
       max-width: 350px;
+    }
+
+    .line-arrow {
+        width: 36px;
+        height: 32px;
+        background: #bec1d2;
+        clip-path: polygon(100% 50%, 32% 1%, 32% 99%);
+        margin: 0 auto;
     }
 
     .line-heading{
@@ -1242,7 +1216,14 @@
       left: 15px;
       right: 15px;
       display: flex;
-      justify-content: space-between;
+      font-size: 10px;
+      font-family: 'Segoe UI', sans-serif;
+      color: #909090;
+    }
+    .page-num {
+      position: absolute;
+      bottom: 10px;
+      margin-left: 1020px;
       font-size: 10px;
       font-family: 'Segoe UI', sans-serif;
       color: #909090;
@@ -1251,29 +1232,27 @@
 </head>
 <body>
 
-<div class="slide"> <!-- Slide 1 -->
+<div class="slide"> <!-- Slide 0 -->
     <img src="dobimg/dobmain.png" alt="Dolbix Consulting Inc Main Image">
     <div class="slide-text">Company Research</div>
 </div>
 
-<div class="slide"> <!-- Slide 2 -->
+<div class="slide"> <!-- Slide 1 -->
     <div class="slide-content-0">
         <div class="slide-heading">本資料の構成</div>
         <div class="slide-body">
-            <div class="main-item">大項目&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xxx</div>
+            <div class="main-item">大項目&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xxx</div>
             <div class="main-item">大項目</div>
             <div class="sub-item">– 小項目&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xxx</div>
             <div class="sub-item">– 小項目&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xxx</div>
             <div class="main-item">大項目</div>
         </div>
     </div>
-    <div class="footer">
-        <span>Strictly Confidential | © DOLBIX CONSULTING Inc.</span>
-        <span>1</span>
-    </div>
+    <div class="footer">Strictly Confidential | © DOLBIX CONSULTING Inc.</div>
+    <div class="page-num">1</div>
 </div>
 
-<div class="slide">
+<div class="slide"> <!-- Slide 2 -->
     <div class="slide-content-0">
         <div class="center-image-container">
             <div class="center-image">
@@ -1282,10 +1261,8 @@
             </div>
         </div>
     </div>
-    <div class="footer">
-        <span>Strictly Confidential | © DOLBIX CONSULTING Inc.</span>
-        <span>2</span>
-    </div>
+    <div class="footer">Strictly Confidential | © DOLBIX CONSULTING Inc.</div>
+    <div class="page-num">2</div>
 </div>
 
 <div class="slide">  <!-- Slide 3 -->
@@ -1304,40 +1281,44 @@
                         <td class="label">設立年</td>
                         <td class="value"></td>
                     </tr>
-                    <tr style="height: 25px;">
+                    <tr style="height: 5px;">
                         <td class="label">本社所在地</td>
                         <td class="value"></td>
                     </tr>
-                    <tr style="height: 15px;">
+                    <tr style="height: 5px;">
                         <td class="label">拠点数</td>
                         <td class="value"></td>
                     </tr>
-                    <tr style="height: 25px;">
+                    <tr style="height: 5px;">
                         <td class="label">代表者</td>
                         <td class="value"></td>
                     </tr>
-                    <tr style="height: 30px;">
+                    <tr style="height: 5px;">
                         <td class="label">時価総額<br>(YY/MM/D)</td>
                         <td class="value"></td>
                     </tr>
-                    <tr style="height: 50px;">
+                    <tr style="height: 5px;">
                         <td class="label">事業内容</td>
                         <td class="value"></td>
                     </tr>
-                    <tr style="height: 30px;">
+                    <tr style="height: 5px;">
                         <td class="label">売上高（YY/M<br>期）</td>
                         <td class="value"></td>
                     </tr>
-                    <tr style="height: 50px;">
+                    <tr style="height: 5px;">
                         <td class="label">売上高<br>構成比率<br>(YY/M期)</td>
                         <td class="value"></td>
                     </tr>
-                    <tr style="height: 15px;">
+                    <tr style="height: 5px;">
                         <td class="label">プライム比率</td>
                         <td class="value"></td>
                     </tr>
-                    <tr style="height: 15px;">
+                    <tr style="height: 5px;">
                         <td class="label">従業員数</td>
+                        <td class="value"></td>
+                    </tr>
+                                        <tr style="height: 5px;">
+                        <td class="label">売上高<br>構成比率<br>(YY/M期)</td>
                         <td class="value"></td>
                     </tr>
           </tbody>
@@ -1349,21 +1330,20 @@
         <div class="timeline-container-4">
                     <div class="arrow-image-4">
                         <div class="css-arrow-4"></div>
+                        <div class="triangle-arrow-4"></div>
                     </div>
                     <div class="timeline-years-4">
-                        <div class="year-item-4" style="margin-bottom: 5px;">XX年</div>
-                        <div class="year-item-4" style="margin-bottom: 20px;">XX年</div>
-                        <div class="year-item-4" style="margin-bottom: 5px;">XX年</div>
-                        <div class="year-item-4" style="margin-bottom: 5px;">XX年</div>
-                        <div class="year-item-4" style="margin-bottom: 17px;">XX年</div>
-                        <div class="year-item-4" style="margin-bottom: 5px;">XX年</div>
-                        <div class="year-item-4" style="margin-bottom: 5px;">XX年</div>
-                        <div class="year-item-4" style="margin-bottom: 5px;">XX年</div>
-                        <div class="year-item-4" style="margin-bottom: 6px;">XX年</div>
-                        <div class="year-item-4" style="margin-bottom: 6px;">XX年</div>
-                        <div class="year-item-4" style="margin-bottom: 17px;">XX年</div>
-                        <div class="year-item-4" style="margin-bottom: 5px;">XX年</div>
-                        <div class="year-item-4" style="margin-bottom: 5px;">XX年</div>
+                        <ul class="timeline-list-4">
+                            <li class="year-item-4" style="margin-bottom: 15px;">1990年　会社設立</li>
+                            <li class="year-item-4" style="margin-bottom: 20px;">1995年　事業拡大</li>
+                            <li class="year-item-4" style="margin-bottom: 15px;">2000年　新サービス開始</li>
+                            <li class="year-item-4" style="margin-bottom: 20px;">2005年　海外進出</li>
+                            <li class="year-item-4" style="margin-bottom: 15px;">2010年　技術革新</li>
+                            <li class="year-item-4" style="margin-bottom: 20px;">2015年　市場拡大</li>
+                            <li class="year-item-4" style="margin-bottom: 15px;">2020年　デジタル化推進</li>
+                            <li class="year-item-4" style="margin-bottom: 0px;">2023年　現在</li>
+                        </ul>
+                        
                     </div>
                 </div>
 
@@ -1371,10 +1351,8 @@
     </div>
   </div>
   <div class="source-note">出所：XX</div>
-  <div class="footer">
-    <span>Strictly Confidential | © DOLBIX CONSULTING Inc.</span>
-    <span>3</span>
-  </div>
+    <div class="footer">Strictly Confidential | © DOLBIX CONSULTING Inc.</div>
+    <div class="page-num">3</div>
 </div>
 
 
@@ -1390,7 +1368,7 @@
                 <canvas 
                     class="chartjs-chart" 
                     id="pieChart" 
-                    width="400" 
+                    width="1000" 
                     height="400"
                     data-chart='{
                         "type": "pie",
@@ -1428,7 +1406,7 @@
                             }]
                         },
                         "options": {
-                            "responsive": true,
+                            "responsive": false,
                             "maintainAspectRatio": true,
                             "plugins": {
                                 "legend": {
@@ -1470,17 +1448,15 @@
     </div>
     <!-- Source updated -->
     <div class="source-note">出所：S&P CapIQ</div>
-    <div class="footer">
-        <span>Strictly Confidential | © DOLBIX CONSULTING Inc.</span>
-        <span>4</span>
-    </div>
+    <div class="footer">Strictly Confidential | © DOLBIX CONSULTING Inc.</div>
+    <div class="page-num">4</div>
 </div>
 
 
 <div class="slide"> <!-- Slide 5 -->
     <div class="slide-content-1">
         <div class="slide-heading-1">子会社</div>
-        <div class="pie-heading" style="margin-top: 80px;">子会社a</div>
+        <div class="pie-heading" style="margin-top: 50px;">子会社a</div>
         
         <table class="info-table-6">
           <colgroup>
@@ -1495,6 +1471,22 @@
             </thead>
             <tbody>
                 <tr style="height: 70px;">
+                <td class="label"></td>
+                <td class="value"></td>
+                </tr>
+                <tr style="height: 70px;">
+                <td class="label"></td>
+                <td class="value"></td>
+                </tr>
+                                <tr style="height: 70px;">
+                <td class="label"></td>
+                <td class="value"></td>
+                </tr>
+                <tr style="height: 70px;">
+                <td class="label"></td>
+                <td class="value"></td>
+                </tr>
+                                <tr style="height: 70px;">
                 <td class="label"></td>
                 <td class="value"></td>
                 </tr>
@@ -1527,14 +1519,13 @@
                 <td class="label"></td>
                 <td class="value"></td>
                 </tr>
+                
             </tbody>
             </table>
     </div>
     <div class="source-note">出所：XX</div>
-    <div class="footer">
-        <span>Strictly Confidential | © DOLBIX CONSULTING Inc.</span>
-        <span>5</span>
-    </div>
+    <div class="footer">Strictly Confidential | © DOLBIX CONSULTING Inc.</div>
+    <div class="page-num">5</div>
 </div>
 
 
@@ -1598,7 +1589,7 @@
               <td class="label">CompanyXXX</td>
               <td class="value">-</td>
             </tr>
-            <tr style="height: 25px;">
+    <tr style="height: 25px;">
               <td class="label">CompanyXXX</td>
               <td class="value">-</td>
             </tr>
@@ -1610,6 +1601,23 @@
               <td class="label">CompanyXXX</td>
               <td class="value">-</td>
             </tr>
+            <tr style="height: 25px;">
+              <td class="label">CompanyXXX</td>
+              <td class="value">-</td>
+            </tr>
+                        <tr style="height: 25px;">
+              <td class="label">CompanyXXX</td>
+              <td class="value">-</td>
+            </tr>
+            <tr style="height: 25px;">
+              <td class="label">CompanyXXX</td>
+              <td class="value">-</td>
+            </tr>
+            <tr style="height: 25px;">
+              <td class="label">CompanyXXX</td>
+              <td class="value">-</td>
+            </tr>
+            
           </tbody>
         </table>
         <div class="subsidiary-note" style="--note-margin-top:8px; --note-margin-left:10px;">仕入概数：○社</div>
@@ -1668,7 +1676,19 @@
               <td class="label">CompanyXXX</td>
               <td class="value">-</td>
             </tr>
+    <tr style="height: 25px;">
+              <td class="label">CompanyXXX</td>
+              <td class="value">-</td>
+            </tr>
             <tr style="height: 25px;">
+              <td class="label">CompanyXXX</td>
+              <td class="value">-</td>
+            </tr>
+            <tr style="height: 25px;">
+              <td class="label">CompanyXXX</td>
+              <td class="value">-</td>
+            </tr>
+                        <tr style="height: 25px;">
               <td class="label">CompanyXXX</td>
               <td class="value">-</td>
             </tr>
@@ -1687,17 +1707,15 @@
     </div>
   </div>
   <div class="source-note">出所：XX</div>
-  <div class="footer">
-    <span>Strictly Confidential | © DOLBIX CONSULTING Inc.</span>
-    <span>6</span>
-  </div>
+  <div class="footer">Strictly Confidential | © DOLBIX CONSULTING Inc.</div>
+  <div class="page-num">6</div>
 </div>
 
 <div class="slide"> <!-- Slide 7 -->
     <div class="slide-content-1">
         <div class="slide-heading-1">事業セグメント</div>
         
-        <table class="info-table-6" style="margin: 20px auto; width: 100%; margin-top: 80px;">
+        <table class="info-table-6" style="margin: 20px auto; width: 100%; margin-top: 50px;">
           <colgroup>
             <col class="col-label">
             <col class="col-value">
@@ -2005,10 +2023,8 @@
     </div>
 
     <div class="source-note">出所：XX</div>
-    <div class="footer">
-        <span>Strictly Confidential | © DOLBIX CONSULTING Inc.</span>
-        <span>7</span>
-    </div>
+    <div class="footer">Strictly Confidential | © DOLBIX CONSULTING Inc.</div>
+    <div class="page-num">7</div>
 </div>
 
 <div class="slide"> <!-- Slide 8 -->
@@ -2069,10 +2085,9 @@
                 <td class="value" style="width: 150px;"></td>
                 <td class="value" style="width: 150px;"></td>
                 </tr>
-                <tr class="red-highlight" style="height: 5px; position: relative;">
-                  <td class="label" style="text-align: left; width: 200px; position: relative;">
+                <tr style="height: 5px;">
+                  <td class="label" style="text-align: left; width: 200px;">
                     ネット有利子負債(除く現預金・短期性有価証券)
-                    <div class="table-row-highlight-wrapper"></div>
                   </td>
                   <td class="unit" style="width: 75px;">百万円</td>
                   <td class="value" style="width: 150px;"></td>
@@ -2093,25 +2108,23 @@
                   <td class="value" style="width: 150px;"></td>
                   <td class="value" style="width: 150px;"></td>
                 </tr>
-                <tr class="red-highlight" style="height: 5px; position: relative;">
-                  <td class="label" style="text-align: left; width: 300px; position: relative;">
+                <tr style="height: 5px;">
+                  <td class="label" style="text-align: left; width: 300px;">
                     ROE
-                    <div class="table-row-highlight-wrapper"></div>
                   </td>
                   <td class="unit" style="width: 75px;">%</td>
                   <td class="value" style="width: 150px;"></td>
                   <td class="value" style="width: 150px;"></td>
                   <td class="value" style="width: 150px;"></td>
                 </tr>
-                <tr class="red-highlight" style="height: 5px; position: relative;">
-                  <td class="label" style="text-align: left; width: 300px; position: relative;">
+                <tr style="height: 5px;">
+                  <td class="label" style="text-align: left; width: 300px;">
                     株主資本比率
-                    <div class="table-row-highlight-wrapper"></div>
                   </td>
                   <td class="unit" style="width: 75px;">%</td>
                   <td class="value" style="width: 150px;"></td>
                   <td class="value" style="width: 150px;"></td>
-                  <td class="value" style="width: 150px;"></td>
+                                                    <td class="value" style="width: 150px;"></td>
                 </tr>
                 <tr style="height: 5px;">
                   <td class="label" style="text-align: left; width: 300px;">ネットD/Eレシオ</td>
@@ -2120,7 +2133,6 @@
                   <td class="value" style="width: 150px;"></td>
                   <td class="value" style="width: 150px;"></td>
                 </tr>
-                <tr style="height: 5px;">
                   <td class="label" style="text-align: left; width: 300px;">有利子負債/EBITDA</td>
                   <td class="unit" style="width: 75px;">倍</td>
                   <td class="value" style="width: 150px;"></td>
@@ -2155,10 +2167,9 @@
                   <td class="value" style="width: 150px;"></td>
                   <td class="value" style="width: 150px;"></td>
                 </tr>
-                <tr style="height: 5px; position: relative;">
-                  <td class="label" style="text-align: left; width: 300px; position: relative;">
+                <tr style="height: 5px;">
+                  <td class="label" style="text-align: left; width: 300px;">
                     一人当たりの売上高
-                    <div class="table-row-highlight-wrapper" style="border: 2px dashed #0066ff;"></div>
                   </td>
                   <td class="unit" style="width: 75px;">千円</td>
                   <td class="value" style="width: 150px;"></td>
@@ -2170,10 +2181,8 @@
         
     </div>
     <div class="source-note">出所：XX</div>
-    <div class="footer">
-        <span>Strictly Confidential | © DOLBIX CONSULTING Inc.</span>
-        <span>8</span>
-    </div>
+    <div class="footer">Strictly Confidential | © DOLBIX CONSULTING Inc.</div>
+    <div class="page-num">8</div>
 </div>
 
 <div class="slide"> <!-- Slide 9 -->
@@ -2181,7 +2190,7 @@
             <div class="slide-heading-1" style="margin-bottom: -15px;">業績の推移</div>
             <div class="subsidiary-blocks">
                 <div class="subsidiary-block">
-                    <div class="table-heading-7" style="top: 30px;">売上高の推移</div>
+                    <div class="table-heading-7">売上高の推移</div>
                     <div class="chart-container">
                         <div class="chart-with-arrow">
                             <div class="arrow-container-9">
@@ -2210,7 +2219,7 @@
             }]
         },
         "options": {
-            "responsive": true,
+            "responsive": false,
             "maintainAspectRatio": true,
             "plugins": {
                 "legend": {
@@ -2274,7 +2283,7 @@
                     </div>
                 </div>
                 <div class="subsidiary-block">
-                    <div class="table-heading-7" style="top: 30px;">営業利益の推移</div>
+                    <div class="table-heading-7">営業利益の推移</div>
                     <div class="chart-container">
                         <div class="chart-with-arrow">
                             <div class="arrow-container-9">
@@ -2294,7 +2303,7 @@
 
             "labels": ["2019/3 jp", "2020/3 jp", "2021/3 jp"],
             "datasets": [{
-                "data": [19, 17, 16],
+                "data": [-19, 17, 16],
                 "backgroundColor": ["#4A90E2", "#4A90E2", "#4A90E2"],
                 "borderColor": "#ffffff",
                 "borderWidth": 1,
@@ -2303,9 +2312,8 @@
             }]
         },
         "options": {
-            "responsive": true,
+            "responsive": false,
             "maintainAspectRatio": true,
-           
             "plugins": {
                 "legend": {
                     "display": false
@@ -2330,7 +2338,7 @@
                 "y": {
                     "beginAtZero": true,
                     "max": 20,
-                    "min": 0,
+                    "min": -20,
                     "display": false,
                     "grid": {
                         "display": false
@@ -2338,6 +2346,8 @@
                 },
                 "x": {
                     "display": true,
+                    "position": "center",
+                    "offset": true,
                     "ticks": {
                         "font": {
                             "family": "Meiryo UI",
@@ -2370,10 +2380,8 @@
             </div>
         </div>
         <div class="source-note">出所：XX</div>
-        <div class="footer">
-            <span>Strictly Confidential | © DOLBIX CONSULTING Inc.</span>
-            <span>9</span>
-        </div>
+    <div class="footer">Strictly Confidential | © DOLBIX CONSULTING Inc.</div>
+    <div class="page-num">9</div>
     </div>
 
   
@@ -2389,9 +2397,8 @@
                     <li>営業体制の拡充によってエンジニア稼働数の拡大と新規顧客開拓に注力</li>
                     
                     <!-- Only this li gets the red dotted border overlay that extends beyond its natural boundaries -->
-                    <li style="position: relative;">
+                    <li>
                         一次請け案件の獲得とパートナー強化を推進し、Slerとして長期拡大できる事業構造を獲得
-                        <div class="red-highlight-wrapper"></div>
                     </li>
                     
                     <li>離職対策に継続して取り組み、エンジニアの長期キャリア形成と付加価値化を実現</li>
@@ -2417,7 +2424,7 @@
                                 <li>案件創出のためのアライアンス活動を各事業領域で展開</li>
                                 <li>大企業向けERPパッケージ「COMPANY」運用支援事業の拡大</li>
                                 <li>クラウドシステム運用・定着化市場へ進出、まずはSalesforce関連領域の案件拡大に注力</li>
-                                <li>フードバリューチェーンDXでの商用化</li>
+
                             </ul>
                         </div>
 
@@ -2445,11 +2452,9 @@
                 </div>
             </div>
         </div>
-        <div class="source-note">出所：XX</div>
-        <div class="footer">
-            <span>Strictly Confidential | © DOLBIX CONSULTING Inc.</span>
-            <span>10</span>
-        </div>
+    <div class="source-note">出所：XX</div>
+    <div class="footer">Strictly Confidential | © DOLBIX CONSULTING Inc.</div>
+    <div class="page-num">10</div>
     </div>
 
     <div class="slide">
@@ -2457,16 +2462,16 @@
             <div class="slide-heading-1">中期経営計画（FY22決算資料より）</div>
 
             <div class="main-content">
-              <div class="blue-text">
-                    <span class="line1" style="color: #201f1f; font-size: 18px;">2027次8請け案件500の創出、長期キャリア形成、長期請け案件</span>
-                    <span class="line2" style="background-color: rgb(255, 199, 94); color: #000; font-size: 16px; padding: 3px 8px;">長期請け案件テム運用定着化市場への進出に長期請け案件よる次世代成長力の獲得</span>
+                <div style="text-align: center; margin-bottom: 10px; font-weight: bold;">
+                    <div class="line1" style="color: #201f1f; font-size: 18px;">2027次8請け案件500の創出、長期キャリア形成、長期請け案件</div>
+                    <div class="line2" style="background-color: rgb(255, 199, 94); color: #000; font-size: 16px; padding: 3px 8px;">長期請け案件テム運用定着化市場への進出に長期請け案件よる次世代成長力の獲得</div>
                 </div>
+
                 <ul class="top-points" style="margin-bottom: -10px;">
                     <li>営業体制の拡充に長期請け案件よってエンジニア稼働数の拡大と新規顧客開拓に注力</li>
 
-                    <li style="position: relative;">
+                    <li>
                         一次請け案件の獲得とパートナー強化を推進し、Slerとして長期拡大できる事業構造を獲得
-                        <div class="red-highlight-wrapper"></div>
                     </li>
                     
                     <li>離職対策に継続しャリア形成と付加価値化を実現</li>
@@ -2510,11 +2515,9 @@
                 </div>
             </div>
         </div>
-        <div class="source-note">出所：XX</div>
-        <div class="footer">
-            <span>Strictly Confidential | © DOLBIX CONSULTING Inc.</span>
-            <span>11</span>
-        </div>
+    <div class="source-note">出所：XX</div>
+    <div class="footer">Strictly Confidential | © DOLBIX CONSULTING Inc.</div>
+    <div class="page-num">11</div>
     </div>
 
 
@@ -2524,8 +2527,8 @@
 
             <div class="main-content">
               <div class="blue-text">
-                    <span class="line1" style="color: #d80000; font-size: 18px;">2022次8け案請け案件3,051の創出</span>
-                    <span class="line2" style="color: #d80000; font-size: 18px; padding: 3px 8px;">の進出630に長期請</span>
+                    <div class="line1" style="color: #d80000; font-size: 18px;">2022次8け案請け案件3,051の創出</div>
+                    <div class="line2" style="color: #d80000; font-size: 18px; padding: 3px 8px;">の進出630に長期請</div>
                 </div>
                 <ul class="top-points" style="margin-bottom: -10px; font-weight: bold;">
                     <li>営業体制の拡充に長期請け案件よってエンジニア</li>                    
@@ -2704,17 +2707,15 @@
                 </div>
             </div>
         </div>
-        <div class="source-note">出所：XX</div>
-        <div class="footer">
-            <span>Strictly Confidential | © DOLBIX CONSULTING Inc.</span>
-            <span>12</span>
-        </div>
+    <div class="source-note">出所：XX</div>
+    <div class="footer">Strictly Confidential | © DOLBIX CONSULTING Inc.</div>
+    <div class="page-num">12</div>
     </div>
 
-    <div class="slide">
+    <div class="slide"> <!-- Slide 10 -->
     <div class="slide-content-1">
         <div class="slide-heading-1">足許の時価総額の推移と想定投資金額</div>
-        <div class="line-heading" style="margin-top: 80px;">過去6か月間の時価総額の推移</div>
+        <div class="line-heading" style="margin-top: 50px;">過去6か月間の時価総額の推移</div>
         
         <div class="chart-container-13" style="max-width: 800px; margin: 20px auto;">
             <div class="chart">
@@ -2825,7 +2826,7 @@
 
             <div class="arrow-with-text" style="margin: 0 30px; display: flex; flex-direction: column; align-items: center;">
                 <div class="premium-text" style="font-family: 'Meiryo UI', sans-serif; font-size: 12px; color: #666; margin-bottom: 10px; white-space: nowrap; text-align: center;">プレミアムO%(仮)<br>加味</div>
-                <div class="triangle-arrow" style="width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-bottom: 20px solid #ccc; transform: rotate(90deg);"></div>
+                <div class="line-arrow"></div>
             </div>
 
             <div class="investment-container" style="width: 200px; text-align: center;">
@@ -2838,12 +2839,749 @@
 
     </div>
     <div class="source-note">出所：XX</div>
-    <div class="footer">
-        <span>Strictly Confidential | © DOLBIX CONSULTING Inc.</span>
-        <span>13</span>
-    </div>
+    <div class="footer">Strictly Confidential | © DOLBIX CONSULTING Inc.</div>
+    <div class="page-num">13</div>
 </div>
 
+
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize page numbers starting from 0
+            function initializePageNumbers() {
+                const slides = document.querySelectorAll('.slide');
+                slides.forEach((slide, index) => {
+                    let pageNumElement = slide.querySelector('.page-num');
+                    if (!pageNumElement) {
+                        // Create page-num element if it doesn't exist
+                        pageNumElement = document.createElement('div');
+                        pageNumElement.className = 'page-num';
+                        slide.appendChild(pageNumElement);
+                    }
+                    pageNumElement.textContent = index.toString();
+                });
+            }
+
+            // Function to detect overflow and paginate slides
+            function paginateSlides() {
+                const slides = document.querySelectorAll('.slide');
+                
+                slides.forEach((slide, slideIndex) => {
+                    checkAndSplitSlide(slide, slideIndex);
+                });
+            }
+            
+            function checkAndSplitSlide(slide, slideIndex) {
+                const sourceNote = slide.querySelector('.source-note');
+                
+                if (!sourceNote) return;
+                
+                const sourceNoteRect = sourceNote.getBoundingClientRect();
+                const slideContent = slide.querySelector('.slide-content-0, .slide-content-1, .slide-content-2');
+                
+                if (!slideContent) return;
+                
+                // Check for overflow using source note position with 20px buffer
+                const overflowThreshold = sourceNoteRect.top - 20;
+                const overflowingElements = [];
+                
+                // Get all direct children of slide content that could overflow
+                const allElements = Array.from(slideContent.children);
+                
+                allElements.forEach(element => {
+                    // Skip heading elements and chart containers
+                    if (element.classList.contains('slide-heading-1') || 
+                        element.classList.contains('chart-container') ||
+                        element.classList.contains('chart') ||
+                        element.querySelector('canvas')) {
+                        return;
+                    }
+                    
+                    const elementRect = element.getBoundingClientRect();
+                    if (elementRect.bottom > overflowThreshold) {
+                        // Check if this is a table
+                        if (element.tagName === 'TABLE') {
+                            overflowingElements.push({ element: element, type: 'table' });
+                        }
+                        // Check if this contains tables or text content
+                        else if (element.querySelector('table') || hasSignificantTextContent(element)) {
+                            overflowingElements.push({ element: element, type: 'container' });
+                        }
+                    }
+                });
+                
+                if (overflowingElements.length > 0) {
+                    const newSlide = handleOverflow(slide, overflowingElements, slideIndex);
+                    
+                    // Clean up original slide after moving content
+                    cleanupOriginalSlide(slide, overflowingElements);
+                    
+                    // Update page numbers only for slides after the split
+                    updatePageNumbersAfterSplit(slideIndex);
+                    
+                    // Recursively check the new slide for overflow
+                    if (newSlide) {
+                        setTimeout(() => {
+                            checkAndSplitSlide(newSlide, slideIndex + 1);
+                        }, 100);
+                    }
+                }
+            }
+            
+            function hasSignificantTextContent(element) {
+                // Check if element has meaningful text content (more than just whitespace)
+                const text = element.textContent.trim();
+                return text.length > 10 && !element.querySelector('canvas, img');
+            }
+            
+            function handleOverflow(originalSlide, overflowingElements, slideIndex) {
+                // Create new slide with exact same structure and styling
+                const newSlide = createNewSlide(originalSlide, slideIndex);
+                
+                // Insert new slide after original
+                originalSlide.parentNode.insertBefore(newSlide, originalSlide.nextSibling);
+                
+                // Move overflowing content with preserved styling
+                moveOverflowingContent(originalSlide, newSlide, overflowingElements);
+                
+                return newSlide;
+            }
+            
+            function createNewSlide(originalSlide, slideIndex) {
+                const newSlide = document.createElement('div');
+                newSlide.className = 'slide';
+                
+                // Copy slide content structure with exact same styling
+                const originalContent = originalSlide.querySelector('.slide-content-0, .slide-content-1, .slide-content-2');
+                const contentClass = originalContent ? originalContent.className : 'slide-content-1';
+                
+                // Create new content container with same class and styling
+                const newContent = document.createElement('div');
+                newContent.className = contentClass;
+                
+                // Copy all inline styles and attributes from original content
+                if (originalContent) {
+                    copyElementAttributes(originalContent, newContent);
+                }
+                
+                // Copy main heading (slide-heading-1) with exact styling
+                const originalHeading = originalSlide.querySelector('.slide-heading-1');
+                if (originalHeading) {
+                    const newHeading = cloneElementWithAllStyling(originalHeading);
+                    newContent.appendChild(newHeading);
+                }
+                
+                newSlide.appendChild(newContent);
+                
+                // Copy footer with exact styling
+                const originalFooter = originalSlide.querySelector('.footer');
+                if (originalFooter) {
+                    const newFooter = cloneElementWithAllStyling(originalFooter);
+                    newSlide.appendChild(newFooter);
+                }
+
+                // Create page number element
+                const newPageNum = document.createElement('div');
+                newPageNum.className = 'page-num';
+                newPageNum.textContent = (slideIndex + 1).toString();
+                newSlide.appendChild(newPageNum);
+                
+                // Copy source note with exact styling
+                const originalSourceNote = originalSlide.querySelector('.source-note');
+                if (originalSourceNote) {
+                    const newSourceNote = cloneElementWithAllStyling(originalSourceNote);
+                    newSlide.appendChild(newSourceNote);
+                }
+                
+                return newSlide;
+            }
+            
+            function cloneElementWithAllStyling(element, includeChildren = true) {
+                const clone = includeChildren ? element.cloneNode(true) : element.cloneNode(false);
+                
+                // Copy all attributes
+                copyElementAttributes(element, clone);
+                
+                return clone;
+            }
+            
+            function copyElementAttributes(source, target) {
+                // Copy all attributes
+                Array.from(source.attributes).forEach(attr => {
+                    target.setAttribute(attr.name, attr.value);
+                });
+                
+                // Copy class list
+                target.className = source.className;
+                
+                // Copy inline styles
+                if (source.style.cssText) {
+                    target.style.cssText = source.style.cssText;
+                }
+            }
+            
+            function moveOverflowingContent(originalSlide, newSlide, overflowingElements) {
+                const newContent = newSlide.querySelector('.slide-content-0, .slide-content-1, .slide-content-2');
+                const sourceNote = originalSlide.querySelector('.source-note');
+                const overflowThreshold = sourceNote.getBoundingClientRect().top - 20;
+                
+                overflowingElements.forEach(({ element, type }) => {
+                    if (type === 'table') {
+                        handleTableOverflow(element, newContent, overflowThreshold);
+                    } else if (type === 'container') {
+                        handleContainerOverflow(element, newContent, overflowThreshold);
+                    }
+                });
+            }
+            
+            function cleanupOriginalSlide(slide, overflowingElements) {
+                const slideContent = slide.querySelector('.slide-content-0, .slide-content-1, .slide-content-2');
+                if (!slideContent) return;
+                
+                // Track which elements were actually moved to avoid over-cleanup
+                const movedElements = new Set();
+                overflowingElements.forEach(({ element }) => {
+                    movedElements.add(element);
+                });
+                
+                // Clean up empty tables in the original slide
+                const tables = slideContent.querySelectorAll('table');
+                tables.forEach(table => {
+                    const tbody = table.querySelector('tbody');
+                    if (!tbody || tbody.children.length === 0) {
+                        // Only remove table if it was actually processed for moving
+                        if (movedElements.has(table) || hasTableBeenSplit(table)) {
+                            table.remove();
+                            
+                            // Remove associated table heading only if table was removed
+                            const tableHeading = findTableHeading(table);
+                            if (tableHeading) {
+                                tableHeading.remove();
+                            }
+                            
+                            // Remove associated subsidiary note only if table was removed
+                            const subsidiaryNote = findSubsidiaryNote(table);
+                            if (subsidiaryNote) {
+                                subsidiaryNote.remove();
+                            }
+                        }
+                    }
+                });
+                
+                // Clean up subsidiary blocks only if their tables were actually moved
+                const subsidiaryBlocks = slideContent.querySelectorAll('.subsidiary-block');
+                subsidiaryBlocks.forEach(block => {
+                    const blockTable = block.querySelector('table');
+                    const blockTbody = blockTable ? blockTable.querySelector('tbody') : null;
+                    
+                    // Only remove block if its table is completely emptied due to splitting
+                    if (blockTable && (!blockTbody || blockTbody.children.length === 0) && 
+                        (movedElements.has(blockTable) || hasTableBeenSplit(blockTable))) {
+                        block.remove();
+                    }
+                });
+                
+                // Clean up empty subsidiary-blocks container only if all blocks were removed
+                const subsidiaryBlocksContainer = slideContent.querySelector('.subsidiary-blocks');
+                if (subsidiaryBlocksContainer && subsidiaryBlocksContainer.children.length === 0) {
+                    subsidiaryBlocksContainer.remove();
+                }
+                
+                // Clean up orphaned headings and subheadings after content has been moved
+                // Wait a bit for DOM to settle after all removals
+                setTimeout(() => {
+                    cleanupEmptyHeadings(slideContent, movedElements);
+                }, 50);
+            }
+
+            function cleanupEmptyHeadings(slideContent, movedElements) {
+                // Define all heading classes to check
+                const headingClasses = [
+                    '.table-heading-4', 
+                    '.table-heading-7', 
+                    '.pie-heading',
+                    '.line-heading',
+                    '.timeline-heading-4'
+                ];
+                
+                headingClasses.forEach(headingClass => {
+                    const headings = slideContent.querySelectorAll(headingClass);
+                    headings.forEach(heading => {
+                        // Check if heading should be removed based on current DOM state
+                        if (shouldRemoveHeadingAfterSplit(heading, slideContent)) {
+                            heading.remove();
+                        }
+                    });
+                });
+            }
+
+            function shouldRemoveHeadingAfterSplit(heading, slideContent) {
+                // Check the current DOM state to see if heading has any content below it
+                let nextElement = heading.nextElementSibling;
+                
+                while (nextElement) {
+                    // Skip over other headings to find actual content
+                    if (isHeadingElement(nextElement)) {
+                        nextElement = nextElement.nextElementSibling;
+                        continue;
+                    }
+                    
+                    // Check if this element currently has meaningful content
+                    if (hasCurrentContent(nextElement)) {
+                        return false; // Don't remove heading, it has content below
+                    }
+                    
+                    nextElement = nextElement.nextElementSibling;
+                }
+                
+                // No content found after this heading, so it can be removed
+                return true;
+            }
+
+            function hasCurrentContent(element) {
+                // Check current DOM state for meaningful content
+                
+                // Check for tables with actual data rows
+                if (element.tagName === 'TABLE') {
+                    const tbody = element.querySelector('tbody');
+                    return tbody && tbody.children.length > 0;
+                }
+                
+                // Check for containers with tables that have data
+                const tables = element.querySelectorAll('table');
+                if (tables.length > 0) {
+                    for (let table of tables) {
+                        const tbody = table.querySelector('tbody');
+                        if (tbody && tbody.children.length > 0) {
+                            return true; // Found a table with data
+                        }
+                    }
+                }
+                
+                // Check for charts or other visual content
+                if (element.querySelector('canvas, img, .chart')) {
+                    return true;
+                }
+                
+                // Check for meaningful text content (but not just empty containers)
+                const text = element.textContent.trim();
+                if (text.length > 10 && !element.querySelector('canvas, img')) {
+                    // Make sure it's not just an empty container
+                    const hasActualTextNodes = Array.from(element.childNodes).some(node => 
+                        node.nodeType === Node.TEXT_NODE && node.textContent.trim().length > 0
+                    );
+                    if (hasActualTextNodes) {
+                        return true;
+                    }
+                }
+                
+                // Check for subsidiary blocks with content
+                if (element.classList.contains('subsidiary-block') || 
+                    element.classList.contains('subsidiary-blocks')) {
+                    const blockTables = element.querySelectorAll('table tbody');
+                    for (let tbody of blockTables) {
+                        if (tbody.children.length > 0) {
+                            return true;
+                        }
+                    }
+                }
+                
+                return false;
+            }
+
+            function cleanupEmptyTables(slideContent) {
+                const tables = slideContent.querySelectorAll('table');
+                tables.forEach(table => {
+                    const tbody = table.querySelector('tbody');
+                    if (!tbody || tbody.children.length === 0) {
+                        table.remove();
+                    }
+                });
+            }
+
+            function cleanupEmptyBlocks(slideContent) {
+                const blocks = slideContent.querySelectorAll('.subsidiary-block');
+                blocks.forEach(block => {
+                    const table = block.querySelector('table');
+                    const tbody = table ? table.querySelector('tbody') : null;
+                    
+                    // Only remove block if its table is empty
+                    if (table && (!tbody || tbody.children.length === 0)) {
+                        block.remove();
+                    }
+                });
+            }
+
+            function hasTableBeenSplit(table) {
+                // Check if table has been marked as split (empty tbody but was not originally empty)
+                const tbody = table.querySelector('tbody');
+                return tbody && tbody.children.length === 0 && table.hasAttribute('data-was-split');
+            }
+            
+            function handleTableOverflow(table, newContent, overflowThreshold) {
+                // Mark table as being split
+                table.setAttribute('data-was-split', 'true');
+                
+                // Create new table with exact same structure and styling
+                const newTable = cloneElementWithAllStyling(table, false);
+                
+                // Copy table header with exact styling
+                const originalThead = table.querySelector('thead');
+                if (originalThead) {
+                    const newThead = cloneElementWithAllStyling(originalThead);
+                    newTable.appendChild(newThead);
+                }
+                
+                // Copy colgroup with exact styling
+                const originalColgroup = table.querySelector('colgroup');
+                if (originalColgroup) {
+                    const newColgroup = cloneElementWithAllStyling(originalColgroup);
+                    newTable.appendChild(newColgroup);
+                }
+                
+                // Create new tbody with exact styling
+                const newTbody = document.createElement('tbody');
+                const originalTbody = table.querySelector('tbody');
+                if (originalTbody) {
+                    copyElementAttributes(originalTbody, newTbody);
+                }
+                newTable.appendChild(newTbody);
+                
+                // Move overflowing rows with exact styling
+                if (originalTbody) {
+                    const rows = Array.from(originalTbody.querySelectorAll('tr'));
+                    let movedRows = 0;
+                    
+                    rows.forEach(row => {
+                        const rowRect = row.getBoundingClientRect();
+                        if (rowRect.bottom > overflowThreshold) {
+                            // Clone row with all styling and move
+                            const clonedRow = cloneElementWithAllStyling(row);
+                            newTbody.appendChild(clonedRow);
+                            row.remove();
+                            movedRows++;
+                        }
+                    });
+                    
+                    // Only add new table if we moved rows and validate headers don't overlap with footer
+                    if (movedRows > 0 && validateTableContent(newTable, newContent)) {
+                        // Find table heading that comes before this table
+                        const tableHeading = findTableHeading(table);
+                        if (tableHeading) {
+                            const newHeading = cloneElementWithAllStyling(tableHeading);
+                            newContent.appendChild(newHeading);
+                        }
+                        
+                        newContent.appendChild(newTable);
+                        
+                        // Find any notes that come after this table
+                        const subsidiaryNote = findSubsidiaryNote(table);
+                        if (subsidiaryNote) {
+                            const newNote = cloneElementWithAllStyling(subsidiaryNote);
+                            newContent.appendChild(newNote);
+                        }
+                    }
+                }
+            }
+            
+            function handleContainerOverflow(container, newContent, overflowThreshold) {
+                // For containers, check if we need to split content or move the whole container
+                const containerRect = container.getBoundingClientRect();
+                
+                // If the container starts below the threshold, move the entire container
+                if (containerRect.top > overflowThreshold) {
+                    const clonedContainer = cloneElementWithAllStyling(container);
+                    newContent.appendChild(clonedContainer);
+                    container.remove();
+                    return;
+                }
+                
+                // Handle complex container structures (like subsidiary-blocks with multiple tables)
+                if (container.classList.contains('subsidiary-blocks')) {
+                    handleSubsidiaryBlocksOverflow(container, newContent, overflowThreshold);
+                    return;
+                }
+                
+                // If container has tables, handle table splitting
+                const tables = container.querySelectorAll('table');
+                if (tables.length > 0) {
+                    tables.forEach(table => {
+                        const tableRect = table.getBoundingClientRect();
+                        if (tableRect.bottom > overflowThreshold) {
+                            handleTableOverflow(table, newContent, overflowThreshold);
+                        }
+                    });
+                }
+                
+                // Handle other overflowing elements within the container
+                const children = Array.from(container.children);
+                children.forEach(child => {
+                    const childRect = child.getBoundingClientRect();
+                    if (childRect.top > overflowThreshold) {
+                        // Move entire child element
+                        const clonedChild = cloneElementWithAllStyling(child);
+                        
+                        // Find or create appropriate container structure in new content
+                        let targetContainer = findOrCreateContainerStructure(container, newContent);
+                        targetContainer.appendChild(clonedChild);
+                        child.remove();
+                    }
+                });
+            }
+            
+            function handleSubsidiaryBlocksOverflow(container, newContent, overflowThreshold) {
+                // Clone the subsidiary-blocks container structure
+                const newSubsidiaryBlocks = cloneElementWithAllStyling(container, false);
+                newContent.appendChild(newSubsidiaryBlocks);
+                
+                // Handle each subsidiary-block
+                const subsidiaryBlocks = container.querySelectorAll('.subsidiary-block');
+                subsidiaryBlocks.forEach(block => {
+                    const blockRect = block.getBoundingClientRect();
+                    
+                    // If entire block overflows, move it completely
+                    if (blockRect.top > overflowThreshold) {
+                        const clonedBlock = cloneElementWithAllStyling(block);
+                        newSubsidiaryBlocks.appendChild(clonedBlock);
+                        block.remove();
+                    }
+                    // If block partially overflows, handle table splitting within it
+                    else if (blockRect.bottom > overflowThreshold) {
+                        const newBlock = cloneElementWithAllStyling(block, false);
+                        
+                        // Handle table within the block
+                        const table = block.querySelector('table');
+                        if (table) {
+                            const tableRect = table.getBoundingClientRect();
+                            if (tableRect.bottom > overflowThreshold) {
+                                // Split table content
+                                handleTableWithinBlock(table, block, newBlock, overflowThreshold);
+                                
+
+                                // Only add new block if it has valid content
+                                if (validateBlockContent(newBlock)) {
+                                    newSubsidiaryBlocks.appendChild(newBlock);
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // Remove subsidiary-blocks container if it's empty
+                if (newSubsidiaryBlocks.children.length === 0) {
+                    newSubsidiaryBlocks.remove();
+                }
+            }
+            
+            function handleTableWithinBlock(table, originalBlock, newBlock, overflowThreshold) {
+                // Mark table as being split
+                table.setAttribute('data-was-split', 'true');
+                
+                // Copy table heading
+                const tableHeading = originalBlock.querySelector('.table-heading-7, .table-heading-4');
+                if (tableHeading) {
+                    const newHeading = cloneElementWithAllStyling(tableHeading);
+                    newBlock.appendChild(newHeading);
+                }
+                
+                // Create new table structure
+                const newTable = cloneElementWithAllStyling(table, false);
+                
+                // Copy table header and colgroup
+                const originalThead = table.querySelector('thead');
+                if (originalThead) {
+                    const newThead = cloneElementWithAllStyling(originalThead);
+                    newTable.appendChild(newThead);
+                }
+                
+                const originalColgroup = table.querySelector('colgroup');
+                if (originalColgroup) {
+                    const newColgroup = cloneElementWithAllStyling(originalColgroup);
+                    newTable.appendChild(newColgroup);
+                }
+                
+                // Create new tbody and move overflowing rows
+                const newTbody = document.createElement('tbody');
+                const originalTbody = table.querySelector('tbody');
+                if (originalTbody) {
+                    copyElementAttributes(originalTbody, newTbody);
+                    
+                    const rows = Array.from(originalTbody.querySelectorAll('tr'));
+                    let movedRows = 0;
+                    
+                    rows.forEach(row => {
+                        const rowRect = row.getBoundingClientRect();
+                        if (rowRect.bottom > overflowThreshold) {
+                            const clonedRow = cloneElementWithAllStyling(row);
+                            newTbody.appendChild(clonedRow);
+                            row.remove();
+                            movedRows++;
+                        }
+                    });
+                    
+                    if (movedRows > 0) {
+                        newTable.appendChild(newTbody);
+                        newBlock.appendChild(newTable);
+                        
+                        // Copy subsidiary note if exists
+                        const subsidiaryNote = originalBlock.querySelector('.subsidiary-note');
+                        if (subsidiaryNote) {
+                            const newNote = cloneElementWithAllStyling(subsidiaryNote);
+                            newBlock.appendChild(newNote);
+                        }
+                    }
+                }
+            }
+            
+            function validateTableContent(table, newContent) {
+                // Check if table has actual data rows
+                const tbody = table.querySelector('tbody');
+                if (!tbody || tbody.children.length === 0) {
+                    return false;
+                }
+                
+                // Check if table header/heading would overlap with footer
+                const tempContainer = document.createElement('div');
+                tempContainer.style.position = 'absolute';
+                tempContainer.style.visibility = 'hidden';
+                tempContainer.appendChild(table.cloneNode(true));
+                newContent.appendChild(tempContainer);
+                
+                const tableRect = tempContainer.getBoundingClientRect();
+                const footer = newContent.closest('.slide').querySelector('.footer');
+                const footerRect = footer ? footer.getBoundingClientRect() : null;
+                
+                tempContainer.remove();
+                
+                if (footerRect && tableRect.bottom > footerRect.top - 20) {
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            function validateBlockContent(block) {
+                // Check if block has meaningful content (tables with data)
+                const table = block.querySelector('table tbody');
+                return table && table.children.length > 0;
+            }
+            
+            function findOrCreateContainerStructure(originalContainer, newContent) {
+                // Try to find existing container with same class
+                const containerClasses = originalContainer.className.split(' ');
+                let targetContainer = null;
+                
+                for (let className of containerClasses) {
+                    if (className) {
+                        targetContainer = newContent.querySelector('.' + className);
+                        if (targetContainer) break;
+                    }
+                }
+                
+                // If no matching container found, create one
+                if (!targetContainer) {
+                    targetContainer = cloneElementWithAllStyling(originalContainer, false);
+                    newContent.appendChild(targetContainer);
+                }
+                
+                return targetContainer;
+            }
+            
+            function findTableHeading(table) {
+                const headingClasses = ['.table-heading-4', '.table-heading-7', '.pie-heading'];
+                let heading = null;
+                
+                // Check previous sibling
+                let prevElement = table.previousElementSibling;
+                while (prevElement) {
+                    for (let className of headingClasses) {
+                        if (prevElement.matches && prevElement.matches(className)) {
+                            heading = prevElement;
+                            break;
+                        }
+                    }
+                    if (heading) break;
+                    prevElement = prevElement.previousElementSibling;
+                }
+                
+                return heading;
+            }
+            
+            function findSubsidiaryNote(table) {
+                let nextElement = table.nextElementSibling;
+                while (nextElement) {
+                    if (nextElement.classList && nextElement.classList.contains('subsidiary-note')) {
+                        return nextElement;
+                    }
+                    nextElement = nextElement.nextElementSibling;
+                }
+                return null;
+            }
+            
+            function updatePageNumbersAfterSplit(splitAfterIndex) {
+                const slides = document.querySelectorAll('.slide');
+                // Only update slides after the split point
+                for (let i = splitAfterIndex + 1; i < slides.length; i++) {
+                    const pageNumElement = slides[i].querySelector('.page-num');
+                    if (pageNumElement) {
+                        pageNumElement.textContent = i.toString();
+                    }
+                }
+            }
+
+            // Initialize page numbers starting from 0
+            initializePageNumbers();
+            
+            // Run pagination after all content is loaded and charts are rendered
+            setTimeout(() => {
+                paginateSlides();
+            }, 1000);
+            
+            // Re-run on window resize
+            window.addEventListener('resize', () => {
+                setTimeout(paginateSlides, 500);
+            });
+        });
+      </script>
+      <script>
+        // Script to modify Chart.js canvas elements with negative data
+        document.querySelectorAll('canvas.chartjs-chart').forEach(function(canvas) {
+            const dataChart = canvas.getAttribute('data-chart');
+            if (dataChart) {
+                try {
+                    let config = JSON.parse(dataChart);
+                    let hasNegative = false;
+                    if (config.data && config.data.datasets) {
+                        config.data.datasets.forEach(function(dataset) {
+                            if (dataset.data) {
+                                dataset.data.forEach(function(value) {
+                                    if (value < 0) {
+                                        hasNegative = true;
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    if (hasNegative && config.options && config.options.scales) {
+                        const yScale = config.options.scales.y || {};
+                        if (yScale.max !== undefined) {
+                            yScale.min = -yScale.max;
+                        }
+                        config.options.scales.y = yScale;
+
+                        const xScale = config.options.scales.x || {};
+                        xScale.position = "center";
+                        xScale.offset = true;
+                        config.options.scales.x = xScale;
+
+                        const newDataChart = JSON.stringify(config);
+                        canvas.setAttribute('data-chart', newDataChart);
+                    }
+                } catch (e) {
+                    console.error('Error parsing or modifying data-chart:', e);
+                }
+            }
+        });
+      </script>
       <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Register the datalabels plugin

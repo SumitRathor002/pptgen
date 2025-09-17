@@ -32,6 +32,9 @@ from pptx.enum.chart import XL_LEGEND_POSITION
 from PIL import Image
 import os
 
+# Font scaling factor to match HTML rendering more closely
+FONT_SCALE_FACTOR = 0.88  # Reduce font sizes by 15% to better match HTML
+
 def SubElement(parent, tagname, **kwargs):
     element = OxmlElement(tagname)
     element.attrib.update(kwargs)
@@ -126,8 +129,7 @@ def safe_float(value, default=0.0):
     
 
 def pixels_to_emu(pixels):
-    """Convert pixels to EMU with high precision (96 PPI)"""
-    return int(round(pixels * 9525))
+    return math.floor(pixels * 9525)
 
 
 def px_to_pt(px):
@@ -138,7 +140,9 @@ def px_to_pt(px):
 def get_font_size_pt(font_size_px):
     if font_size_px <= 0:
         return 12
-    return max(6, int(px_to_pt(font_size_px)))
+    # Apply scaling factor to reduce font size slightly for better HTML matching
+    scaled_size = max(6, int(px_to_pt(font_size_px) * FONT_SCALE_FACTOR))
+    return scaled_size
 
 
 def parse_border_radius(radius_str, shape_width_px, shape_height_px):
@@ -918,7 +922,6 @@ def add_table_element(slide, element, slide_width, slide_height, parent_has_shad
             
             final_height = max(20, min(final_height, 100))
             
-            print(f"Table row {r_index}: CSS height={css_height}, rendered={rendered_height}, final={final_height}")
             table.rows[r_index].height = pixels_to_emu(final_height)
 
         # Apply default borders to ALL table cells
@@ -1654,16 +1657,19 @@ def add_chart_element(slide, element, slide_width, slide_height):
             
             chart.legend.include_in_layout = False
             
-            # Improved legend font configuration with error handling
+            # Improved legend font configuration with error handling and scaling
             try:
                 legend_labels = legend_opts.get('labels', {})
                 legend_font = legend_labels.get('font', {})
                 legend_color_str = legend_labels.get('color')
                 
                 if legend_font.get('size'):
-                    chart.legend.font.size = Pt(max(6, int(legend_font['size'])))
+                    # Apply font scaling factor to legend font size
+                    original_size = int(legend_font['size'])
+                    scaled_size = max(6, int(original_size * FONT_SCALE_FACTOR))
+                    chart.legend.font.size = Pt(scaled_size)
                 else:
-                    chart.legend.font.size = Pt(10)  # Default size
+                    chart.legend.font.size = Pt(int(10 * FONT_SCALE_FACTOR))  # Default size with scaling
                 
                 if legend_font.get('family'):
                     # Clean font family name and handle special fonts
@@ -1682,8 +1688,8 @@ def add_chart_element(slide, element, slide_width, slide_height):
                         chart.legend.font.color.rgb = legend_color
             except Exception as e:
                 print(f"Error configuring legend font: {e}")
-                # Set safe defaults
-                chart.legend.font.size = Pt(10)
+                # Set safe defaults with scaling
+                chart.legend.font.size = Pt(int(10 * FONT_SCALE_FACTOR))
                 chart.legend.font.name = 'Arial'
         else:
             # Default behavior when display is not specified
@@ -1704,7 +1710,7 @@ def add_chart_element(slide, element, slide_width, slide_height):
                     # Ignore any errors in hiding single series labels
                     pass
 
-        # Enhanced Data Labels with proper font settings from options
+        # Enhanced Data Labels with proper font settings from options and scaling
         datalabel_opts = plugins.get('datalabels', {})
         has_datalabels = datalabel_opts.get('display', False)
         
@@ -1713,11 +1719,13 @@ def add_chart_element(slide, element, slide_width, slide_height):
             plot.has_data_labels = True
             data_labels = plot.data_labels
             
-            # Get font settings from datalabels options - use exact values from JSON
+            # Get font settings from datalabels options - apply scaling to exact values from JSON
             font_opts = datalabel_opts.get('font', {})
             label_color_str = datalabel_opts.get('color', '#333333')
             label_color = parse_color(label_color_str)
-            font_size = font_opts.get('size', 8)  # Use exact size from JSON
+            original_font_size = font_opts.get('size', 8)  # Use exact size from JSON
+            # Apply font scaling factor to datalabels font size
+            scaled_font_size = max(6, int(original_font_size * FONT_SCALE_FACTOR))
             font_family = font_opts.get('family', 'Arial')
             font_weight = font_opts.get('weight', 'normal')
 
@@ -1725,9 +1733,9 @@ def add_chart_element(slide, element, slide_width, slide_height):
             if font_family in ['Meiryo UI', 'Meiryo']:
                 font_family = 'Arial'
 
-            # Apply font settings to data labels using exact values
+            # Apply font settings to data labels using scaled values
             data_labels.font.bold = font_weight in ['bold', '600', '700', '800', '900']
-            data_labels.font.size = Pt(font_size)  # Use exact font size
+            data_labels.font.size = Pt(scaled_font_size)  # Use scaled font size
             data_labels.font.name = font_family
             if label_color:
                 data_labels.font.color.rgb = label_color
@@ -1746,7 +1754,7 @@ def add_chart_element(slide, element, slide_width, slide_height):
                 data_labels.show_value = False
                 data_labels.show_percentage = False
                 
-                # Apply formatting to individual points with consistent font settings
+                # Apply formatting to individual points with consistent scaled font settings
                 for series in chart.series:
                     for i, point in enumerate(series.points):
                         point.has_data_label = True
@@ -1755,10 +1763,10 @@ def add_chart_element(slide, element, slide_width, slide_height):
                         formatted_text = parse_datalabel_formatter(formatter_str, labels, values, i)
                         data_label.text_frame.text = formatted_text
                         
-                        # Apply exact font settings to each point's data label
+                        # Apply exact scaled font settings to each point's data label
                         if data_label.text_frame.paragraphs:
                             for paragraph in data_label.text_frame.paragraphs:
-                                paragraph.font.size = Pt(font_size)  # Use exact size
+                                paragraph.font.size = Pt(scaled_font_size)  # Use scaled size
                                 paragraph.font.bold = font_weight in ['bold', '600', '700', '800', '900']
                                 paragraph.font.name = font_family
                                 if label_color:
@@ -1766,13 +1774,13 @@ def add_chart_element(slide, element, slide_width, slide_height):
                         # Also apply to individual runs in paragraphs
                         for paragraph in data_label.text_frame.paragraphs:
                             for run in paragraph.runs:
-                                run.font.size = Pt(font_size)
+                                run.font.size = Pt(scaled_font_size)  # Use scaled size
                                 run.font.bold = font_weight in ['bold', '600', '700', '800', '900']
                                 run.font.name = font_family
                                 if label_color:
                                     run.font.color.rgb = label_color
             else:
-                # For non-custom formatters, still apply the exact font settings
+                # For non-custom formatters, still apply the exact scaled font settings
                 data_labels.show_category_name = False
                 data_labels.show_value = True
                 data_labels.show_percentage = False
@@ -1827,10 +1835,32 @@ def add_chart_element(slide, element, slide_width, slide_height):
                 if step_size:
                     value_axis.major_unit = float(step_size)
 
+                # Remove tick marks for bar charts
+                if chart_type_str == 'bar':
+                    try:
+                        # Remove major and minor tick marks using XML manipulation
+                        axis_element = value_axis._element
+                        major_tick = axis_element.find(qn('c:majorTickMark'))
+                        if major_tick is not None:
+                            major_tick.set('val', 'none')
+                        else:
+                            major_tick_elem = SubElement(axis_element, 'c:majorTickMark', val='none')
+                        
+                        minor_tick = axis_element.find(qn('c:minorTickMark'))
+                        if minor_tick is not None:
+                            minor_tick.set('val', 'none')
+                        else:
+                            minor_tick_elem = SubElement(axis_element, 'c:minorTickMark', val='none')
+                    except Exception as tick_error:
+                        print(f"Error removing value axis tick marks: {tick_error}")
+
                 if value_axis.tick_labels:
                     tick_font = ticks.get('font', {})
                     if tick_font.get('size'):
-                        value_axis.tick_labels.font.size = Pt(tick_font['size'])
+                        # Apply font scaling factor to value axis tick labels
+                        original_tick_size = tick_font['size']
+                        scaled_tick_size = max(6, int(original_tick_size * FONT_SCALE_FACTOR))
+                        value_axis.tick_labels.font.size = Pt(scaled_tick_size)
                     
                     # Handle font family for axis labels
                     if tick_font.get('family'):
@@ -1855,7 +1885,7 @@ def add_chart_element(slide, element, slide_width, slide_height):
             except Exception as e:
                 print(f"Error configuring value axis: {e}")
             
-            # Enhanced Category axis configuration - axis visibility should be independent of datalabels
+            # Enhanced Category axis configuration with font scaling
             try:
                 cat_ticks = category_scale.get('ticks', {})
                 
@@ -1866,13 +1896,35 @@ def add_chart_element(slide, element, slide_width, slide_height):
                     # Configure category axis labels when they should be visible
                     category_axis.visible = True
                     
+                    # Remove tick marks for bar charts
+                    if chart_type_str == 'bar':
+                        try:
+                            # Remove major and minor tick marks using XML manipulation
+                            axis_element = category_axis._element
+                            major_tick = axis_element.find(qn('c:majorTickMark'))
+                            if major_tick is not None:
+                                major_tick.set('val', 'none')
+                            else:
+                                major_tick_elem = SubElement(axis_element, 'c:majorTickMark', val='none')
+                        
+                            minor_tick = axis_element.find(qn('c:minorTickMark'))
+                            if minor_tick is not None:
+                                minor_tick.set('val', 'none')
+                            else:
+                                minor_tick_elem = SubElement(axis_element, 'c:minorTickMark', val='none')
+                        except Exception as tick_error:
+                            print(f"Error removing category axis tick marks: {tick_error}")
+                    
                     if category_axis.tick_labels:
                         tick_font = cat_ticks.get('font', {})
                         if tick_font.get('size'):
-                            category_axis.tick_labels.font.size = Pt(tick_font['size'])
+                            # Apply font scaling factor to category axis tick labels
+                            original_cat_size = tick_font['size']
+                            scaled_cat_size = max(6, int(original_cat_size * FONT_SCALE_FACTOR))
+                            category_axis.tick_labels.font.size = Pt(scaled_cat_size)
                         else:
-                            # Default font size for category labels
-                            category_axis.tick_labels.font.size = Pt(8)
+                            # Default font size for category labels with scaling
+                            category_axis.tick_labels.font.size = Pt(int(8 * FONT_SCALE_FACTOR))
                         
                         # Handle font family for category axis labels
                         if tick_font.get('family'):
@@ -1893,6 +1945,23 @@ def add_chart_element(slide, element, slide_width, slide_height):
                             category_axis.tick_labels.orientation = 0  # Horizontal
                         elif max_rotation > 0:
                             category_axis.tick_labels.orientation = max_rotation
+                        
+                        # Set x-axis label position to 'low' and distance from axis for bar charts
+                        if chart_type_str == 'bar':
+                            try:
+                                # Access the axis element and set tick label position using XML
+                                axis_element = category_axis._element
+                                tick_lbl_pos = axis_element.find(qn('c:tickLblPos'))
+                                if tick_lbl_pos is not None:
+                                    tick_lbl_pos.set('val', 'low')
+                                else:
+                                    tick_lbl_pos_elem = SubElement(axis_element, 'c:tickLblPos', val='low')
+                                
+                                # Set distance from axis (500 points)
+                                category_axis.tick_labels.offset = 500
+                                
+                            except Exception as tick_pos_error:
+                                print(f"Error setting tick label position: {tick_pos_error}")
                 
                 # Handle axis line display
                 border_config = category_scale.get('border', {})
@@ -1974,6 +2043,13 @@ def add_chart_element(slide, element, slide_width, slide_height):
                                 if color:
                                     point.format.fill.solid()
                                     point.format.fill.fore_color.rgb = color
+                            
+                            # Disable "invert if negative" for bar/column charts to prevent automatic color inversion
+                            if chart_type in [XL_CHART_TYPE.COLUMN_CLUSTERED, XL_CHART_TYPE.BAR_CLUSTERED]:
+                                try:
+                                    _ = SubElement(point.format.element, 'c:invertIfNegative', val='0')
+                                except Exception as e:
+                                    print(f"Error disabling invertIfNegative for point {j}: {e}")
         except Exception as e:
             print(f"Error applying series colors: {e}")
 
@@ -1983,7 +2059,7 @@ def add_chart_element(slide, element, slide_width, slide_height):
 
 
 def add_shape_element(slide, element, slide_width, slide_height):
-    """Enhanced shape rendering with proper text support"""
+    """Enhanced shape rendering with proper text support and expanded clip-path mapping"""
     shape_info = element.get('shapeInfo')
     if not shape_info:
         return
@@ -2002,16 +2078,101 @@ def add_shape_element(slide, element, slide_width, slide_height):
 
     shape_type = MSO_SHAPE.RECTANGLE # Default
     
-    # Map common clip-paths to PowerPoint shapes
+    # Enhanced clip-path mapping to PowerPoint shapes
     if 'polygon' in clip_path:
-        # A simple heuristic for chevron arrows
-        if '50% 0%' in clip_path and '100% 50%' in clip_path and '50% 100%' in clip_path:
-             shape_type = MSO_AUTO_SHAPE_TYPE.CHEVRON
-        # Heuristic for block arrows
-        elif '100% 50%' in clip_path and '75% 90%' in clip_path:
+        # Normalize the clip-path string for easier pattern matching
+        normalized_clip = clip_path.lower().replace(' ', '').replace('polygon(', '').replace(')', '')
+        
+        # Triangle patterns - Downward facing triangle (like triangle-arrow-4)
+        # Pattern: polygon(50% 100%, 0 0, 100% 0) - peak at bottom, base at top
+        if ('50%100%' in normalized_clip and '00' in normalized_clip and '100%0' in normalized_clip) or \
+           ('50%100%' in normalized_clip and '0%0%' in normalized_clip and '100%0%' in normalized_clip):
+            shape_type = MSO_AUTO_SHAPE_TYPE.ISOSCELES_TRIANGLE
+            rotation = 180  # Rotate to point downward
+        
+        # Triangle patterns - Right facing triangle (like line-arrow)
+        # Pattern: polygon(100% 50%, 32% 1%, 32% 99%) - peak at right, base vertical on left
+        elif ('100%50%' in normalized_clip and '32%1%' in normalized_clip and '32%99%' in normalized_clip) or \
+             ('100%50%' in normalized_clip and any(x in normalized_clip for x in ['30%0%', '30%100%', '35%0%', '35%100%'])):
+            shape_type = MSO_AUTO_SHAPE_TYPE.ISOSCELES_TRIANGLE
+            rotation = 90  # Rotate to point right
+        
+        # Enhanced Chevron patterns
+        # Original chevron: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)
+        elif ('50%0%' in normalized_clip and '100%50%' in normalized_clip and '50%100%' in normalized_clip and '0%50%' in normalized_clip):
+            shape_type = MSO_AUTO_SHAPE_TYPE.CHEVRON
+        
+        # Complex chevron: polygon(75% 0%, 100% 50%, 75% 100%, 21% 100%, 54% 50%, 19% 0)
+        elif ('75%0%' in normalized_clip and '100%50%' in normalized_clip and '75%100%' in normalized_clip and 
+              '21%100%' in normalized_clip and '54%50%' in normalized_clip and '19%0' in normalized_clip):
+            shape_type = MSO_AUTO_SHAPE_TYPE.CHEVRON
+        
+        # Right arrow patterns
+        # Pattern: polygon(100% 50%, 75% 90%, ...) - arrow pointing right
+        elif '100%50%' in normalized_clip and '75%90%' in normalized_clip:
             shape_type = MSO_AUTO_SHAPE_TYPE.RIGHT_ARROW
-        elif '0% 50%' in clip_path and '25% 90%' in clip_path:
+        
+        # Left arrow patterns  
+        # Pattern: polygon(0% 50%, 25% 90%, ...) - arrow pointing left
+        elif '0%50%' in normalized_clip and '25%90%' in normalized_clip:
             shape_type = MSO_AUTO_SHAPE_TYPE.LEFT_ARROW
+        
+        # Up arrow patterns
+        # Pattern: polygon(50% 0%, 90% 25%, ...) - arrow pointing up
+        elif '50%0%' in normalized_clip and '90%25%' in normalized_clip:
+            shape_type = MSO_AUTO_SHAPE_TYPE.UP_ARROW
+        
+        # Down arrow patterns
+        # Pattern: polygon(50% 100%, 90% 75%, ...) - arrow pointing down
+        elif '50%100%' in normalized_clip and '90%75%' in normalized_clip:
+            shape_type = MSO_AUTO_SHAPE_TYPE.DOWN_ARROW
+        
+        # Additional triangle orientations
+        # Left-facing triangle: polygon(0% 50%, 100% 0%, 100% 100%)
+        elif ('0%50%' in normalized_clip and '100%0%' in normalized_clip and '100%100%' in normalized_clip):
+            shape_type = MSO_AUTO_SHAPE_TYPE.ISOSCELES_TRIANGLE
+            rotation = 270  # Rotate to point left
+        
+        # Up-facing triangle: polygon(50% 0%, 0% 100%, 100% 100%)
+        elif ('50%0%' in normalized_clip and '0%100%' in normalized_clip and '100%100%' in normalized_clip):
+            shape_type = MSO_AUTO_SHAPE_TYPE.ISOSCELES_TRIANGLE
+            rotation = 0  # Default upward orientation
+        
+        # Hexagon pattern: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%)
+        elif ('30%0%' in normalized_clip and '70%0%' in normalized_clip and '100%50%' in normalized_clip and 
+              '70%100%' in normalized_clip and '30%100%' in normalized_clip and '0%50%' in normalized_clip):
+            shape_type = MSO_AUTO_SHAPE_TYPE.HEXAGON
+        
+        # Pentagon pattern: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)
+        elif ('50%0%' in normalized_clip and '100%38%' in normalized_clip and '82%100%' in normalized_clip and 
+              '18%100%' in normalized_clip and '0%38%' in normalized_clip):
+            shape_type = MSO_AUTO_SHAPE_TYPE.PENTAGON
+        
+        # Octagon pattern: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)
+        elif ('30%0%' in normalized_clip and '70%0%' in normalized_clip and '100%30%' in normalized_clip and 
+              '100%70%' in normalized_clip and '70%100%' in normalized_clip and '30%100%' in normalized_clip and 
+              '0%70%' in normalized_clip and '0%30%' in normalized_clip):
+            shape_type = MSO_AUTO_SHAPE_TYPE.OCTAGON
+        
+        # Star patterns: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)
+        elif ('50%0%' in normalized_clip and '61%35%' in normalized_clip and '98%35%' in normalized_clip and 
+              '68%57%' in normalized_clip and '79%91%' in normalized_clip and '50%70%' in normalized_clip):
+            shape_type = MSO_AUTO_SHAPE_TYPE.STAR_5_POINTED
+        
+        # Diamond/Rhombus pattern: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)
+        elif ('50%0%' in normalized_clip and '100%50%' in normalized_clip and '50%100%' in normalized_clip and 
+              '0%50%' in normalized_clip and normalized_clip.count('%') == 8):  # Exactly 4 points
+            shape_type = MSO_AUTO_SHAPE_TYPE.DIAMOND
+        
+        # Parallelogram pattern: polygon(25% 0%, 100% 0%, 75% 100%, 0% 100%)
+        elif ('25%0%' in normalized_clip and '100%0%' in normalized_clip and '75%100%' in normalized_clip and 
+              '0%100%' in normalized_clip):
+            shape_type = MSO_AUTO_SHAPE_TYPE.PARALLELOGRAM
+        
+        # Trapezoid pattern: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%)
+        elif ('20%0%' in normalized_clip and '80%0%' in normalized_clip and '100%100%' in normalized_clip and 
+              '0%100%' in normalized_clip):
+            shape_type = MSO_AUTO_SHAPE_TYPE.TRAPEZOID
 
     try:
         shape = slide.shapes.add_shape(
@@ -2029,6 +2190,7 @@ def add_shape_element(slide, element, slide_width, slide_height):
         shape.line.fill.background()
         shape.shadow.inherit = False
         
+        # Apply rotation if needed
         if rotation != 0:
             shape.rotation = rotation
 
