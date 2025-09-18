@@ -12,11 +12,24 @@ async function extractSlideData(htmlFilePath, outputPath) {
         const htmlContent = await fs.readFile(htmlFilePath, 'utf-8');
         await page.setViewport({ width: 1920, height: 1080 });
         await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+        
+        // Wait for page stability and content to fully load
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
+        // Wait for fonts and images to load
         await page.waitForFunction(() => {
             const images = Array.from(document.querySelectorAll('img'));
             const fonts = document.fonts ? document.fonts.ready : Promise.resolve();
             return Promise.all([fonts, images.every(img => img.complete)]);
         }, { timeout: 15000 }).catch(() => console.log('Some resources may not have loaded'));
+
+        // Final wait to ensure all dynamic content is loaded
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Wait for any potential JavaScript rendering
+        await page.waitForFunction(() => {
+            return document.readyState === 'complete';
+        }, { timeout: 10000 }).catch(() => console.log('Page may not be fully ready'));
 
         const documentInfo = await page.evaluate(() => {
             const body = document.body;

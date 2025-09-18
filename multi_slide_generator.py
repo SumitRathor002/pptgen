@@ -33,7 +33,7 @@ from PIL import Image
 import os
 
 # Font scaling factor to match HTML rendering more closely
-FONT_SCALE_FACTOR = 0.88  # Reduce font sizes by 15% to better match HTML
+FONT_SCALE_FACTOR = 0.88  # Reduce font sizes by 12% to better match HTML
 
 def SubElement(parent, tagname, **kwargs):
     element = OxmlElement(tagname)
@@ -1554,6 +1554,19 @@ def add_chart_element(slide, element, slide_width, slide_height):
         chart_type_str = chart_config.get('type')
         options = chart_config.get('options', {})
         
+        # Check if all data values are negative for bar charts
+        all_negative = False
+        if chart_type_str == 'bar':
+            datasets = chart_config.get('data', {}).get('datasets', [])
+            if datasets:
+                all_values = []
+                for dataset in datasets:
+                    data_values = dataset.get('data', [])
+                    all_values.extend([val for val in data_values if isinstance(val, (int, float))])
+                
+                if all_values and all(val < 0 for val in all_values):
+                    all_negative = True
+        
         # Map chart types with better handling
         if chart_type_str == 'pie':
             chart_type = XL_CHART_TYPE.PIE
@@ -1812,22 +1825,35 @@ def add_chart_element(slide, element, slide_width, slide_height):
             value_axis = chart.category_axis if is_horizontal_bar else chart.value_axis
 
             try:
-                # Handle beginAtZero
-                if value_scale.get('beginAtZero', True):
-                    value_axis.minimum_scale = 0.0
-                
-                # Handle min/max values
-                val_min = value_scale.get('min')
-                val_max = value_scale.get('max')
-                suggested_max = value_scale.get('suggestedMax')
-                
-                if val_min is not None:
-                    value_axis.minimum_scale = float(val_min)
-                
-                if val_max is not None:
-                    value_axis.maximum_scale = float(val_max)
-                elif suggested_max is not None:
-                    value_axis.maximum_scale = float(suggested_max)
+                # Handle special case for all-negative bar charts
+                if all_negative and chart_type_str == 'bar':
+                    # For all-negative data, remove max and use only min
+                    val_min = value_scale.get('min')
+                    if val_min is not None:
+                        value_axis.minimum_scale = float(val_min)
+                    
+                    # Don't set maximum scale for all-negative charts
+                    # Let PowerPoint auto-scale the maximum
+                    
+                    # Don't force beginAtZero for all-negative charts
+                else:
+                    # Normal handling for mixed or positive data
+                    # Handle beginAtZero
+                    if value_scale.get('beginAtZero', True):
+                        value_axis.minimum_scale = 0.0
+                    
+                    # Handle min/max values
+                    val_min = value_scale.get('min')
+                    val_max = value_scale.get('max')
+                    suggested_max = value_scale.get('suggestedMax')
+                    
+                    if val_min is not None:
+                        value_axis.minimum_scale = float(val_min)
+                    
+                    if val_max is not None:
+                        value_axis.maximum_scale = float(val_max)
+                    elif suggested_max is not None:
+                        value_axis.maximum_scale = float(suggested_max)
                 
                 # Handle step size
                 ticks = value_scale.get('ticks', {})
@@ -1946,19 +1972,48 @@ def add_chart_element(slide, element, slide_width, slide_height):
                         elif max_rotation > 0:
                             category_axis.tick_labels.orientation = max_rotation
                         
-                        # Set x-axis label position to 'low' and distance from axis for bar charts
+                        # Enhanced x-axis positioning for bar charts with negative values
                         if chart_type_str == 'bar':
                             try:
                                 # Access the axis element and set tick label position using XML
                                 axis_element = category_axis._element
-                                tick_lbl_pos = axis_element.find(qn('c:tickLblPos'))
-                                if tick_lbl_pos is not None:
-                                    tick_lbl_pos.set('val', 'low')
-                                else:
-                                    tick_lbl_pos_elem = SubElement(axis_element, 'c:tickLblPos', val='low')
                                 
-                                # Set distance from axis (500 points)
-                                category_axis.tick_labels.offset = 500
+                                # Check if there are any negative values in the dataset
+                                has_negative_values = False
+                                datasets = chart_config.get('data', {}).get('datasets', [])
+                                for dataset in datasets:
+                                    data_values = dataset.get('data', [])
+                                    if any(isinstance(val, (int, float)) and val < 0 for val in data_values):
+                                        has_negative_values = True
+                                        break
+                                
+                                if has_negative_values:
+                                    # For charts with negative values, position x-axis at top
+                                    tick_lbl_pos = axis_element.find(qn('c:tickLblPos'))
+                                    if tick_lbl_pos is not None:
+                                        tick_lbl_pos.set('val', 'high')  # Position at top
+                                    else:
+                                        tick_lbl_pos_elem = SubElement(axis_element, 'c:tickLblPos', val='high')
+                                    
+                                    # Set distance from axis for top positioning
+                                    category_axis.tick_labels.offset = 500
+                                    
+                                    # Set axis crossing to automatic high for negative data
+                                    crosses = axis_element.find(qn('c:crosses'))
+                                    if crosses is not None:
+                                        crosses.set('val', 'autoZero')
+                                    else:
+                                        crosses_elem = SubElement(axis_element, 'c:crosses', val='autoZero')
+                                else:
+                                    # For normal charts, position x-axis at bottom
+                                    tick_lbl_pos = axis_element.find(qn('c:tickLblPos'))
+                                    if tick_lbl_pos is not None:
+                                        tick_lbl_pos.set('val', 'low')
+                                    else:
+                                        tick_lbl_pos_elem = SubElement(axis_element, 'c:tickLblPos', val='low')
+                                    
+                                    # Set distance from axis (500 points)
+                                    category_axis.tick_labels.offset = 500
                                 
                             except Exception as tick_pos_error:
                                 print(f"Error setting tick label position: {tick_pos_error}")
