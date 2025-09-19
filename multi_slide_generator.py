@@ -542,274 +542,6 @@ def add_overlay_element(slide, element, slide_width, slide_height):
         textbox.line.fill.background()
         textbox.shadow.inherit = False
 
-def get_bullet_style_for_list(element, list_info):
-    """
-    Determine bullet char, color, font, and size for a list based on className or CSS styles.
-    Returns (bullet_char, bullet_color, bullet_font, bullet_size_pt)
-    """
-    class_name = element.get('className', '')
-    styles = element.get('styles', {})
-    bullet_char = '\u2022'
-    bullet_color = RGBColor(40, 167, 69)
-    bullet_font = 'Arial'
-    bullet_size_pt = 12
-
-    # Try to infer from class or parent context
-    if 'top-points' in class_name:
-        bullet_color = RGBColor(40, 167, 69)
-        bullet_font = 'Arial'
-        bullet_size_pt = 14
-        bullet_char = '●'
-    elif 'category-points' in class_name:
-        bullet_color = RGBColor(40, 167, 69)
-        bullet_font = 'Arial'
-        bullet_size_pt = 12
-        bullet_char = '●'
-    # Try to get from styles if present
-    color_str = styles.get('color')
-    if color_str:
-        parsed = parse_color(color_str)
-        if parsed:
-            bullet_color = parsed
-    font_size = safe_float(styles.get('fontSize', '12'))
-    if font_size:
-        bullet_size_pt = get_font_size_pt(font_size)
-    font_family = styles.get('fontFamily')
-    if font_family:
-        bullet_font = font_family.split(',')[0].strip('"\'')
-    # Try to get bullet char from ::before content if available
-    if 'listInfo' in element and element['listInfo'].get('bulletChar'):
-        bullet_char = element['listInfo']['bulletChar']
-    return bullet_char, bullet_color, bullet_font, bullet_size_pt
-
-def add_list_paragraphs(text_frame, list_info, level=0, counters=None, element=None, bullet_style_override=None):
-    if counters is None:
-        counters = {}
-    list_type = list_info.get('type')
-    is_ordered = list_type == 'ol'
-    list_styles = list_info.get('listStyles', {})
-    list_style_type = list_styles.get('listStyleType', 'disc' if not is_ordered else 'decimal')
-    if is_ordered:
-        counter_key = f'ol_{level}'
-        counters[counter_key] = list_info.get('start', 1) - 1
-    items = list_info.get('items', [])
-    avg_space_px = 0
-    if len(items) > 1:
-        spaces = []
-        for i in range(len(items) - 1):
-            item_bottom = items[i]['rect']['y'] + items[i]['rect']['height']
-            next_top = items[i+1]['rect']['y']
-            space_px = next_top - item_bottom
-            if space_px > 0:
-                spaces.append(space_px)
-        avg_space_px = sum(spaces) / len(spaces) if spaces else 0
-    space_after_pt = px_to_pt(avg_space_px)
-    line_height_str = list_info.get('styles', {}).get('lineHeight', 'normal')
-    if line_height_str == 'normal':
-        line_spacing = 1.15
-    else:
-        try:
-            line_spacing = float(line_height_str)
-        except ValueError:
-            line_spacing = 1.15
-
-    # Determine bullet style for this list
-    if bullet_style_override:
-        bullet_char, bullet_color, bullet_font, bullet_size_pt = bullet_style_override
-    else:
-        bullet_char, bullet_color, bullet_font, bullet_size_pt = get_bullet_style_for_list(element or {}, list_info)
-
-    first_item = True
-    for item in items:
-        p = None
-        item_styles = item.get('styles', {})
-        default_font_size_px = safe_float(item_styles.get('fontSize', '16').replace('px', ''))
-        default_font_size_pt = get_font_size_pt(default_font_size_px)
-        default_font_name = item_styles.get('fontFamily', 'Segoe UI').split(',')[0].strip('"\'')
-        default_color = parse_color(item_styles.get('color'))
-
-        # Per-item bullet info
-        item_bullet = item.get('bulletInfo') or {}
-        per_bullet_char = None
-        per_bullet_color = None
-        if item_bullet:
-            # bulletInfo.content holds the ::before content (if any)
-            per_bullet_char = item_bullet.get('content') or item_bullet.get('text') or None
-            per_styles = item_bullet.get('styles') or {}
-            per_bullet_color = parse_color(per_styles.get('color') or per_styles.get('backgroundColor') or per_styles.get('borderColor') or '')
-
-        if item.get('inlineGroup') and item['inlineGroup'].get('inlineElements'):
-            inline_elements = item['inlineGroup']['inlineElements']
-            first = True
-            bullet_added = False
-            for inline_element in inline_elements:
-                if inline_element.get('type') == 'br':
-                    if p is not None:
-                        p = text_frame.add_paragraph()
-                        p.level = level
-                        p.space_after = Pt(space_after_pt)
-                        p.line_spacing = line_spacing
-                        indent_pt = 18 * level
-                        p.left_indent = Pt(indent_pt)
-                        p.first_line_indent = Pt(-18)
-                    first = True
-                    bullet_added = False
-                    continue
-                element_text = inline_element.get('text', '')
-                if p is None:
-                    if first_item and level == 0:
-                        p = text_frame.paragraphs[0]
-                    else:
-                        p = text_frame.add_paragraph()
-                    p.level = level
-                    p.space_after = Pt(space_after_pt)
-                    p.line_spacing = line_spacing
-                    indent_pt = 18 * level
-                    p.left_indent = Pt(indent_pt)
-                    p.first_line_indent = Pt(-18)
-                if not bullet_added:
-                    if is_ordered:
-                        counters[counter_key] += 1
-                        if list_style_type == 'decimal':
-                            marker_str = f"{counters[counter_key]}."
-                        elif list_style_type == 'lower-alpha':
-                            marker_str = f"{chr(96 + counters[counter_key])}."
-                        elif list_style_type == 'upper-alpha':
-                            marker_str = f"{chr(64 + counters[counter_key])}."
-                        else:
-                            marker_str = f"{counters[counter_key]}."
-                        marker_run = p.add_run()
-                        marker_run.text = marker_str + ' '
-                        marker_run.font.name = default_font_name
-                        marker_run.font.size = Pt(default_font_size_pt)
-                        if default_color:
-                            marker_run.font.color.rgb = default_color
-                    else:
-                        bullet_run = p.add_run()
-                        # Prefer per-item bullet char if recorded, else list-level bullet
-                        bullet_text = per_bullet_char if per_bullet_char else bullet_char
-                        bullet_run.text = (bullet_text or bullet_char) + ' '
-                        bullet_run.font.name = bullet_font
-                        bullet_run.font.size = Pt(bullet_size_pt)
-                        # Use per-item color if present, else list-level color
-                        if per_bullet_color:
-                            bullet_run.font.color.rgb = per_bullet_color
-                        elif bullet_color:
-                            bullet_run.font.color.rgb = bullet_color
-                    bullet_added = True
-                if first:
-                    element_text = element_text.lstrip()
-                if not element_text.strip():
-                    continue
-                first = False
-                run = p.add_run()
-                run.text = element_text
-                inline_styles = inline_element.get('styles', {})
-                font = run.font
-                font_size_px = safe_float(inline_styles.get('fontSize', '16').replace('px', ''))
-                font.name = inline_styles.get('fontFamily', 'Segoe UI').split(',')[0].strip('"\'')
-                font.size = Pt(get_font_size_pt(font_size_px))
-                font.bold = inline_styles.get('fontWeight', '400') in ['bold', '600', '700', '800', '900']
-                font.italic = inline_styles.get('fontStyle', 'normal') == 'italic'
-                color = parse_color(inline_styles.get('color'))
-                if color:
-                    font.color.rgb = color
-            if text_frame.paragraphs and text_frame.paragraphs[-1].runs:
-                last_run = text_frame.paragraphs[-1].runs[-1]
-                last_run.text = last_run.text.rstrip()
-        else:
-            if first_item and level == 0:
-                p = text_frame.paragraphs[0]
-            else:
-                p = text_frame.add_paragraph()
-            p.level = level
-            p.space_after = Pt(space_after_pt)
-            p.line_spacing = line_spacing
-            indent_pt = 18 * level
-            p.left_indent = Pt(indent_pt)
-            p.first_line_indent = Pt(-18)
-            if is_ordered:
-                counters[counter_key] += 1
-                if list_style_type == 'decimal':
-                    marker_str = f"{counters[counter_key]}."
-                elif list_style_type == 'lower-alpha':
-                    marker_str = f"{chr(96 + counters[counter_key])}."
-                elif list_style_type == 'upper-alpha':
-                    marker_str = f"{chr(64 + counters[counter_key])}."
-                else:
-                    marker_str = f"{counters[counter_key]}."
-                marker_run = p.add_run()
-                marker_run.text = marker_str + ' '
-                marker_run.font.name = default_font_name
-                marker_run.font.size = Pt(default_font_size_pt)
-                if default_color:
-                    marker_run.font.color.rgb = default_color
-            else:
-                bullet_run = p.add_run()
-                bullet_text = per_bullet_char if per_bullet_char else bullet_char
-                bullet_run.text = (bullet_text or bullet_char) + ' '
-                bullet_run.font.name = bullet_font
-                bullet_run.font.size = Pt(bullet_size_pt)
-                if per_bullet_color:
-                    bullet_run.font.color.rgb = per_bullet_color
-                elif bullet_color:
-                    bullet_run.font.color.rgb = bullet_color
-            run = p.add_run()
-            run.text = item.get('text', '').strip()
-            font = run.font
-            font.name = default_font_name
-            font.size = Pt(default_font_size_pt)
-            font.bold = item_styles.get('fontWeight', '400') in ['bold', '600', '700', '800', '900']
-            font.italic = item_styles.get('fontStyle', 'normal') == 'italic'
-            color = parse_color(item_styles.get('color'))
-            if color:
-                font.color.rgb = color
-
-        first_item = False
-        if item.get('nestedList'):
-            add_list_paragraphs(text_frame, item['nestedList'], level + 1, counters, element, bullet_style_override)
-
-def add_list_element(slide, element, slide_width, slide_height, parent_has_shadow=False):
-    list_info = element.get('listInfo', {})
-    if not list_info.get('items'):
-        return
-    rect = list_info.get('rect', {})
-    x = safe_int(rect.get('x', 0))
-    y = safe_int(rect.get('y', 0))
-    width = safe_int(rect.get('width', element.get('width', 100)))
-    height = safe_int(rect.get('height', element.get('height', 100)))
-    styles = element.get('styles', {})
-    box_shadow = styles.get('boxShadow', 'none')
-    has_shadow = box_shadow != 'none' and not parent_has_shadow
-    bg_color = parse_color(styles.get('backgroundColor'))
-    border_radius_str = styles.get('borderRadius', '0px')
-    border_radius = parse_border_radius(border_radius_str, width, height)
-    has_radius = border_radius > 0
-    has_border = is_uniform_border(styles)
-    has_any_border_sides = has_any_border(styles)
-    try:
-        if bg_color or has_border or has_any_border_sides or has_radius or has_shadow:
-            add_bg_shape(slide, styles, x, y, width, height)
-        textbox = slide.shapes.add_textbox(
-            pixels_to_emu(x), pixels_to_emu(y),
-            pixels_to_emu(width), pixels_to_emu(height)
-        )
-        text_frame = textbox.text_frame
-        text_frame.word_wrap = True
-        text_frame.vertical_anchor = MSO_ANCHOR.TOP
-        text_frame.margin_left = pixels_to_emu(safe_float(styles.get('paddingLeft', '0px').replace('px', '')))
-        text_frame.margin_right = pixels_to_emu(safe_float(styles.get('paddingRight', '0px').replace('px', '')))
-        text_frame.margin_top = pixels_to_emu(safe_float(styles.get('paddingTop', '0px').replace('px', '')))
-        text_frame.margin_bottom = pixels_to_emu(safe_float(styles.get('paddingBottom', '0px').replace('px', '')))
-        textbox.fill.background()
-        textbox.line.fill.background()
-        textbox.shadow.inherit = False
-        text_frame.clear()
-        bullet_style = get_bullet_style_for_list(element, list_info)
-        add_list_paragraphs(text_frame, list_info, element=element, bullet_style_override=bullet_style)
-    except Exception as e:
-        print(f"Failed to add list: {e}")
-
 def set_cell_border(cell, side, width_px, color_rgb, style='solid'):
     """Apply a border to a table cell side using enhanced method"""
     set_cell_border_enhanced(cell, side, width_px, color_rgb, style)
@@ -1352,15 +1084,13 @@ def add_pseudo_element(slide, element, slide_width, slide_height):
     y = safe_float(element.get('y', 0))
     width = max(1, safe_float(element.get('width', 0)))
     height = max(1, safe_float(element.get('height', 0)))
-    
     styles = element.get('styles', {})
     text = element.get('text', '')
     pseudo_type = element.get('pseudoType', '')
     parent_class = element.get('parentClassName', '')
-    
+    parent_tag = element.get('parentTagName', '')
     x = max(0, min(x, slide_width - width))
     y = max(0, min(y, slide_height - height))
-    
     background_full = styles.get('background', '')
     has_gradient = isinstance(background_full, str) and 'linear-gradient' in background_full
 
@@ -1384,15 +1114,70 @@ def add_pseudo_element(slide, element, slide_width, slide_height):
                     except Exception as e:
                         print(f"Error creating gradient segment: {e}")
         else:
-            # Fallback to solid color
             add_bg_shape(slide, styles, x, y, width, height)
     else:
-        # Standard pseudo element rendering - ensure proper background color handling
         bg_color = parse_color(styles.get('backgroundColor'))
         if bg_color or has_gradient:
             add_bg_shape(slide, styles, x, y, width, height)
 
-    # Add text content for pseudo elements (usually none for decorative elements)
+    if (
+        pseudo_type == '::before'
+        and parent_tag == 'li'
+        and text
+        and 'parentText' in element
+        and element['parentText'].strip()
+    ):
+        try:
+            textbox = slide.shapes.add_textbox(
+                pixels_to_emu(x), pixels_to_emu(y),
+                pixels_to_emu(width), pixels_to_emu(height)
+            )
+            text_frame = textbox.text_frame
+            text_frame.word_wrap = True
+            text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
+            text_frame.margin_left = 0
+            text_frame.margin_right = 0
+            text_frame.margin_top = 0
+            text_frame.margin_bottom = 0
+            text_frame.clear()
+            p = text_frame.paragraphs[0]
+
+            run_bullet = p.add_run()
+            run_bullet.text = text + " "
+            font_bullet = run_bullet.font
+            font_size_px = safe_float(styles.get('fontSize', '12'))
+            font_bullet.name = styles.get('fontFamily', 'Meiryo').split(',')[0].strip('"\'')
+            font_bullet.size = Pt(max(6, get_font_size_pt(font_size_px)))
+            font_bullet.bold = styles.get('fontWeight', '400') in ['bold', '700', '800', '900']
+            font_bullet.italic = styles.get('fontStyle') == 'italic'
+            color = parse_color(styles.get('color', 'black'))
+            if color:
+                font_bullet.color.rgb = color
+
+            run_text = p.add_run()
+            run_text.text = element['parentText'].strip()
+            parent_styles = element.get('parentStyles', {})
+            font_text = run_text.font
+            font_size_px2 = safe_float(parent_styles.get('fontSize', styles.get('fontSize', '12')))
+            font_text.name = parent_styles.get('fontFamily', styles.get('fontFamily', 'Meiryo')).split(',')[0].strip('"\'')
+            font_text.size = Pt(max(6, get_font_size_pt(font_size_px2)))
+            font_text.bold = parent_styles.get('fontWeight', '400') in ['bold', '700', '800', '900']
+            font_text.italic = parent_styles.get('fontStyle', 'normal') == 'italic'
+            color2 = parse_color(parent_styles.get('color', styles.get('color', 'black')))
+            if color2:
+                font_text.color.rgb = color2
+            text_align = parent_styles.get('textAlign', styles.get('textAlign', 'left'))
+            p.alignment = PP_ALIGN.CENTER if text_align == 'center' else PP_ALIGN.RIGHT if text_align == 'right' else PP_ALIGN.LEFT
+            textbox.fill.background()
+            textbox.line.fill.background()
+            textbox.shadow.inherit = False
+
+            element['_li_bullet_text_rendered'] = True
+        except Exception as e:
+            print(f"Failed to add bullet+text pseudo element: {e}")
+        return
+
+    # Fallback: normal pseudo element rendering
     if text and text not in ['""', "''", 'none']:
         try:
             textbox = slide.shapes.add_textbox(
@@ -1402,33 +1187,25 @@ def add_pseudo_element(slide, element, slide_width, slide_height):
             text_frame = textbox.text_frame
             text_frame.word_wrap = True
             text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
-            
-            # Precise margin handling
             text_frame.margin_left = 0
             text_frame.margin_right = 0
             text_frame.margin_top = 0
             text_frame.margin_bottom = 0
-            
             text_frame.clear()
             p = text_frame.paragraphs[0]
             run = p.add_run()
             run.text = text
-            
             font = run.font
             font_size_px = safe_float(styles.get('fontSize', '12'))
             font.name = styles.get('fontFamily', 'Meiryo').split(',')[0].strip('"\'')
             font.size = Pt(max(6, get_font_size_pt(font_size_px)))
             font.bold = styles.get('fontWeight', '400') in ['bold', '700', '800', '900']
             font.italic = styles.get('fontStyle') == 'italic'
-            
             color = parse_color(styles.get('color', 'black'))
             if color:
                 font.color.rgb = color
-            
             text_align = styles.get('textAlign', 'left')
             p.alignment = PP_ALIGN.CENTER if text_align == 'center' else PP_ALIGN.RIGHT if text_align == 'right' else PP_ALIGN.LEFT
-            
-            # Make textbox transparent
             textbox.fill.background()
             textbox.line.fill.background()
             textbox.shadow.inherit = False
@@ -2305,6 +2082,7 @@ def add_shape_element(slide, element, slide_width, slide_height):
                 font.color.rgb = text_color
 
             # Apply text alignment
+            text_align = styles.get('textAlign', 'left')
             if text_align == 'center' or justify_content == 'center':
                 p.alignment = PP_ALIGN.CENTER
             elif text_align == 'right' or justify_content == 'flex-end':
@@ -2425,8 +2203,6 @@ def create_pptx_from_json(json_path, output_path=None):
                 add_overlay_element(slide, element, slide_width, slide_height)
             elif element.get('inlineGroup'):
                 add_inline_group_element(slide, element, slide_width, slide_height, parent_has_shadow)
-            elif element_type in ['ul', 'ol']:
-                add_list_element(slide, element, slide_width, slide_height, parent_has_shadow)
             elif element_type == 'table':
                 # Store table position for overlay calculations
                 table_key = f"table_{element.get('x', 0)}_{element.get('y', 0)}"
@@ -2448,7 +2224,7 @@ def create_pptx_from_json(json_path, output_path=None):
                 add_pseudo_element(slide, element, slide_width, slide_height)
             elif element_type == 'div' and 'chart' in element.get('className', '') and element.get('chartConfig'):
                 add_chart_element(slide, element, slide_width, slide_height)
-            elif element_type in ['div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']:
+            elif element_type in ['div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']:  # Removed ul, ol, li
                 # Prevent duplication for div elements
                 if (element.get('text', '').strip() or
                     has_any_border(element.get('styles', {})) or

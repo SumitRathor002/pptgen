@@ -91,7 +91,6 @@ async function extractSlideData(htmlFilePath, outputPath) {
             const IMPORTANT_ELEMENTS = [
                 'div', 'span', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
                 'strong', 'b', 'em', 'i', 'u', 'strike', 'del', 'ins', 'mark', 'small', 'sub', 'sup',
-                'ul', 'ol', 'li', 'dl', 'dt', 'dd',
                 'table', 'thead', 'tbody', 'tfoot', 'tr', 'td', 'th', 'caption', 'colgroup', 'col',
                 'img', 'svg', 'video', 'audio', 'iframe',
                 'a', 'button', 'input', 'textarea', 'select', 'option', 'label', 'fieldset', 'legend',
@@ -364,65 +363,6 @@ async function extractSlideData(htmlFilePath, outputPath) {
                 return null;
             }
 
-            function getListInfo(element, slideContainer) {
-                const tagName = element.tagName.toLowerCase();
-                const listInfo = {};
-                if (['ul', 'ol'].includes(tagName)) {
-                    const items = Array.from(element.querySelectorAll(':scope > li'));
-                    const styles = window.getComputedStyle(element);
-                    const rect = element.getBoundingClientRect();
-                    const slideRect = slideContainer.getBoundingClientRect();
-                    listInfo.type = tagName;
-                    listInfo.itemCount = items.length;
-                    listInfo.rect = {
-                        x: Math.round(rect.left - slideRect.left),
-                        y: Math.round(rect.top - slideRect.top),
-                        width: Math.round(rect.width),
-                        height: Math.round(rect.height)
-                    };
-                    listInfo.listStyles = {
-                        listStyleType: styles.listStyleType,
-                        listStylePosition: styles.listStylePosition,
-                        paddingLeft: styles.paddingLeft,
-                        marginTop: styles.marginTop,
-                        marginBottom: styles.marginBottom
-                    };
-                    listInfo.items = items.map((item, index) => {
-                        const itemRect = item.getBoundingClientRect();
-                        const itemStyles = extractComprehensiveStyles(item);
-                        const text = item.textContent.trim();
-                        const inlineGroup = getInlineGroup(item, slideContainer, new Set());
-                        const nestedListElement = item.querySelector(':scope > ul, :scope > ol');
-                        const nestedList = nestedListElement ? getListInfo(nestedListElement, slideContainer) : null;
-                        const beforePseudo = extractPseudo(item, slideContainer, '::before');
-                        return {
-                            index,
-                            text: text,
-                            styles: itemStyles,
-                            rect: {
-                                x: Math.round(itemRect.left - slideRect.left),
-                                y: Math.round(itemRect.top - slideRect.top),
-                                width: Math.round(itemRect.width),
-                                height: Math.round(itemRect.height)
-                            },
-                            inlineGroup: inlineGroup,
-                            nestedList: nestedList,
-                            hasNestedList: !!nestedListElement,
-                            bulletInfo: beforePseudo ? {
-                                content: beforePseudo.text,
-                                position: beforePseudo,
-                                styles: beforePseudo.styles
-                            } : null
-                        };
-                    });
-                    if (tagName === 'ol') {
-                        listInfo.start = element.start || 1;
-                        listInfo.reversed = element.reversed || false;
-                    }
-                }
-                return listInfo;
-            }
-
             function getTableInfo(element, slideContainer) {
                 const tagName = element.tagName.toLowerCase();
                 const tableInfo = {};
@@ -619,7 +559,7 @@ async function extractSlideData(htmlFilePath, outputPath) {
                     position: styles.position,
                     display: styles.display,
                     visibility: styles.visibility,
-                    zIndex: styles.zIndex,
+                    zIndex: styles.zIndex, // <-- ensure zIndex is always included
                     boxShadow: styles.boxShadow,
                     listStyleType: styles.listStyleType,
                     listStylePosition: styles.listStylePosition,
@@ -736,10 +676,15 @@ async function extractSlideData(htmlFilePath, outputPath) {
                 const position = getPseudoPosition(element, slideContainer, pseudoStyles, pseudo);
                 if (!position || (position.width <= 0 && position.height <= 0)) return null;
                 const styles = extractComprehensiveStyles(pseudoStyles);
-                
-                const parentZ = parseInt(window.getComputedStyle(element).zIndex) || 0;
-                let assignedZ = parentZ - 2;
-                if (pseudo === '::after') assignedZ = parentZ - 1;
+
+                // Always include zIndex from pseudoStyles if present
+                let zIndex = parseInt(pseudoStyles.zIndex);
+                if (isNaN(zIndex)) {
+                    // fallback to parent zIndex logic
+                    const parentZ = parseInt(window.getComputedStyle(element).zIndex) || 0;
+                    zIndex = pseudo === '::after' ? parentZ - 1 : parentZ - 2;
+                }
+
                 const elementData = {
                     type: 'pseudo',
                     pseudoType: pseudo,
@@ -748,7 +693,7 @@ async function extractSlideData(htmlFilePath, outputPath) {
                     width: position.width,
                     height: position.height,
                     styles,
-                    zIndex: assignedZ,
+                    zIndex: zIndex, // <-- always include zIndex
                     parentClassName: element.className || '',
                     parentTagName: element.tagName.toLowerCase()
                 };
@@ -966,34 +911,31 @@ async function extractSlideData(htmlFilePath, outputPath) {
 
             function extractFooterInfo(element, slideContainer) {
                 const styles = window.getComputedStyle(element);
+                // Only treat as footer if it has class 'footer' or is a <footer> tag, and is a direct child of the slide
                 const isFooter = (
-                    element.className.includes('footer') ||
-                    element.tagName.toLowerCase() === 'footer' ||
-                    (styles.position === 'absolute' && 
-                     styles.display === 'flex')
+                    (element.classList.contains('footer') || element.tagName.toLowerCase() === 'footer') &&
+                    element.parentElement === slideContainer
                 );
-                
                 if (!isFooter) return null;
-                
+
                 const footerRect = element.getBoundingClientRect();
                 const slideRect = slideContainer.getBoundingClientRect();
                 const footerElements = [];
-                
-                // Get direct child elements
+
+                // Only process direct children of the footer element
                 const children = Array.from(element.children);
-                
                 if (children.length === 0) return null;
-                
+
                 const justifyContent = styles.justifyContent;
-                
+
                 children.forEach((child, index) => {
                     const childRect = child.getBoundingClientRect();
                     const childStyles = extractComprehensiveStyles(child);
                     const childTag = child.tagName.toLowerCase();
-                    
+
                     let targetX = childRect.left - slideRect.left;
                     let targetY = childRect.top - slideRect.top;
-                    
+
                     // Handle different justify-content values
                     if (justifyContent === 'space-between' && children.length >= 2) {
                         if (index === 0) {
@@ -1006,7 +948,7 @@ async function extractSlideData(htmlFilePath, outputPath) {
                             // Middle elements: distribute evenly
                             const totalSpace = footerRect.width - children.reduce((sum, el) => sum + el.getBoundingClientRect().width, 0);
                             const spaceBetween = totalSpace / (children.length - 1);
-                            targetX = footerRect.left - slideRect.left + index * spaceBetween + 
+                            targetX = footerRect.left - slideRect.left + index * spaceBetween +
                                      children.slice(0, index).reduce((sum, el) => sum + el.getBoundingClientRect().width, 0);
                         }
                     } else if (justifyContent === 'center') {
@@ -1014,7 +956,7 @@ async function extractSlideData(htmlFilePath, outputPath) {
                         targetX = childRect.left - slideRect.left;
                     } else if (justifyContent === 'flex-start' || justifyContent === 'start') {
                         // Left aligned
-                        targetX = footerRect.left - slideRect.left + 
+                        targetX = footerRect.left - slideRect.left +
                                  children.slice(0, index).reduce((sum, el) => sum + el.getBoundingClientRect().width, 0);
                     } else if (justifyContent === 'flex-end' || justifyContent === 'end') {
                         // Right aligned
@@ -1022,7 +964,7 @@ async function extractSlideData(htmlFilePath, outputPath) {
                         targetX = footerRect.right - slideRect.left - totalChildrenWidth +
                                  children.slice(0, index).reduce((sum, el) => sum + el.getBoundingClientRect().width, 0);
                     }
-                    
+
                     const elementData = {
                         type: childTag,
                         x: Math.round(targetX * 10) / 10,
@@ -1033,7 +975,7 @@ async function extractSlideData(htmlFilePath, outputPath) {
                         className: child.className || '',
                         originalIndex: index
                     };
-                    
+
                     // Add specific properties based on element type
                     if (childTag === 'img') {
                         elementData.mediaInfo = {
@@ -1047,10 +989,10 @@ async function extractSlideData(htmlFilePath, outputPath) {
                     } else {
                         elementData.text = child.textContent.trim();
                     }
-                    
+
                     footerElements.push(elementData);
                 });
-                
+
                 return {
                     type: 'footer',
                     footerElements: footerElements,
@@ -1267,13 +1209,6 @@ async function extractSlideData(htmlFilePath, outputPath) {
                         }
                     }
 
-                    if (['ul', 'ol'].includes(tagName)) {
-                        elementData.listInfo = getListInfo(element, slideElement);
-                        processedTextElements.add(elementId);
-                        getAllDescendants(element).forEach(desc => {
-                            processedTextElements.add(getElementId(desc));
-                        });
-                    }
                     if (['table'].includes(tagName)) {
                         elementData.tableInfo = getTableInfo(element, slideElement);
                         processedTextElements.add(elementId);
@@ -1289,13 +1224,15 @@ async function extractSlideData(htmlFilePath, outputPath) {
                     const after = extractPseudo(element, slideElement, '::after');
                     if (after) slide.elements.push(after);
 
-                    if (['ul', 'ol', 'table'].includes(tagName)) {
+                    // REMOVE all list-specific processing:
+                    // if (['ul', 'ol', 'table'].includes(tagName)) {
+                    if (['table'].includes(tagName)) {  // Only keep table
                         getAllDescendants(element).forEach(desc => {
                             processedElements.add(getElementId(desc));
                         });
                     }
                 });
-
+                
                 const missedElements = Array.from(slideElement.querySelectorAll('img, canvas, svg')).filter(element => 
                     !processedElements.has(getElementId(element))
                 );
