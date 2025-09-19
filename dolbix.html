@@ -163,11 +163,11 @@
 
     .table-heading-4 {
       font-family: 'Meiryo', sans-serif;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: bold;
       color: #4a4a4a;
       margin-bottom: 15px;
-      margin-top: 80px;
+      margin-top: 50px;
       position: relative;
       padding-left: 22px;
       text-align: left;
@@ -222,17 +222,23 @@
       height: inherit;
       position: relative;
       display: table-cell;
+      word-wrap: break-word;
+      word-break: break-word;
+      white-space: normal;
     }
 
     .info-table-4 .label {
       background-color: #4f6883;
       color: white;
       font-weight: bold;
-      width: 60px;
+      width: 180px;
       text-align: left;
       box-sizing: border-box;
       position: relative;
-      font-size: 16px;
+      font-size: 15px;
+      word-wrap: break-word;
+      word-break: break-word;
+      white-space: normal;
     }
 
     .info-table-4 .value {
@@ -244,6 +250,9 @@
       font-size: 15px;
       font-weight: normal;
       text-align: left;
+      word-wrap: break-word;
+      word-break: break-word;
+      white-space: normal;
     }
 
     .timeline-section-4 {
@@ -258,11 +267,11 @@
 
     .timeline-heading-4 {
       font-family: 'Meiryo', sans-serif;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: bold;
       color: #4a4a4a;
       margin-bottom: 15px;
-      margin-top: 80px;
+      margin-top: 50px;
       position: relative;
       padding-left: 22px;
       text-align: left;
@@ -296,7 +305,7 @@
       position: relative;
       height: 300px;
       max-height: 300px;
-      margin-top: -50px; /* Move up to align with table */
+      margin-top: -50px;
       width: 100%;
       box-sizing: border-box;
     }
@@ -342,7 +351,7 @@
 
     .timeline-years-4 {
       position: absolute;
-      left: 40px; /* Adjusted to account for arrow repositioning */
+      left: 3px; /* Moved left to align bullets on top of arrow */
       top: 47px;
       height: 100%;
       display: flex;
@@ -353,42 +362,39 @@
       font-size: 10px;
       color: #333;
       box-sizing: border-box;
-      width: calc(100% - 40px);
+      width: calc(100% - 3px); /* Adjusted for new left */
     }
 
     .year-item-4 {
       height: 20px;
-      font-size: 10px;
+      font-size: 13px;
       display: flex;
       align-items: center;
-      margin-bottom: 5px; /* Add spacing between year items */
+      margin-bottom: 5px;
       position: relative;
       box-sizing: border-box;
       width: 100%;
+      padding-left: 25px;
+      left: 3px; /* Move text right so bullet is centered on arrow */
     }
 
     .year-item-4::before {
-      content: '';
+      content: '●';
       position: absolute;
-      left: var(--bullet-horizontal-position, -22px); /* Adjustable horizontal position */
-      top: 50%;
-      transform: translateY(-50%);
-      width: var(--bullet-size, 10px); /* Adjustable bullet size */
-      height: var(--bullet-size, 8px);
-      background-color: white;
-      border-radius: 50%;
-      border: 1px solid white;
-      box-sizing: border-box;
-      z-index: 3; /* Higher z-index to appear on top of arrow */
+      left: 0;
+      color: #ffffff;
+      font-size: 22px;
+      top: -6px;
+      z-index: 3;
     }
 
     .year-item-4:last-child {
       margin-bottom: 0; /* Remove margin from last item */
     }
-
+    
     .pie-heading{
       font-family: 'Meiryo', sans-serif;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: bold;
       color: #4a4a4a;
       position: relative;
@@ -477,7 +483,10 @@
     padding: 6px 8px;
     border: 1px solid #ccc;
     font-weight: bold;
-    font-size: 16px;
+    font-size: 15px;
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
     }
 
     .info-table-6 tr {
@@ -491,6 +500,9 @@
       box-sizing: border-box;
       height: inherit;
       text-align: left;
+      word-wrap: break-word;
+      word-break: break-word;
+      white-space: normal;
     }
 
     .info-table-6 .label {
@@ -500,6 +512,9 @@
       /* width: 150px;  moved to colgroup */
       text-align: left;
       font-size: 15px;
+      word-wrap: break-word;
+      word-break: break-word;
+      white-space: normal;
     }
 
     .info-table-6 .value {
@@ -509,6 +524,9 @@
       font-size: 15px;
       font-weight: normal;
       text-align: left;
+      word-wrap: break-word;
+      word-break: break-word;
+      white-space: normal;
     }
 
 
@@ -518,7 +536,7 @@
             justify-content: center;
             gap: 0px; /* Adjustable gap between all elements - decrease to bring closer */
             max-width: 1000px;
-            margin: 0 auto;
+            margin: 20px auto;
         }
         
         
@@ -582,7 +600,7 @@
 
     .table-heading-7{
      font-family: 'Meiryo', sans-serif;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: bold;
       color: #4a4a4a;
       position: relative;
@@ -619,7 +637,7 @@
       border-collapse: collapse;
       margin: -50px 10px;
       font-family: 'Meiryo UI', sans-serif;
-      font-size: 9px;
+      font-size: 15px;
       table-layout: fixed;
     }
 
@@ -630,7 +648,10 @@
     padding: 6px 8px;
     border: 1px solid #ccc;
     font-weight: bold;
-    font-size: 16px;
+    font-size: 15px;
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
     }
 
     .info-table-7 tr {
@@ -644,6 +665,9 @@
       box-sizing: border-box;
       height: inherit;
       text-align: left;
+      word-wrap: break-word;
+      word-break: break-word;
+      white-space: normal;
     }
 
     .info-table-7 .label {
@@ -653,6 +677,9 @@
       /* width: 150px;  moved to colgroup */
       text-align: left;
       font-size: 15px;
+      word-wrap: break-word;
+      word-break: break-word;
+      white-space: normal;
     }
 
     .info-table-7 .value {
@@ -662,6 +689,9 @@
       font-size: 15px;
       font-weight: normal;
       /* width: 75px;  moved to colgroup */
+      word-wrap: break-word;
+      word-break: break-word;
+      white-space: normal;
     }
 
     /* Column width control (edit these to change widths) */
@@ -680,7 +710,7 @@
       margin: 50px auto 0;
       font-family: 'Meiryo UI', sans-serif;
       font-size: 15px;
-      table-layout: auto;
+      table-layout: fixed;
     }
 
     .info-table-12 th {
@@ -690,7 +720,7 @@
       text-align: left;
       border: 1px solid #000;
       font-weight: bold;
-      font-size: 16px;
+      font-size: 15px;
       word-wrap: break-word;
       word-break: break-word;
       white-space: normal;
@@ -718,6 +748,9 @@
       font-weight: normal;
       text-align: left;
       font-size: 15px;
+      word-wrap: break-word;
+      word-break: break-word;
+      white-space: normal;
     }
 
     .info-table-12 .value {
@@ -726,6 +759,9 @@
       text-align: left;
       font-size: 15px;
       font-weight: normal;
+      word-wrap: break-word;
+      word-break: break-word;
+      white-space: normal;
     }
 
     .info-table-12 .na-value {
@@ -735,6 +771,9 @@
       font-style: italic;
       font-size: 15px;
       font-weight: normal;
+      word-wrap: break-word;
+      word-break: break-word;
+      white-space: normal;
     }
 
 
@@ -838,7 +877,10 @@
       padding: 8px 4px;
       border: 1px solid #000;
       font-weight: bold;
-      font-size: 16px;
+      font-size: 15px;
+      word-wrap: break-word;
+      word-break: break-word;
+      white-space: normal;
     }
 
     .info-table-8 tr {
@@ -852,6 +894,9 @@
       box-sizing: border-box;
       text-align: left;
       font-size: 15px;
+      word-wrap: break-word;
+      word-break: break-word;
+      white-space: normal;
     }
 
     .info-table-8 .label {
@@ -861,6 +906,9 @@
       text-align: left;
       padding-left: 8px;
       font-size: 15px;
+      word-wrap: break-word;
+      word-break: break-word;
+      white-space: normal;
     }
 
     .info-table-8 .unit {
@@ -869,6 +917,9 @@
       font-weight: normal;
       text-align: left;
       font-size: 15px;
+      word-wrap: break-word;
+      word-break: break-word;
+      white-space: normal;
     }
 
     .info-table-8 .value {
@@ -877,6 +928,9 @@
       text-align: left;
       font-size: 15px;
       font-weight: normal;
+      word-wrap: break-word;
+      word-break: break-word;
+      white-space: normal;
     }
 
     .main-content {
@@ -995,7 +1049,7 @@
         }
 
         .main-content .number {
-            font-size: 16px;
+            font-size: 15px;
             margin: 0;
             text-align: center;
         }
@@ -1176,7 +1230,7 @@
       align-items: center;
       justify-content: center;
       font-family: 'Meiryo', sans-serif;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: bold;
       margin-bottom: 5px;
     }
@@ -1244,7 +1298,7 @@
 
     .line-heading{
       font-family: 'Meiryo', sans-serif;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: bold;
       color: #4a4a4a;
       position: relative;
@@ -1333,7 +1387,7 @@
 
     .chart-title-9 {
         font-family: 'Meiryo', sans-serif;
-        font-size: 16px;
+        font-size: 15px;
         font-weight: bold;
         color: #4a4a4a;
         margin-bottom: 15px;
@@ -1383,7 +1437,7 @@
         transform: translateX(-50%);
         background: #4a6b8a;
         color: white;
-        padding: 8px 16px;
+        padding: 8px 8px;
         font-family: 'Meiryo UI', sans-serif;
         font-size: 10px;
         white-space: nowrap;
@@ -1442,13 +1496,110 @@
       margin-top: 5px;
     }
 
-    /* ...existing code... */
+    /* Bullet point replacement styles */
+    .bullet-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin: 0 0 10px 0;
+      padding: 0;
+    }
+    .bullet-item {
+      display: flex;
+      align-items: flex-start;
+      font-size: 14px;
+      line-height: 1.3;
+      position: relative;
+    }
+    .bullet-mark {
+      width: 16px;
+      min-width: 16px;
+      height: 16px;
+      margin-right: 4px;
+      margin-top: 2px;
+      color: #28a745;
+      font-size: 14px;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* Use a dot as bullet */
+    }
+    .bullet-mark::before {
+      content: '●';
+      color: #28a745;
+      font-size: 14px;
+      display: block;
+    }
+    .bullet-text {
+      flex: 1;
+      font-size: inherit;
+      color: inherit;
+      font-family: inherit;
+      word-break: break-word;
+    }
+
+    /* Category bullet points */
+    .category-bullet-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin: 0;
+      padding: 0;
+    }
+    .category-bullet-item {
+      display: flex;
+      align-items: flex-start;
+      font-size: 10px;
+      line-height: 1.3;
+      position: relative;
+    }
+    .category-bullet-mark {
+      width: 12px;
+      min-width: 12px;
+      height: 12px;
+      margin-right: 3px;
+      margin-top: 2px;
+      color: #28a745;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .category-bullet-mark::before {
+      content: '●';
+      color: #28a745;
+      font-size: 12px;
+      display: block;
+    }
+    .category-bullet-text {
+      flex: 1;
+      font-size: inherit;
+      color: inherit;
+      font-family: inherit;
+      word-break: break-word;
+    }
+
+    .main-content .top-points,
+    .main-content .category-points {
+      list-style: none;
+      padding-left: 0;
+      margin: 0;
+    }
+    .main-content .top-points li,
+    .main-content .category-points li {
+      margin: 0;
+      padding: 0;
+      background: none;
+      border: none;
+    }
+
   </style>
 </head>
 <body>
 
 <div class="slide"> <!-- Slide 0 -->
-    <img src="dobimg/dobmain.png" alt="Dolbix Consulting Inc Main Image">
+    <img src="https://wklogo.blob.core.windows.net/logos-ppt/dolbix-cover.png" alt="Dolbix Consulting Inc Main Image">
     <div class="slide-text">Company Research</div>
 </div>
 
@@ -1471,7 +1622,7 @@
     <div class="slide-content-0">
         <div class="center-image-container">
             <div class="center-image">
-                <img src="dobimg/box.png" alt="Box Background">
+                <img src="https://wklogo.blob.core.windows.net/logos-ppt/dolbix-ppt-box.png" alt="Box Background">
                 <div class="center-image-text">Company Research</div>
             </div>
         </div>
@@ -1509,7 +1660,7 @@
                         <td class="value"></td>
                     </tr>
                     <tr style="height: 5px;">
-                        <td class="label">時価総額<br>(YY/MM/D)</td>
+                        <td class="label">時価総額(YY/MM/D)</td>
                         <td class="value"></td>
                     </tr>
                     <tr style="height: 5px;">
@@ -1517,11 +1668,11 @@
                         <td class="value"></td>
                     </tr>
                     <tr style="height: 5px;">
-                        <td class="label">売上高（YY/M<br>期）</td>
+                        <td class="label">売上高（YY/M期）</td>
                         <td class="value"></td>
                     </tr>
                     <tr style="height: 5px;">
-                        <td class="label">売上高<br>構成比率<br>(YY/M期)</td>
+                        <td class="label">売上高構成比率(YY/M期)</td>
                         <td class="value"></td>
                     </tr>
                     <tr style="height: 5px;">
@@ -1532,8 +1683,8 @@
                         <td class="label">従業員数</td>
                         <td class="value"></td>
                     </tr>
-                                        <tr style="height: 5px;">
-                        <td class="label">売上高<br>構成比率<br>(YY/M期)</td>
+                    <tr style="height: 5px;">
+                        <td class="label">売上高<br>構成比率(YY/M期)</td>
                         <td class="value"></td>
                     </tr>
           </tbody>
@@ -1543,24 +1694,23 @@
       <div class="subsidiary-block">
         <div class="timeline-heading-4">沿革</div>
         <div class="timeline-container-4">
-                    <div class="arrow-image-4">
-                        <div class="css-arrow-4"></div>
-                        <div class="triangle-arrow-4"></div>
-                    </div>
-                    <div class="timeline-years-4">
-                        <ul class="timeline-list-4">
-                            <li class="year-item-4" style="margin-bottom: 15px;">1990年　会社設立</li>
-                            <li class="year-item-4" style="margin-bottom: 20px;">1995年　事業拡大</li>
-                            <li class="year-item-4" style="margin-bottom: 15px;">2000年　新サービス開始</li>
-                            <li class="year-item-4" style="margin-bottom: 20px;">2005年　海外進出</li>
-                            <li class="year-item-4" style="margin-bottom: 15px;">2010年　技術革新</li>
-                            <li class="year-item-4" style="margin-bottom: 20px;">2015年　市場拡大</li>
-                            <li class="year-item-4" style="margin-bottom: 15px;">2020年　デジタル化推進</li>
-                            <li class="year-item-4" style="margin-bottom: 0px;">2023年　現在</li>
-                        </ul>
-                        
-                    </div>
-                </div>
+          <div class="arrow-image-4">
+            <div class="css-arrow-4"></div>
+            <div class="triangle-arrow-4"></div>
+          </div>
+          <div class="timeline-years-4">
+            <div class="timeline-list-4">
+              <div class="year-item-4" style="margin-bottom: 15px;">1990年　会社設立</div>
+              <div class="year-item-4" style="margin-bottom: 20px;">1995年　事業拡大</div>
+              <div class="year-item-4" style="margin-bottom: 15px;">2000年　新サービス開始</div>
+              <div class="year-item-4" style="margin-bottom: 20px;">2005年　海外進出</div>
+              <div class="year-item-4" style="margin-bottom: 15px;">2010年　技術革新</div>
+              <div class="year-item-4" style="margin-bottom: 20px;">2015年　市場拡大</div>
+              <div class="year-item-4" style="margin-bottom: 15px;">2020年　デジタル化推進</div>
+              <div class="year-item-4" style="margin-bottom: 0px;">2023年　現在</div>
+            </div>
+          </div>
+        </div>
 
       </div>
     </div>
@@ -1847,7 +1997,6 @@
             
           </tbody>
         </table>
-        <div class="subsidiary-note" style="--note-margin-top:8px; --note-margin-left:10px;">仕入概数：○社</div>
       </div>
       <div class="subsidiary-block">
         <div class="table-heading-7">子会社a</div>
@@ -1929,7 +2078,6 @@
             </tr>
           </tbody>
         </table>
-        <div class="subsidiary-note" style="--note-margin-top:8px; --note-margin-left:10px;">得意先概数：○社</div>
       </div>
     </div>
   </div>
@@ -1942,7 +2090,7 @@
     <div class="slide-content-1">
         <div class="slide-heading-1">事業セグメント</div>
         
-        <table class="info-table-6" style="margin: 20px auto; width: 100%; margin-top: 50px;">
+        <table class="info-table-6" style="margin: 30px auto 0; width: 100%;">
           <colgroup>
             <col class="col-label">
             <col class="col-value">
@@ -1956,303 +2104,293 @@
             <tbody>
                 <tr style="height: 25px;">
                 <td class="label" style="text-align: left;">SegementA：○％</td>
-                <td class="value">Segement Description</td>
+                <td class="value">Manufactures and sells diversified <strong>passenger cars</strong>, <strong>SUVs</strong>, <strong>luxury Lexus models</strong>, commercial trucks, and electrified vehicles worldwide; consolidated sales reached 9,362,000 units FY ending March 2025</td>
                 </tr>
                 <tr style="height: 25px;">
                 <td class="label" style="text-align: left;">SegementB：○％</td>
-                <td class="value">Segement Description</td>
-                </tr>
-                <tr style="height: 25px;">
-                <td class="label" style="text-align: left;">SegementC：○％</td>
-                <td class="value">Segement Description</td>
-                </tr>
-                <tr style="height: 25px;">
-                <td class="label" style="text-align: left;">SegementD：○％</td>
-                <td class="value">Segement Description</td>
+                <td class="value">Provides <strong>financing</strong>, <strong>leasing</strong>, and insurance via <strong>Toyota Financial Services</strong>, enabling affordable ownership, supporting dealers globally, and deepening lifetime customer relationships across vehicle purchase and usage stages</td>
                 </tr>
             </tbody>
-            </table>
-            
-            <div class="charts-container-7">
-                <!-- First group: Original data charts -->
-                <div class="chart-group-7">
-                    <div class="chart-group-heading-7" style="color: white; background-color: #89c3ab;">調整データ（※除外セグメント）</div>
-                    <div class="chart-pair-7">
-                        <div class="chart-container-7">
-                            <div class="chart" style="position: relative; width: 250px; height: 200px;">
-                                <canvas 
-                                    class="chartjs-chart" 
-                                    id="pieChart1" 
-                                    width="250"
-                                    height="200"
-                                    data-chart='{
-                                        "type": "pie",
-                                        "data": {
-                                            "labels": ["SIセグメント", "DXセグメント", "機構設計セグメント", "みどりクラウド", "その他"],
-                                            "datasets": [{
-                                                "data": [70.7, 24.2, 3.1, 2.0, 0.0],
-                                                "backgroundColor": [
-                                                    "#F1C40F",
-                                                    "#E67E22",
-                                                    "#95A5A6",
-                                                    "#AED6F1",
-                                                    "#D5DBDB"
-                                                ],
-                                                "borderColor": "#ffffff",
-                                                "borderWidth": 3
-                                            }]
-                                        },
-                                        "options": {
-                                            "responsive": false,
-                                            "maintainAspectRatio": false,
-                                            "plugins": {
-                                                "legend": {
-                                                    "display": false
-                                                },
-                                                "tooltip": {
-                                                    "enabled": false
-                                                },
-                                                "datalabels": {
-                                                    "display": true,
-                                                    "color": "#333333",
-                                                    "font": {
-                                                        "family": "Arial",
-                                                        "size": 7,
-                                                        "weight": "normal"
-                                                    },
-                                                    "clamp": false,
-                                                    "formatter": "function(value, context) { return context.chart.data.labels[context.dataIndex] + \"\\n\" + value + \"%\"; }"
-                                                }
+        </table>
+        
+        <div class="charts-container-7" style="margin-top: 50px;">
+            <!-- First group: Original data charts -->
+            <div class="chart-group-7">
+                <div class="chart-group-heading-7" style="color: white; background-color: #89c3ab;">調整データ（※除外セグメント）</div>
+                <div class="chart-pair-7">
+                    <div class="chart-container-7">
+                        <div class="chart" style="position: relative; width: 250px; height: 200px;">
+                            <canvas 
+                                class="chartjs-chart" 
+                                id="pieChart1" 
+                                width="250"
+                                height="200"
+                                data-chart='{
+                                    "type": "pie",
+                                    "data": {
+                                        "labels": ["SIセグメント", "DXセグメント", "機構設計セグメント", "みどりクラウド", "その他"],
+                                        "datasets": [{
+                                            "data": [70.7, 24.2, 3.1, 2.0, 0.0],
+                                            "backgroundColor": [
+                                                "#F1C40F",
+                                                "#E67E22",
+                                                "#95A5A6",
+                                                "#AED6F1",
+                                                "#D5DBDB"
+                                            ],
+                                            "borderColor": "#ffffff",
+                                            "borderWidth": 3
+                                        }]
+                                    },
+                                    "options": {
+                                        "responsive": false,
+                                        "maintainAspectRatio": false,
+                                        "plugins": {
+                                            "legend": {
+                                                "display": false
                                             },
-                                            "rotation": 0,
-                                            "circumference": 360,
-                                            "cutout": 0,
-                                            "layout": {
-                                                "padding": {
-                                                    "top": 25,
-                                                    "bottom": 25,
-                                                    "left": 25,
-                                                    "right": 25
-                                                }
+                                            "tooltip": {
+                                                "enabled": false
+                                            },
+                                            "datalabels": {
+                                                "display": true,
+                                                "color": "#333333",
+                                                "font": {
+                                                    "family": "Arial",
+                                                    "size": 7,
+                                                    "weight": "normal"
+                                                },
+                                                "clamp": false,
+                                                "formatter": "function(value, context) { return context.chart.data.labels[context.dataIndex] + \"\\n\" + value + \"%\"; }"
+                                            }
+                                        },
+                                        "rotation": 0,
+                                        "circumference": 360,
+                                        "cutout": 0,
+                                        "layout": {
+                                            "padding": {
+                                                "top": 25,
+                                                "bottom": 25,
+                                                "left": 25,
+                                                "right": 25
                                             }
                                         }
-                                    }'>
-                                </canvas>
-                            </div>
-                            <div class="chart-title-7">2021年8月期</div>
+                                    }
+                                }'>
+                            </canvas>
                         </div>
-                        
-                        <div class="arrow-7"></div>
-                        
-                        <div class="chart-container-7">
-                            <div class="chart" style="position: relative; width: 250px; height: 200px;">
-                                <canvas 
-                                    class="chartjs-chart" 
-                                    id="pieChart2" 
-                                    width="250" 
-                                    height="200"
-                                    data-chart='{
-                                        "type": "pie",
-                                        "data": {
-                                            "labels": ["SIセグメント", "DXセグメント", "機構設計セグメント", "みどりクラウド"],
-                                            "datasets": [{
-                                                "data": [72.4, 22.5, 3.1, 2.0],
-                                                "backgroundColor": [
-                                                    "#F1C40F",
-                                                    "#E67E22",
-                                                    "#95A5A6",
-                                                    "#AED6F1"
-                                                ],
-                                                "borderColor": "#ffffff",
-                                                "borderWidth": 3
-                                            }]
-                                        },
-                                        "options": {
-                                            "responsive": false,
-                                            "maintainAspectRatio": false,
-                                            "plugins": {
-                                                "legend": {
-                                                    "display": false
-                                                },
-                                                "tooltip": {
-                                                    "enabled": false
-                                                },
-                                                "datalabels": {
-                                                    "display": true,
-                                                    "color": "#333333",
-                                                    "font": {
-                                                        "family": "Arial",
-                                                        "size": 7,
-                                                        "weight": "normal"
-                                                    },
-                                                    "anchor": "end",
-                                                    "align": "start",
-                                                    "offset": 10,
-                                                    "formatter": "function(value, context) { return context.chart.data.labels[context.dataIndex] + \"\\n\" + value + \"%\"; }"
-                                                }
-                                            },
-                                            "rotation": 0,
-                                            "circumference": 360,
-                                            "cutout": 0,
-                                            "layout": {
-                                                "padding": {
-                                                    "top": 15,
-                                                    "bottom": 15,
-                                                    "left": 15,
-                                                    "right": 15
-                                                }
-                                            }
-                                        }
-                                    }'>
-                                </canvas>
-                            </div>
-                            <div class="chart-title-7">2022年8月期</div>
-                        </div>
+                        <div class="chart-title-7">2021年8月期</div>
                     </div>
-                </div>
-                
-                <!-- Second group: Adjusted data charts -->
-                <div class="chart-group-7">
-                    <div class="chart-group-heading-7" style="color: white; background-color: #89c3ab;">調整データ（※除外セグメント）</div>
-                    <div class="chart-pair-7">
-                        <div class="chart-container-7">
-                            <div class="chart" style="position: relative; width: 250px; height: 200px;">
-                                <canvas 
-                                    class="chartjs-chart" 
-                                    id="pieChart3" 
-                                    width="250" 
-                                    height="200"
-                                    data-chart='{
-                                        "type": "pie",
-                                        "data": {
-                                            "labels": ["SIセグメント", "DXセグメント", "機構設計セグメント"],
-                                            "datasets": [{
-                                                "data": [64.5, 32.0, 3.5],
-                                                "backgroundColor": [
-                                                    "#F1C40F",
-                                                    "#E67E22",
-                                                    "#95A5A6"
-                                                ],
-                                                "borderColor": "#ffffff",
-                                                "borderWidth": 3
-                                            }]
-                                        },
-                                        "options": {
-                                            "responsive": false,
-                                            "maintainAspectRatio": false,
-                                            "plugins": {
-                                                "legend": {
-                                                    "display": false
-                                                },
-                                                "tooltip": {
-                                                    "enabled": false
-                                                },
-                                                "datalabels": {
-                                                    "display": true,
-                                                    "color": "#333333",
-                                                    "font": {
-                                                        "family": "Arial",
-                                                        "size": 7,
-                                                        "weight": "normal"
-                                                    },
-                                                    "anchor": "end",
-                                                    "align": "start",
-                                                    "offset": 10,
-                                                    "formatter": "function(value, context) { return context.chart.data.labels[context.dataIndex] + \"\\n\" + value + \"%\"; }"
-                                                }
+                    
+                    <div class="arrow-7"></div>
+                    
+                    <div class="chart-container-7">
+                        <div class="chart" style="position: relative; width: 250px; height: 200px;">
+                            <canvas 
+                                class="chartjs-chart" 
+                                id="pieChart2" 
+                                width="250" 
+                                height="200"
+                                data-chart='{
+                                    "type": "pie",
+                                    "data": {
+                                        "labels": ["SIセグメント", "DXセグメント", "機構設計セグメント", "みどりクラウド"],
+                                        "datasets": [{
+                                            "data": [72.4, 22.5, 3.1, 2.0],
+                                            "backgroundColor": [
+                                                "#F1C40F",
+                                                "#E67E22",
+                                                "#95A5A6",
+                                                "#AED6F1"
+                                            ],
+                                            "borderColor": "#ffffff",
+                                            "borderWidth": 3
+                                        }]
+                                    },
+                                    "options": {
+                                        "responsive": false,
+                                        "maintainAspectRatio": false,
+                                        "plugins": {
+                                            "legend": {
+                                                "display": false
                                             },
-                                            "rotation": 0,
-                                            "circumference": 360,
-                                            "cutout": 0,
-                                            "layout": {
-                                                "padding": {
-                                                    "top": 25,
-                                                    "bottom": 25,
-                                                    "left": 25,
-                                                    "right": 25
-                                                }
+                                            "tooltip": {
+                                                "enabled": false
+                                            },
+                                            "datalabels": {
+                                                "display": true,
+                                                "color": "#333333",
+                                                "font": {
+                                                    "family": "Arial",
+                                                    "size": 7,
+                                                    "weight": "normal"
+                                                },
+                                                "anchor": "end",
+                                                "align": "start",
+                                                "offset": 10,
+                                                "formatter": "function(value, context) { return context.chart.data.labels[context.dataIndex] + \"\\n\" + value + \"%\"; }"
+                                            }
+                                        },
+                                        "rotation": 0,
+                                        "circumference": 360,
+                                        "cutout": 0,
+                                        "layout": {
+                                            "padding": {
+                                                "top": 15,
+                                                "bottom": 15,
+                                                "left": 15,
+                                                "right": 15
                                             }
                                         }
-                                    }'>
-                                </canvas>
-                            </div>
-                            <div class="chart-title-7">2021年8月期<br><span style="font-size: 10px;">(※条子セグメント除く)</span></div>
+                                    }
+                                }'>
+                            </canvas>
                         </div>
-                        
-                        <div class="arrow-7"></div>
-                        
-                        <div class="chart-container-7">
-                            <div class="chart" style="position: relative; width: 250px; height: 200px;">
-                                <canvas 
-                                    class="chartjs-chart" 
-                                    id="pieChart4" 
-                                    width="250" 
-                                    height="200"
-                                    data-chart='{
-                                        "type": "pie",
-                                        "data": {
-                                            "labels": ["SIセグメント", "DXセグメント", "機構設計セグメント"],
-                                            "datasets": [{
-                                                "data": [67.2, 32.7, 0.1],
-                                                "backgroundColor": [
-                                                    "#F1C40F",
-                                                    "#E67E22",
-                                                    "#95A5A6"
-                                                ],
-                                                "borderColor": "#ffffff",
-                                                "borderWidth": 3
-                                            }]
-                                        },
-                                        "options": {
-                                            "responsive": false,
-                                            "maintainAspectRatio": false,
-                                            "plugins": {
-                                                "legend": {
-                                                    "display": false
-                                                },
-                                                "tooltip": {
-                                                    "enabled": false
-                                                },
-                                                "datalabels": {
-                                                    "display": true,
-                                                    "color": "#333333",
-                                                    "font": {
-                                                        "family": "Arial",
-                                                        "size": 7,
-                                                        "weight": "normal"
-                                                    },
-                                                    "anchor": "end",
-                                                    "align": "start",
-                                                    "offset": 10,
-                                                    "formatter": "function(value, context) { return context.chart.data.labels[context.dataIndex] + \"\\n\" + value + \"%\"; }"
-                                                }
-                                            },
-                                            "rotation": 0,
-                                            "circumference": 360,
-                                            "cutout": 0,
-                                            "layout": {
-                                                "padding": {
-                                                    "top": 15,
-                                                    "bottom": 15,
-                                                    "left": 15,
-                                                    "right": 15 
-                                                }
-                                            }
-                                        }
-                                    }'>
-                                </canvas>
-                            </div>
-                            <div class="chart-title-7">2022年8月期<br><span style="font-size: 10px;">(※条子セグメント除く)</span></div>
-                        </div>
+                        <div class="chart-title-7">2022年8月期</div>
                     </div>
                 </div>
             </div>
+            
+            <!-- Second group: Adjusted data charts -->
+            <div class="chart-group-7">
+                <div class="chart-group-heading-7" style="color: white; background-color: #89c3ab;">調整データ（※除外セグメント）</div>
+                <div class="chart-pair-7">
+                    <div class="chart-container-7">
+                        <div class="chart" style="position: relative; width: 250px; height: 200px;">
+                            <canvas 
+                                class="chartjs-chart" 
+                                id="pieChart3" 
+                                width="250" 
+                                height="200"
+                                data-chart='{
+                                    "type": "pie",
+                                    "data": {
+                                        "labels": ["SIセグメント", "DXセグメント", "機構設計セグメント"],
+                                        "datasets": [{
+                                            "data": [64.5, 32.0, 3.5],
+                                            "backgroundColor": [
+                                                "#F1C40F",
+                                                "#E67E22",
+                                                "#95A5A6"
+                                            ],
+                                            "borderColor": "#ffffff",
+                                            "borderWidth": 3
+                                        }]
+                                    },
+                                    "options": {
+                                        "responsive": false,
+                                        "maintainAspectRatio": false,
+                                        "plugins": {
+                                            "legend": {
+                                                "display": false
+                                            },
+                                            "tooltip": {
+                                                "enabled": false
+                                            },
+                                            "datalabels": {
+                                                "display": true,
+                                                "color": "#333333",
+                                                "font": {
+                                                    "family": "Arial",
+                                                    "size": 7,
+                                                                                                       "weight": "normal"
+                                                },
+                                                "anchor": "end",
+                                                "align": "start",
+                                                "offset": 10,
+                                                "formatter": "function(value, context) { return context.chart.data.labels[context.dataIndex] + \"\\n\" + value + \"%\"; }"
+                                            }
+                                        },
+                                        "rotation": 0,
+                                        "circumference": 360,
+                                        "cutout": 0,
+                                        "layout": {
+                                            "padding": {
+                                                "top": 25,
+                                                "bottom": 25,
+                                                "left": 25,
+                                                "right": 25
+                                            }
+                                        }
+                                    }
+                                }'>
+                            </canvas>
+                        </div>
+                        <div class="chart-title-7">2021年8月期<br><span style="font-size: 10px;">(※条子セグメント除く)</span></div>
+                    </div>
+                    
+                    <div class="arrow-7"></div>
+                    
+                    <div class="chart-container-7">
+                        <div class="chart" style="position: relative; width: 250px; height: 200px;">
+                            <canvas 
+                                class="chartjs-chart" 
+                                id="pieChart4" 
+                                width="250" 
+                                height="200"
+                                data-chart='{
+                                    "type": "pie",
+                                    "data": {
+                                        "labels": ["SIセグメント", "DXセグメント", "機構設計セグメント"],
+                                        "datasets": [{
+                                            "data": [67.2, 32.7, 0.1],
+                                            "backgroundColor": [
+                                                "#F1C40F",
+                                                "#E67E22",
+                                                "#95A5A6"
+                                            ],
+                                            "borderColor": "#ffffff",
+                                            "borderWidth": 3
+                                        }]
+                                    },
+                                    "options": {
+                                        "responsive": false,
+                                        "maintainAspectRatio": false,
+                                        "plugins": {
+                                            "legend": {
+                                                "display": false
+                                            },
+                                            "tooltip": {
+                                                "enabled": false
+                                            },
+                                            "datalabels": {
+                                                "display": true,
+                                                "color": "#333333",
+                                                "font": {
+                                                    "family": "Arial",
+                                                    "size": 7,
+                                                    "weight": "normal"
+                                                },
+                                                "anchor": "end",
+                                                "align": "start",
+                                                "offset": 10,
+                                                "formatter": "function(value, context) { return context.chart.data.labels[context.dataIndex] + \"\\n\" + value + \"%\"; }"
+                                            }
+                                        },
+                                        "rotation": 0,
+                                        "circumference": 360,
+                                        "cutout": 0,
+                                        "layout": {
+                                            "padding": {
+                                                "top": 15,
+                                                "bottom": 15,
+                                                "left": 15,
+                                                "right": 15 
+                                            }
+                                        }
+                                    }
+                                }'>
+                            </canvas>
+                        </div>
+                        <div class="chart-title-7">2022年8月期<br><span style="font-size: 10px;">(※条子セグメント除く)</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-
     <div class="source-note">出所：XX</div>
     <div class="footer">Strictly Confidential | © DOLBIX CONSULTING Inc.</div>
     <div class="page-num">7</div>
-</div>
 </div>
 
 <div class="slide"> <!-- Slide 8 -->
@@ -2263,146 +2401,146 @@
         <table class="info-table-8">
             <thead>
                 <tr>
-                <th style="width: 300px;">財務指標</th>
-                <th style="width: 75px;">単位</th>
-                <th style="width: 150px;">2020/8期</th>
-                <th style="width: 150px;">2021/8期</th>
-                <th style="width: 150px;">2022/8期</th>
+                <th style="width: 200px;">財務指標</th>
+                <th style="width: 50px;">単位</th>
+                <th style="width: 80px;">2020/8期</th>
+                <th style="width: 80px;">2021/8期</th>
+                <th style="width: 80px;">2022/8期</th>
                 </tr>
             </thead>
             <tbody>
                 <tr style="height: 5px;">
-                <td class="label" style="text-align: left; width: 300px;">売上高</td>
-                <td class="value" style="width: 75px;">百万円</td>
-                <td class="value" style="width: 150px;"></td>
-                <td class="value" style="width: 150px;"></td>
-                <td class="value" style="width: 150px;"></td>
+                <td class="label" style="text-align: left; width: 200px;">売上高</td>
+                <td class="value" style="width: 50px;">百万円</td>
+                <td class="value" style="width: 80px;"></td>
+                <td class="value" style="width: 80px;"></td>
+                <td class="value" style="width: 80px;"></td>
                 </tr>
                 <tr style="height: 5px;">
-                <td class="label" style="text-align: left; width: 300px;">EBITDA</td>
-                <td class="value" style="width: 75px;">百万円</td>
-                <td class="value" style="width: 150px;"></td>
-                <td class="value" style="width: 150px;"></td>
-                <td class="value" style="width: 150px;"></td>
+                <td class="label" style="text-align: left; width: 200px;">EBITDA</td>
+                <td class="value" style="width: 50px;">百万円</td>
+                <td class="value" style="width: 80px;"></td>
+                <td class="value" style="width: 80px;"></td>
+                <td class="value" style="width: 80px;"></td>
                 </tr>
                 <tr style="height: 5px;">
-                <td class="label" style="text-align: left; width: 300px;">営業利益率</td>
-                <td class="value" style="width: 75px;">%</td>
-                <td class="value" style="width: 150px;"></td>
-                <td class="value" style="width: 150px;"></td>
-                <td class="value" style="width: 150px;"></td>
+                <td class="label" style="text-align: left; width: 200px;">営業利益率</td>
+                <td class="value" style="width: 50px;">%</td>
+                <td class="value" style="width: 80px;"></td>
+                <td class="value" style="width: 80px;"></td>
+                <td class="value" style="width: 80px;"></td>
                 </tr>
                 <tr style="height: 5px;">
-                <td class="label" style="text-align: left; width: 300px;">親会社株主に帰属する当期純利益</td>
-                <td class="value" style="width: 75px;">百万円</td>
-                <td class="value" style="width: 150px;"></td>
-                <td class="value" style="width: 150px;"></td>
-                <td class="value" style="width: 150px;"></td>
+                <td class="label" style="text-align: left; width: 200px;">親会社株主に帰属する当期純利益</td>
+                <td class="value" style="width: 50px;">百万円</td>
+                <td class="value" style="width: 80px;"></td>
+                <td class="value" style="width: 80px;"></td>
+                <td class="value" style="width: 80px;"></td>
                 </tr>
                 <tr style="height: 5px;">
-                <td class="label" style="text-align: left; width: 300px;">資産合計</td>
-                <td class="value" style="width: 75px;">百万円</td>
-                <td class="value" style="width: 150px;"></td>
-                <td class="value" style="width: 150px;"></td>
-                <td class="value" style="width: 150px;"></td>
+                <td class="label" style="text-align: left; width: 200px;">資産合計</td>
+                <td class="value" style="width: 50px;">百万円</td>
+                <td class="value" style="width: 80px;"></td>
+                <td class="value" style="width: 80px;"></td>
+                <td class="value" style="width: 80px;"></td>
                 </tr>
                 <tr style="height: 5px;">
-                <td class="label" style="text-align: left; width: 300px;">純資産合計</td>
-                <td class="value" style="width: 75px;">百万円</td>
-                <td class="value" style="width: 150px;"></td>
-                <td class="value" style="width: 150px;"></td>
-                <td class="value" style="width: 150px;"></td>
+                <td class="label" style="text-align: left; width: 200px;">純資産合計</td>
+                <td class="value" style="width: 50px;">百万円</td>
+                <td class="value" style="width: 80px;"></td>
+                <td class="value" style="width: 80px;"></td>
+                <td class="value" style="width: 80px;"></td>
                 </tr>
                 <tr style="height: 5px;">
                   <td class="label" style="text-align: left; width: 200px;">
                     ネット有利子負債(除く現預金・短期性有価証券)
                   </td>
-                  <td class="unit" style="width: 75px;">百万円</td>
-                  <td class="value" style="width: 150px;"></td>
-                  <td class="value" style="width: 150px;"></td>
-                  <td class="value" style="width: 150px;"></td>
+                  <td class="unit" style="width: 50px;">百万円</td>
+                  <td class="value" style="width: 80px;"></td>
+                  <td class="value" style="width: 80px;"></td>
+                  <td class="value" style="width: 80px;"></td>
                 </tr>
                 <tr style="height: 5px;">
-                  <td class="label" style="text-align: left; width: 300px;">現預金同等物及び短期性有価証券</td>
-                  <td class="unit" style="width: 75px;">百万円</td>
-                  <td class="value" style="width: 150px;"></td>
-                  <td class="value" style="width: 150px;"></td>
-                  <td class="value" style="width: 150px;"></td>
+                  <td class="label" style="text-align: left; width: 200px;">現預金同等物及び短期性有価証券</td>
+                  <td class="unit" style="width: 50px;">百万円</td>
+                  <td class="value" style="width: 80px;"></td>
+                  <td class="value" style="width: 80px;"></td>
+                  <td class="value" style="width: 80px;"></td>
                 </tr>
                 <tr style="height: 5px;">
-                  <td class="label" style="text-align: left; width: 300px;">有利子負債残高</td>
-                  <td class="unit" style="width: 75px;">百万円</td>
-                  <td class="value" style="width: 150px;"></td>
-                  <td class="value" style="width: 150px;"></td>
-                  <td class="value" style="width: 150px;"></td>
+                  <td class="label" style="text-align: left; width: 200px;">有利子負債残高</td>
+                  <td class="unit" style="width: 50px;">百万円</td>
+                  <td class="value" style="width: 80px;"></td>
+                  <td class="value" style="width: 80px;"></td>
+                  <td class="value" style="width: 80px;"></td>
                 </tr>
                 <tr style="height: 5px;">
-                  <td class="label" style="text-align: left; width: 300px;">
+                  <td class="label" style="text-align: left; width: 200px;">
                     ROE
                   </td>
-                  <td class="unit" style="width: 75px;">%</td>
-                  <td class="value" style="width: 150px;"></td>
-                  <td class="value" style="width: 150px;"></td>
-                  <td class="value" style="width: 150px;"></td>
+                  <td class="unit" style="width: 50px;">%</td>
+                  <td class="value" style="width: 80px;"></td>
+                  <td class="value" style="width: 80px;"></td>
+                  <td class="value" style="width: 80px;"></td>
                 </tr>
                 <tr style="height: 5px;">
-                  <td class="label" style="text-align: left; width: 300px;">
+                  <td class="label" style="text-align: left; width: 200px;">
                     株主資本比率
                   </td>
-                  <td class="unit" style="width: 75px;">%</td>
-                  <td class="value" style="width: 150px;"></td>
-                  <td class="value" style="width: 150px;"></td>
-                                                    <td class="value" style="width: 150px;"></td>
+                  <td class="unit" style="width: 50px;">%</td>
+                  <td class="value" style="width: 80px;"></td>
+                  <td class="value" style="width: 80px;"></td>
+                  <td class="value" style="width: 80px;"></td>
                 </tr>
                 <tr style="height: 5px;">
-                  <td class="label" style="text-align: left; width: 300px;">ネットD/Eレシオ</td>
-                  <td class="unit" style="width: 75px;">倍</td>
-                  <td class="value" style="width: 150px;"></td>
-                  <td class="value" style="width: 150px;"></td>
-                  <td class="value" style="width: 150px;"></td>
+                  <td class="label" style="text-align: left; width: 200px;">ネットD/Eレシオ</td>
+                  <td class="unit" style="width: 50px;">倍</td>
+                  <td class="value" style="width: 80px;"></td>
+                  <td class="value" style="width: 80px;"></td>
+                  <td class="value" style="width: 80px;"></td>
                 </tr>
-                  <td class="label" style="text-align: left; width: 300px;">有利子負債/EBITDA</td>
-                  <td class="unit" style="width: 75px;">倍</td>
-                  <td class="value" style="width: 150px;"></td>
-                  <td class="value" style="width: 150px;"></td>
-                  <td class="value" style="width: 150px;"></td>
-                </tr>
-                <tr style="height: 5px;">
-                  <td class="label" style="text-align: left; width: 300px;">時価総額(自己株式調整後)</td>
-                  <td class="unit" style="width: 75px;">百万円</td>
-                  <td class="value" style="width: 150px;"></td>
-                  <td class="value" style="width: 150px;"></td>
-                  <td class="value" style="width: 150px;"></td>
+                  <td class="label" style="text-align: left; width: 200px;">有利子負債/EBITDA</td>
+                  <td class="unit" style="width: 50px;">倍</td>
+                  <td class="value" style="width: 80px;"></td>
+                  <td class="value" style="width: 80px;"></td>
+                  <td class="value" style="width: 80px;"></td>
                 </tr>
                 <tr style="height: 5px;">
-                  <td class="label" style="text-align: left; width: 300px;">PER</td>
-                  <td class="unit" style="width: 75px;">倍</td>
-                  <td class="value" style="width: 150px;"></td>
-                  <td class="value" style="width: 150px;"></td>
-                  <td class="value" style="width: 150px;"></td>
+                  <td class="label" style="text-align: left; width: 200px;">時価総額(自己株式調整後)</td>
+                  <td class="unit" style="width: 50px;">百万円</td>
+                  <td class="value" style="width: 80px;"></td>
+                  <td class="value" style="width: 80px;"></td>
+                  <td class="value" style="width: 80px;"></td>
                 </tr>
                 <tr style="height: 5px;">
-                  <td class="label" style="text-align: left; width: 300px;">PBR</td>
-                  <td class="unit" style="width: 75px;">倍</td>
-                  <td class="value" style="width: 150px;"></td>
-                  <td class="value" style="width: 150px;"></td>
-                  <td class="value" style="width: 150px;"></td>
+                  <td class="label" style="text-align: left; width: 200px;">PER</td>
+                  <td class="unit" style="width:50px;">倍</td>
+                  <td class="value" style="width: 80px;"></td>
+                  <td class="value" style="width: 80px;"></td>
+                  <td class="value" style="width: 80px;"></td>
                 </tr>
                 <tr style="height: 5px;">
-                  <td class="label" style="text-align: left; width: 300px;">従業員数</td>
-                  <td class="unit" style="width: 75px;">人</td>
-                  <td class="value" style="width: 150px;"></td>
-                  <td class="value" style="width: 150px;"></td>
-                  <td class="value" style="width: 150px;"></td>
+                  <td class="label" style="text-align: left; width: 200px;">PBR</td>
+                  <td class="unit" style="width: 50px;">倍</td>
+                  <td class="value" style="width: 80px;"></td>
+                  <td class="value" style="width: 80px;"></td>
+                  <td class="value" style="width: 80px;"></td>
                 </tr>
                 <tr style="height: 5px;">
-                  <td class="label" style="text-align: left; width: 300px;">
+                  <td class="label" style="text-align: left; width: 200px;">従業員数</td>
+                  <td class="unit" style="width: 50px;">人</td>
+                  <td class="value" style="width: 80px;"></td>
+                  <td class="value" style="width: 80px;"></td>
+                  <td class="value" style="width: 80px;"></td>
+                </tr>
+                <tr style="height: 5px;">
+                  <td class="label" style="text-align: left; width: 200px;">
                     一人当たりの売上高
                   </td>
-                  <td class="unit" style="width: 75px;">千円</td>
-                  <td class="value" style="width: 150px;"></td>
-                  <td class="value" style="width: 150px;"></td>
-                  <td class="value" style="width: 150px;"></td>
+                  <td class="unit" style="width: 50px;">千円</td>
+                  <td class="value" style="width: 80px;"></td>
+                  <td class="value" style="width: 80px;"></td>
+                  <td class="value" style="width: 80px;"></td>
                 </tr>
             </tbody>
         </table>
@@ -2420,10 +2558,10 @@
         
         <div class="chart-area-9">
             <div class="chart-section-9">
-                <div class="chart-title-9">売上高の推移</div>
+                <div class="chart-title-9">売上高の推移 (Currency Units)</div>
                 <div class="chart-with-arrow-9">
                     <div class="arrow-label-9">
-                        売上高CAGR(19/3期-21/3期)+8.2%
+                        売上高 CAGR: +8.2%
                     </div>
                     <canvas
                         class="chartjs-chart chart-canvas-9"
@@ -2435,7 +2573,7 @@
                             "data": {
                                 "labels": ["2019/3 jp", "2020/3 jp", "2021/3 jp"],
                                 "datasets": [{
-                                    "data": [216, 255, 253],
+                                    "data": [216, 253, 254],
                                     "backgroundColor": ["#2c4a6b", "#2c4a6b", "#2c4a6b"],
                                     "borderColor": "#ffffff",
                                     "borderWidth": 1,
@@ -2499,10 +2637,10 @@
             </div>
             
             <div class="chart-section-9">
-                <div class="chart-title-9">営業利益の推移</div>
+                <div class="chart-title-9">営業利益の推移 (Currency Units)</div>
                 <div class="chart-with-arrow-9">
                     <div class="arrow-label-9">
-                        得意先数CAGR(19/3期-21/3期)-8.8%
+                        得意先数 CAGR: 8.8%
                     </div>
                     <canvas
                         class="chartjs-chart chart-canvas-9"
@@ -2583,330 +2721,8 @@
     <div class="page-num">9</div>
 </div>
 
-<div class="slide">
-        <div class="slide-content-1">
-            <div class="slide-heading-1">成長ビジョン（FY22決算資料より）</div>
 
-
-
-            <div class="main-content" style="margin-top: 40px;">
-                <ul class="top-points">
-                    <li>営業体制の拡充によってエンジニア稼働数の拡大と新規顧客開拓に注力</li>
-                    
-                    <!-- Only this li gets the red dotted border overlay that extends beyond its natural boundaries -->
-                    <li>
-                        一次請け案件の獲得とパートナー強化を推進し、Slerとして長期拡大できる事業構造を獲得
-                    </li>
-                    
-                    <li>離職対策に継続して取り組み、エンジニアの長期キャリア形成と付加価値化を実現</li>
-                    <li>株式会社セラクCCCにおいてSalesforceを中心としたクラウドシステム運用・定着化市場へ進出</li>
-                </ul>
-
-                <div class="category-sections-container">
-                    <div class="category-section">
-                        <div class="category-box">人材創出</div>
-                        <ul class="category-points">
-                            <li>採用力の優位性は維持、営業状況と市況次第で計画以上の採用拡大の可能性を見据える</li>
-                            <li>一次請け案件の拡大を見据え、プロジェクトリーダー人材の育成に注力する</li>
-                        </ul>
-                    </div>
-
-                    <div class="parallel-section">
-                        <div class="category-section">
-                            <div class="category-box">成長施策</div>
-                            <ul class="category-points">
-                                <li>組織改編を実施し、一次請け案件獲得に注力</li>
-                                <li>パートナー強化を進め、臨機応変なエンジニアアサインが可能な構造に</li>
-                                <li>DXシフトを継続し、高利益率・高成長案件を拡大</li>
-                                <li>案件創出のためのアライアンス活動を各事業領域で展開</li>
-                            </ul>
-                        </div>
-
-                        <div class="engineer-info">
-                            <div class="gray-box">期末エンジニア数</div>
-                            <div class="number">3,171名</div>
-                            <div class="small-text">(エンジニア純増120名)</div>
-                        </div>
-                    </div>
-
-
-
-                    <div class="category-section">
-                        <div class="category-box">経営基盤</div>
-                        <ul class="category-points">
-                            <li>タレントマネジメントシステムの導入で人材情報の可視化とキャリア形成を実施</li>
-                            <li>管理体制の強化やシステム基盤の整備を継続</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="blue-text">
-                    <span class="line1">一次請け案件の創出、長期キャリア形成、</span>
-                    <span class="line2">クラウドシステム運用・定着化市場の進出による次世代成長力の獲得</span>
-                </div>
-            </div>
-        </div>
-    <div class="source-note">出所：XX</div>
-    <div class="footer">Strictly Confidential | © DOLBIX CONSULTING Inc.</div>
-    <div class="page-num">10</div>
-    </div>
-
-    <div class="slide">
-        <div class="slide-content-1">
-            <div class="slide-heading-1">中期経営計画（FY22決算資料より）</div>
-
-            <div class="main-content" style="margin-top: 40px;">
-                <div style="text-align: center; margin-bottom: 10px; font-weight: bold;">
-                    <div class="line1" style="color: #201f1f; font-size: 18px;">2027次8請け案件500の創出、長期キャリア形成、長期請け案件</div>
-                    <div class="line2" style="background-color: rgb(255, 199, 94); color: #000; font-size: 16px; padding: 3px 8px;">長期請け案件テム運用定着化市場への進出に長期請け案件よる次世代成長力の獲得</div>
-                </div>
-
-                <ul class="top-points" style="margin-bottom: -10px;">
-                    <li>営業体制の拡充に長期請け案件よってエンジニア稼働数の拡大と新規顧客開拓に注力</li>
-
-                    <li>
-                        一次請け案件の獲得とパートナー強化を推進し、Slerとして長期拡大できる事業構造を獲得
-                    </li>
-                    
-                    <li>離職対策に継続しャリア形成と付加価値化を実現</li>
-                    <li>株式会社セ運用・定着化市場へ進出</li>
-                </ul>
-
-                <div class="category-sections-container" style="margin-left: 150px;">
-                    <div class="category-section">
-                        <ul class="category-points">
-                            <li>採用力の優位性は維持、営業状況と市況次第で計画以上の採用拡大の可能性を見据える</li>
-                            <li>一次請け案件の拡大を見据え、プロジェクトリーダー人材の育成に注力する</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="chart-container-11">
-                    <div class="chart" style="position: relative; width: 100%; height: 100%;">
-                        <canvas 
-                            class="chartjs-chart" 
-                            id="stackedAreaChart" 
-                            width="600" 
-                            height="220"
-                            style="max-width: 100%; max-height: 100%;"
-                            data-chart='{"type":"line","data":{"labels":["FY2022","FY2023","FY2024","FY2025","FY2026","FY2027"],"datasets":[{"label":"SIセグメント","data":[150,170,190,220,280,350],"backgroundColor":"rgba(245,206,126,0.8)","borderColor":"rgba(245,206,126,1)","borderWidth":1,"fill":"origin","tension":0.4},{"label":"DXセグメント","data":[40,55,75,100,120,135],"backgroundColor":"rgba(232,158,82,0.8)","borderColor":"rgba(232,158,82,1)","borderWidth":1,"fill":"-1","tension":0.4},{"label":"みどりクラウドセグメント","data":[8,9,10,12,14,13],"backgroundColor":"rgba(174,214,241,0.8)","borderColor":"rgba(174,214,241,1)","borderWidth":1,"fill":"-1","tension":0.4},{"label":"その他","data":[1,1,2,2,2,2],"backgroundColor":"rgba(255,192,203,0.8)","borderColor":"rgba(255,192,203,1)","borderWidth":1,"fill":"-1","tension":0.4}]},"options":{"responsive":true,"maintainAspectRatio":false,"interaction":{"intersect":false},"layout":{"padding":{"left":15,"right":30,"top":15,"bottom":15}},"scales":{"x":{"display":true,"grid":{"display":false},"ticks":{"color":"#666","font":{"size":8}},"offset":false},"y":{"stacked":true,"display":true,"grid":{"display":true,"color":"rgba(200,200,200,0.1)","lineWidth":0.3},"ticks":{"color":"#666","font":{"size":8},"stepSize":100},"min":0,"max":500}},"plugins":{"legend":{"display":false},"tooltip":{"enabled":true,"mode":"index","intersect":false},"datalabels":{"display":false}},"elements":{"point":{"radius":0,"hoverRadius":0}}}}'>
-                        </canvas>
-
-                        <div class="chart-labels-11">
-                            <div class="segment-label-11 si-segment-11">SIセグメント</div>
-                            <div class="segment-label-11 dx-segment-11">DXセグメント</div>
-                            <div class="segment-label-11 cloud-segment-11">みどりクラウドセグメント</div>
-                        </div>
-
-                        <div class="value-labels-11">
-                            <div class="value-13-2-11">13.2億円</div>
-                            <div class="value-midori-label-11">みどりクラウドセグメント</div>
-                            <div class="value-16-9-11">16.9億円</div>
-                            <div class="value-120-7-11">120.7億円</div>
-                            <div class="value-350-11">350.0億円</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    <div class="source-note">出所：XX</div>
-    <div class="footer">Strictly Confidential | © DOLBIX CONSULTING Inc.</div>
-    <div class="page-num">11</div>
-    </div>
-
-
-<div class="slide">
-        <div class="slide-content-1">
-            <div class="slide-heading-1">人材育成力、採用力（２）</div>
-
-            <div class="main-content" style="margin-top: 40px;">
-              <div class="blue-text">
-                    <div class="line1" style="color: #d80000; font-size: 18px;">2022次8け案請け案件3,051の創出</div>
-                    <div class="line2" style="color: #d80000; font-size: 18px; padding: 3px 8px;">の進出630に長期請</div>
-                </div>
-                <ul class="top-points" style="margin-bottom: -10px; font-weight: bold;">
-                    <li>営業体制の拡充に長期請け案件よってエンジニア</li>                    
-                    <li>離職対策に継続しャリア形成と付加価値化を実現稼働数の拡大と</li>
-                    <li>株式会社セ運用・定着化市場へ進出新規顧客開拓に注力稼働数の拡大とに注</li>
-                </ul>
-                <div class="subsidiary-blocks-12">
-                    <div class="comparison-container">
-                        <!-- Initial Plan Section -->
-                        <div class="comparison-section">
-                            <div class="comparison-heading" style="background-color: #a2c389; color: white;">期初計画</div>
-                            <div class="comparison-subtitle">(単位：人)</div>
-                            <div class="chart-with-dynamic-arrow">
-                                <div class="chart">
-                                    <canvas
-                                        class="chartjs-chart"
-                                        id="planChart"
-                                        width="350" 
-                                        height="200"
-                                        data-chart='{
-                                            "type": "bar",
-                                            "data": {
-                                                "labels": ["実績値\n2021年8月期末\nエンジニア数", "期初計画値\n2022年8月期末\nエンジニア数"],
-                                                "datasets": [{
-                                                    "data": [2621, 2880],
-                                                    "backgroundColor": ["rgba(245,206,126,0.7)", "rgba(245,206,126,1)"],
-                                                    "borderColor": "#ffffff",
-                                                    "borderWidth": 1,
-                                                    "categoryPercentage": 0.9,
-                                                    "barPercentage": 0.4
-                                                }]
-                                            },
-                                            "options": {
-                                                "responsive": true,
-                                                "maintainAspectRatio": true,
-                                                "plugins": {
-                                                    "legend": {"display": false},
-                                                    "tooltip": {"enabled": false},
-                                                    "datalabels": {
-                                                        "display": true,
-                                                        "color": "#333",
-                                                        "font": {"size": 12, "weight": "bold"},
-                                                        "anchor": "end",
-                                                        "align": "top",
-                                                        "offset": 5
-                                                    }
-                                                },
-                                                "scales": {
-                                                    "y": {
-                                                        "display": true,
-                                                        "beginAtZero": false,
-                                                        "min": 2100,
-                                                        "max": 3300,
-                                                        "ticks": {
-                                                            "stepSize": 300,
-                                                            "color": "#888",
-                                                            "font": {"size": 8}
-                                                        },
-                                                        "grid": {
-                                                            "display": true,
-                                                            "color": "rgba(200, 200, 200, 0.3)",
-                                                            "drawBorder": false
-                                                        },
-                                                        "border": {
-                                                            "display": false
-                                                        }
-                                                    },
-                                                    "x": {
-                                                        "display": true,
-                                                        "ticks": {
-                                                            "font": {"size": 8},
-                                                            "color": "#666",
-                                                            "maxRotation": 0,
-                                                            "minRotation": 0,
-                                                            "callback": "function(value, index, values) { return this.getLabelForValue(value).split(\"\\n\"); }"
-                                                        },
-                                                        "grid": {"display": false}
-                                                    }
-                                                },
-                                                "layout": {"padding": {"top": 20, "bottom": 10}}
-                                            }
-                                        }'>
-                                    </canvas>
-                                </div>
-                                <div class="dynamic-growth-arrow" data-chart-id="planChart" data-growth-value="+259"></div>
-                                <div class="dynamic-growth-text" data-chart-id="planChart">+259</div>
-                            </div>
-                        </div>
-
-                        <!-- Arrow between sections -->
-                        <div class="comparison-arrow">
-                            <div class="chevron-arrow"></div>
-                        </div>
-
-                        <!-- Final Results Section -->
-                        <div class="comparison-section">
-                            <div class="comparison-heading" style="background-color: #a2c389; color: white;">最終実績</div>
-                            <div class="comparison-subtitle">(単位：人)</div>
-                            <div class="chart-with-dynamic-arrow">
-                                <div class="chart">
-                                    <canvas
-                                        class="chartjs-chart"
-                                        id="resultChart"
-                                        width="350"
-                                        height="200"
-                                        data-chart='{
-                                            "type": "bar",
-                                            "data": {
-                                                "labels": ["実績値\n2021年8月期末\nエンジニア数", "実績値\n2022年8月期末\nエンジニア数"],
-                                                "datasets": [{
-                                                    "data": [2421, 3051],
-                                                    "backgroundColor": ["rgba(245,206,126,0.7)", "rgba(245,206,126,1)"],
-                                                    "borderColor": "#ffffff",
-                                                    "borderWidth": 1,
-                                                    "categoryPercentage": 0.9,
-                                                    "barPercentage": 0.4
-                                                }]
-                                            },
-                                            "options": {
-                                                "responsive": true,
-                                                "maintainAspectRatio": true,
-                                                "plugins": {
-                                                    "legend": {"display": false},
-                                                    "tooltip": {"enabled": false},
-                                                    "datalabels": {
-                                                        "display": true,
-                                                        "color": "#333",
-                                                        "font": {"size": 12, "weight": "bold"},
-                                                        "anchor": "end",
-                                                        "align": "top",
-                                                        "offset": 5
-                                                    }
-                                                },
-                                                "scales": {
-                                                    "y": {
-                                                        "display": true,
-                                                        "beginAtZero": false,
-                                                        "min": 2100,
-                                                        "max": 3300,
-                                                        "ticks": {
-                                                            "stepSize": 300,
-                                                            "color": "#888",
-                                                            "font": {"size": 8}
-                                                        },
-                                                        "grid": {
-                                                            "display": true,
-                                                            "color": "rgba(200, 200, 200, 0.3)",
-                                                            "drawBorder": false
-                                                        },
-                                                        "border": {
-                                                            "display": false
-                                                        }
-                                                    },
-                                                    "x": {
-                                                        "display": true,
-                                                        "ticks": {
-                                                            "font": {"size": 8},
-                                                            "color": "#666",
-                                                            "maxRotation": 0,
-                                                            "minRotation": 0,
-                                                            "callback": "function(value, index, values) { return this.getLabelForValue(value).split(\"\\n\"); }"
-                                                        },
-                                                        "grid": {"display": false}
-                                                    }
-                                                },
-                                                "layout": {"padding": {"top": 20, "bottom": 10}}
-                                            }
-                                        }'>
-                                    </canvas>
-                                </div>
-                                <div class="dynamic-growth-arrow" data-chart-id="resultChart" data-growth-value="+630"></div>
-                                <div class="dynamic-growth-text" data-chart-id="resultChart">+630</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    <div class="source-note">出所：XX</div>
-    <div class="footer">Strictly Confidential | © DOLBIX CONSULTING Inc.</div>
-    <div class="page-num">12</div>
-    </div>
-
-    <div class="slide"> <!-- Slide 10 -->
+<div class="slide"> <!-- Slide 10 -->
     <div class="slide-content-1">
         <div class="slide-heading-1">足許の時価総額の推移と想定投資金額</div>
         <div class="line-heading" style="margin-top: 40px;">過去6か月間の時価総額の推移</div>
@@ -3121,8 +2937,371 @@
     <div class="footer">Strictly Confidential | © DOLBIX CONSULTING Inc.</div>
     <div class="page-num">12</div>
 </div>
+
+<div class="slide">
+        <div class="slide-content-1">
+            <div class="slide-heading-1">成長ビジョン（FY22決算資料より）</div>
+            <div class="main-content" style="margin-top: 40px;">
+                <div class="bullet-list">
+                  <div class="bullet-item">
+                    <div class="bullet-mark"></div>
+                    <div class="bullet-text">営業体制の拡充によってエンジニア稼働数の拡大と新規顧客開拓に注力</div>
+                  </div>
+                  <div class="bullet-item">
+                    <div class="bullet-mark"></div>
+                    <div class="bullet-text">一次請け案件の獲得とパートナー強化を推進し、Slerとして長期拡大できる事業構造を獲得</div>
+                  </div>
+                  <div class="bullet-item">
+                    <div class="bullet-mark"></div>
+                    <div class="bullet-text">離職対策に継続して取り組み、エンジニアの長期キャリア形成と付加価値化を実現</div>
+                  </div>
+                  <div class="bullet-item">
+                    <div class="bullet-mark"></div>
+                    <div class="bullet-text">株式会社セラクCCCにおいてSalesforceを中心としたクラウドシステム運用・定着化市場へ進出</div>
+                  </div>
+                </div>
+                <div class="category-sections-container">
+                    <div class="category-section">
+                        <div class="category-box">人材創出</div>
+                        <div class="category-bullet-list">
+                          <div class="category-bullet-item">
+                            <div class="category-bullet-mark"></div>
+                            <div class="category-bullet-text">採用力の優位性は維持、営業状況と市況次第で計画以上の採用拡大の可能性を見据える</div>
+                          </div>
+                          <div class="category-bullet-item">
+                            <div class="category-bullet-mark"></div>
+                            <div class="category-bullet-text">一次請け案件の拡大を見据え、プロジェクトリーダー人材の育成に注力する</div>
+                          </div>
+                        </div>
+                    </div>
+
+                    <div class="parallel-section">
+                        <div class="category-section">
+                            <div class="category-box">成長施策</div>
+                            <div class="category-bullet-list">
+                              <div class="category-bullet-item">
+                                <div class="category-bullet-mark"></div>
+                                <div class="category-bullet-text">組織改編を実施し、一次請け案件獲得に注力</div>
+                              </div>
+                              <div class="category-bullet-item">
+                                <div class="category-bullet-mark"></div>
+                                <div class="category-bullet-text">パートナー強化を進め、臨機応変なエンジニアアサインが可能な構造に</div>
+                              </div>
+                              <div class="category-bullet-item">
+                                <div class="category-bullet-mark"></div>
+                                <div class="category-bullet-text">DXシフトを継続し、高利益率・高成長案件を拡大</div>
+                              </div>
+                              <div class="category-bullet-item">
+                                <div class="category-bullet-mark"></div>
+                                <div class="category-bullet-text">案件創出のためのアライアンス活動を各事業領域で展開</div>
+                              </div>
+                            </div>
+                        </div>
+                        <div class="engineer-info">
+                            <div class="gray-box">期末エンジニア数</div>
+                            <div class="number">3,171名</div>
+                            <div class="small-text">(エンジニア純増120名)</div>
+                        </div>
+                    </div>
+
+
+                    <div class="category-section">
+                        <div class="category-box">経営基盤</div>
+                        <div class="category-bullet-list">
+                          <div class="category-bullet-item">
+                            <div class="category-bullet-mark"></div>
+                            <div class="category-bullet-text">タレントマネジメントシステムの導入で人材情報の可視化とキャリア形成を実施</div>
+                          </div>
+                          <div class="category-bullet-item">
+                            <div class="category-bullet-mark"></div>
+                            <div class="category-bullet-text">管理体制の強化やシステム基盤の整備を継続</div>
+                          </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="blue-text">
+                    <span class="line1">一次請け案件の創出、長期キャリア形成、</span>
+                    <span class="line2">クラウドシステム運用・定着化市場の進出による次世代成長力の獲得</span>
+                </div>
+            </div>
+        </div>
+    <div class="source-note">出所：XX</div>
+    <div class="footer">Strictly Confidential | © DOLBIX CONSULTING Inc.</div>
+    <div class="page-num">10</div>
 </div>
 
+    <div class="slide">
+        <div class="slide-content-1">
+            <div class="slide-heading-1">中期経営計画（FY22決算資料より）</div>
+            <div class="main-content" style="margin-top: 40px;">
+                <div style="text-align: center; margin-bottom: 10px; font-weight: bold;">
+                    <div class="line1" style="color: #201f1f; font-size: 18px;">2027次8請け案件500の創出、長期キャリア形成、長期請け案件</div>
+                    <div class="line2" style="background-color: rgb(255, 199, 94); color: #000; font-size: 16px; padding: 3px 8px;">長期請け案件テム運用定着化市場への進出に長期請け案件よる次世代成長力の獲得</div>
+                </div>
+                <div class="bullet-list" style="margin-bottom: -10px;">
+                  <div class="bullet-item">
+                    <div class="bullet-mark"></div>
+                    <div class="bullet-text">営業体制の拡充に長期請け案件よってエンジニア稼働数の拡大と新規顧客開拓に注力</div>
+                  </div>
+                  <div class="bullet-item">
+                    <div class="bullet-mark"></div>
+                    <div class="bullet-text">一次請け案件の獲得とパートナー強化を推進し、Slerとして長期拡大できる事業構造を獲得</div>
+                  </div>
+                  <div class="bullet-item">
+                    <div class="bullet-mark"></div>
+                    <div class="bullet-text">離職対策に継続して取り組み、エンジニアの長期キャリア形成と付加価値化を実現</div>
+                  </div>
+                  <div class="bullet-item">
+                    <div class="bullet-mark"></div>
+                    <div class="bullet-text">株式会社セラクCCCにおいてSalesforceを中心としたクラウドシステム運用・定着化市場へ進出</div>
+                  </div>
+                </div>
+                <div class="category-sections-container" style="margin-left: 150px;">
+                    <div class="category-section">
+                        <div class="category-bullet-list">
+                          <div class="category-bullet-item">
+                            <div class="category-bullet-mark"></div>
+                            <div class="category-bullet-text">採用力の優位性は維持、営業状況と市況次第で計画以上の採用拡大の可能性を見据える</div>
+                          </div>
+                          <div class="category-bullet-item">
+                            <div class="category-bullet-mark"></div>
+                            <div class="category-bullet-text">一次請け案件の拡大を見据え、プロジェクトリーダー人材の育成に注力する</div>
+                          </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-container-11">
+                    <div class="chart" style="position: relative; width: 100%; height: 100%;">
+                        <canvas 
+                            class="chartjs-chart" 
+                            id="stackedAreaChart" 
+                            width="600" 
+                            height="220"
+                            style="max-width: 100%; max-height: 100%;"
+                            data-chart='{"type":"line","data":{"labels":["FY2022","FY2023","FY2024","FY2025","FY2026","FY2027"],"datasets":[{"label":"SIセグメント","data":[150,170,190,220,280,350],"backgroundColor":"rgba(245,206,126,0.8)","borderColor":"rgba(245,206,126,1)","borderWidth":1,"fill":"origin","tension":0.4},{"label":"DXセグメント","data":[40,55,75,100,120,135],"backgroundColor":"rgba(232,158,82,0.8)","borderColor":"rgba(232,158,82,1)","borderWidth":1,"fill":"-1","tension":0.4},{"label":"みどりクラウドセグメント","data":[8,9,10,12,14,13],"backgroundColor":"rgba(174,214,241,0.8)","borderColor":"rgba(174,214,241,1)","borderWidth":1,"fill":"-1","tension":0.4},{"label":"その他","data":[1,1,2,2,2,2],"backgroundColor":"rgba(255,192,203,0.8)","borderColor":"rgba(255,192,203,1)","borderWidth":1,"fill":"-1","tension":0.4}]},"options":{"responsive":true,"maintainAspectRatio":false,"interaction":{"intersect":false},"layout":{"padding":{"left":15,"right":30,"top":15,"bottom":15}},"scales":{"x":{"display":true,"grid":{"display":false},"ticks":{"color":"#666","font":{"size":8}},"offset":false},"y":{"stacked":true,"display":true,"grid":{"display":true,"color":"rgba(200,200,200,0.1)","lineWidth":0.3},"ticks":{"color":"#666","font":{"size":8},"stepSize":100},"min":0,"max":500}},"plugins":{"legend":{"display":false},"tooltip":{"enabled":true,"mode":"index","intersect":false},"datalabels":{"display":false}},"elements":{"point":{"radius":0,"hoverRadius":0}}}}'>
+                        </canvas>
+
+                        <div class="chart-labels-11">
+                            <div class="segment-label-11 si-segment-11">SIセグメント</div>
+                            <div class="segment-label-11 dx-segment-11">DXセグメント</div>
+                            <div class="segment-label-11 cloud-segment-11">みどりクラウドセグメント</div>
+                        </div>
+
+                        <div class="value-labels-11">
+                            <div class="value-13-2-11">13.2億円</div>
+                            <div class="value-midori-label-11">みどりクラウドセグメント</div>
+                            <div class="value-16-9-11">16.9億円</div>
+                            <div class="value-120-7-11">120.7億円</div>
+                            <div class="value-350-11">350.0億円</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <div class="source-note">出所：XX</div>
+    <div class="footer">Strictly Confidential | © DOLBIX CONSULTING Inc.</div>
+    <div class="page-num">11</div>
+</div>
+
+
+<div class="slide">
+        <div class="slide-content-1">
+            <div class="slide-heading-1">人材育成力、採用力（２）</div>
+            <div class="main-content" style="margin-top: 40px;">
+              <div class="blue-text">
+                    <div class="line1" style="color: #d80000; font-size: 18px;">2022次8け案請け案件3,051の創出</div>
+                    <div class="line2" style="color: #d80000; font-size: 18px; padding: 3px 8px;">の進出630に長期請</div>
+                </div>
+                <div class="bullet-list" style="margin-bottom: -10px; font-weight: bold;">
+                  <div class="bullet-item">
+                    <div class="bullet-mark"></div>
+                    <div class="bullet-text">営業体制の拡充に長期請け案件よってエンジニア</div>
+                  </div>
+                  <div class="bullet-item">
+                    <div class="bullet-mark"></div>
+                    <div class="bullet-text">離職対策に継続しャリア形成と付加価値化を実現稼働数の拡大と</div>
+                  </div>
+                  <div class="bullet-item">
+                    <div class="bullet-mark"></div>
+                    <div class="bullet-text">株式会社セ運用・定着化市場へ進出新規顧客開拓に注力稼働数の拡大とに注</div>
+                  </div>
+                </div>
+                <div class="subsidiary-blocks-12">
+                  <div class="comparison-container">
+                      <!-- Initial Plan Section -->
+                      <div class="comparison-section">
+                          <div class="comparison-heading" style="background-color: #a2c389; color: white;">期初計画</div>
+                          <div class="comparison-subtitle">(単位：人)</div>
+                          <div class="chart-with-dynamic-arrow">
+                              <div class="chart">
+                                  <canvas
+                                      class="chartjs-chart"
+                                      id="planChart"
+                                      width="350" 
+                                      height="200"
+                                      data-chart='{
+                                          "type": "bar",
+                                          "data": {
+                                              "labels": ["実績値\n2021年8月期末\nエンジニア数", "期初計画値\n2022年8月期末\nエンジニア数"],
+                                              "datasets": [{
+                                                  "data": [2621, 2880],
+                                                  "backgroundColor": ["rgba(245,206,126,0.7)", "rgba(245,206,126,1)"],
+                                                  "borderColor": "#ffffff",
+                                                  "borderWidth": 1,
+                                                  "categoryPercentage": 0.9,
+                                                  "barPercentage": 0.4
+                                              }]
+                                          },
+                                          "options": {
+                                              "responsive": true,
+                                              "maintainAspectRatio": true,
+                                              "plugins": {
+                                                  "legend": {"display": false},
+                                                  "tooltip": {"enabled": false},
+                                                  "datalabels": {
+                                                      "display": true,
+                                                      "color": "#333",
+                                                      "font": {"size": 12, "weight": "bold"},
+                                                      "anchor": "end",
+                                                      "align": "top",
+                                                      "offset": 5
+                                                  }
+                                              },
+                                              "scales": {
+                                                  "y": {
+                                                      "display": true,
+                                                      "beginAtZero": false,
+                                                      "min": 2100,
+                                                      "max": 3300,
+                                                      "ticks": {
+                                                          "stepSize": 300,
+                                                          "color": "#888",
+                                                          "font": {"size": 8}
+                                                      },
+                                                      "grid": {
+                                                          "display": true,
+                                                          "color": "rgba(200, 200, 200, 0.3)",
+                                                          "drawBorder": false
+                                                      },
+                                                      "border": {
+                                                          "display": false
+                                                      }
+                                                  },
+                                                  "x": {
+                                                      "display": true,
+                                                      "ticks": {
+                                                          "font": {"size": 8},
+                                                          "color": "#666",
+                                                          "maxRotation": 0,
+                                                          "minRotation": 0,
+                                                          "callback": "function(value, index, values) { return this.getLabelForValue(value).split(\"\\n\"); }"
+                                                      },
+                                                      "grid": {"display": false}
+                                                  }
+                                              },
+                                              "layout": {"padding": {"top": 20, "bottom": 10}}
+                                          }
+                                      }'>
+                                  </canvas>
+                              </div>
+                              <div class="dynamic-growth-arrow" data-chart-id="planChart" data-growth-value="+259"></div>
+                              <div class="dynamic-growth-text" data-chart-id="planChart">+259</div>
+                          </div>
+                      </div>
+
+                      <!-- Arrow between sections -->
+                      <div class="comparison-arrow">
+                          <div class="chevron-arrow"></div>
+                      </div>
+
+                      <!-- Final Results Section -->
+                      <div class="comparison-section">
+                          <div class="comparison-heading" style="background-color: #a2c389; color: white;">最終実績</div>
+                          <div class="comparison-subtitle">(単位：人)</div>
+                          <div class="chart-with-dynamic-arrow">
+                              <div class="chart">
+                                  <canvas
+                                      class="chartjs-chart"
+                                      id="resultChart"
+                                      width="350"
+                                      height="200"
+                                      data-chart='{
+                                          "type": "bar",
+                                          "data": {
+                                              "labels": ["実績値\n2021年8月期末\nエンジニア数", "実績値\n2022年8月期末\nエンジニア数"],
+                                              "datasets": [{
+                                                  "data": [2421, 3051],
+                                                  "backgroundColor": ["rgba(245,206,126,0.7)", "rgba(245,206,126,1)"],
+                                                  "borderColor": "#ffffff",
+                                                  "borderWidth": 1,
+                                                  "categoryPercentage": 0.9,
+                                                  "barPercentage": 0.4
+                                              }]
+                                          },
+                                          "options": {
+                                              "responsive": true,
+                                              "maintainAspectRatio": true,
+                                              "plugins": {
+                                                  "legend": {"display": false},
+                                                  "tooltip": {"enabled": false},
+                                                  "datalabels": {
+                                                      "display": true,
+                                                      "color": "#333",
+                                                      "font": {"size": 12, "weight": "bold"},
+                                                      "anchor": "end",
+                                                      "align": "top",
+                                                      "offset": 5
+                                                  }
+                                              },
+                                              "scales": {
+                                                  "y": {
+                                                      "display": true,
+                                                      "beginAtZero": false,
+                                                      "min": 2100,
+                                                      "max": 3300,
+                                                      "ticks": {
+                                                          "stepSize": 300,
+                                                          "color": "#888",
+                                                          "font": {"size": 8}
+                                                      },
+                                                      "grid": {
+                                                          "display": true,
+                                                          "color": "rgba(200, 200, 200, 0.3)",
+                                                          "drawBorder": false
+                                                      },
+                                                      "border": {
+                                                          "display": false
+                                                      }
+                                                  },
+                                                  "x": {
+                                                      "display": true,
+                                                      "ticks": {
+                                                          "font": {"size": 8},
+                                                          "color": "#666",
+                                                          "maxRotation": 0,
+                                                          "minRotation": 0,
+                                                          "callback": "function(value, index, values) { return this.getLabelForValue(value).split(\"\\n\"); }"
+                                                      },
+                                                      "grid": {"display": false}
+                                                  }
+                                              },
+                                              "layout": {"padding": {"top": 20, "bottom": 10}}
+                                          }
+                                      }'>
+                                  </canvas>
+                              </div>
+                              <div class="dynamic-growth-arrow" data-chart-id="resultChart" data-growth-value="+630"></div>
+                              <div class="dynamic-growth-text" data-chart-id="resultChart">+630</div>
+                          </div>
+                      </div>
+                  </div>
+                </div>
+            </div>
+        </div>
+    <div class="source-note">出所：XX</div>
+    <div class="footer">Strictly Confidential | © DOLBIX CONSULTING Inc.</div>
+    <div class="page-num">12</div>
+    </div>
 
  <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -3800,12 +3979,14 @@
                 // Only update slides after the split point
                 for (let i = splitAfterIndex + 1; i < slides.length; i++) {
                     const pageNumElement = slides[i].querySelector('.page-num');
+
                     if (pageNumElement) {
                         pageNumElement.textContent = i.toString();
                     }
                 }
             }
 
+           
             // Initialize page numbers starting from 0
             initializePageNumbers();
             
