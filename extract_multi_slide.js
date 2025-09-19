@@ -91,6 +91,7 @@ async function extractSlideData(htmlFilePath, outputPath) {
             const IMPORTANT_ELEMENTS = [
                 'div', 'span', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
                 'strong', 'b', 'em', 'i', 'u', 'strike', 'del', 'ins', 'mark', 'small', 'sub', 'sup',
+                'ul', 'ol', 'li', 'dl', 'dt', 'dd',
                 'table', 'thead', 'tbody', 'tfoot', 'tr', 'td', 'th', 'caption', 'colgroup', 'col',
                 'img', 'svg', 'video', 'audio', 'iframe',
                 'a', 'button', 'input', 'textarea', 'select', 'option', 'label', 'fieldset', 'legend',
@@ -361,6 +362,65 @@ async function extractSlideData(htmlFilePath, outputPath) {
                     return result;
                 }
                 return null;
+            }
+
+            function getListInfo(element, slideContainer) {
+                const tagName = element.tagName.toLowerCase();
+                const listInfo = {};
+                if (['ul', 'ol'].includes(tagName)) {
+                    const items = Array.from(element.querySelectorAll(':scope > li'));
+                    const styles = window.getComputedStyle(element);
+                    const rect = element.getBoundingClientRect();
+                    const slideRect = slideContainer.getBoundingClientRect();
+                    listInfo.type = tagName;
+                    listInfo.itemCount = items.length;
+                    listInfo.rect = {
+                        x: Math.round(rect.left - slideRect.left),
+                        y: Math.round(rect.top - slideRect.top),
+                        width: Math.round(rect.width),
+                        height: Math.round(rect.height)
+                    };
+                    listInfo.listStyles = {
+                        listStyleType: styles.listStyleType,
+                        listStylePosition: styles.listStylePosition,
+                        paddingLeft: styles.paddingLeft,
+                        marginTop: styles.marginTop,
+                        marginBottom: styles.marginBottom
+                    };
+                    listInfo.items = items.map((item, index) => {
+                        const itemRect = item.getBoundingClientRect();
+                        const itemStyles = extractComprehensiveStyles(item);
+                        const text = item.textContent.trim();
+                        const inlineGroup = getInlineGroup(item, slideContainer, new Set());
+                        const nestedListElement = item.querySelector(':scope > ul, :scope > ol');
+                        const nestedList = nestedListElement ? getListInfo(nestedListElement, slideContainer) : null;
+                        const beforePseudo = extractPseudo(item, slideContainer, '::before');
+                        return {
+                            index,
+                            text: text,
+                            styles: itemStyles,
+                            rect: {
+                                x: Math.round(itemRect.left - slideRect.left),
+                                y: Math.round(itemRect.top - slideRect.top),
+                                width: Math.round(itemRect.width),
+                                height: Math.round(itemRect.height)
+                            },
+                            inlineGroup: inlineGroup,
+                            nestedList: nestedList,
+                            hasNestedList: !!nestedListElement,
+                            bulletInfo: beforePseudo ? {
+                                content: beforePseudo.text,
+                                position: beforePseudo,
+                                styles: beforePseudo.styles
+                            } : null
+                        };
+                    });
+                    if (tagName === 'ol') {
+                        listInfo.start = element.start || 1;
+                        listInfo.reversed = element.reversed || false;
+                    }
+                }
+                return listInfo;
             }
 
             function getTableInfo(element, slideContainer) {
@@ -1209,7 +1269,14 @@ async function extractSlideData(htmlFilePath, outputPath) {
                         }
                     }
 
-                    if (['table'].includes(tagName)) {
+                    if (['ul', 'ol'].includes(tagName)) {
+                        elementData.listInfo = getListInfo(element, slideElement);
+                        processedTextElements.add(elementId);
+                        getAllDescendants(element).forEach(desc => {
+                            processedTextElements.add(getElementId(desc));
+                        });
+                    }
+                    if (['ul', 'ol', 'table'].includes(tagName)) {
                         elementData.tableInfo = getTableInfo(element, slideElement);
                         processedTextElements.add(elementId);
                         getAllDescendants(element).forEach(desc => {
