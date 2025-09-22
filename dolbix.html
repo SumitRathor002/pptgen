@@ -4000,9 +4000,6 @@
                 setTimeout(paginateSlides, 500);
             });
         });
-      </script>
-
-      <script>
         // Script to modify Chart.js canvas elements with negative data
         document.querySelectorAll('canvas.chartjs-chart').forEach(function(canvas) {
             const dataChart = canvas.getAttribute('data-chart');
@@ -4137,9 +4134,6 @@
                 });
             }, 500);
         });
-      </script>
-      
-      <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Register the datalabels plugin
             Chart.register(ChartDataLabels);
@@ -4350,6 +4344,14 @@
                 }, 200);
             });
         });
-    </script>
+
+        setTimeout(() => {
+            const marker = document.createElement('div');
+            marker.id = 'ready';
+            document.body.appendChild(marker);
+        }, 2000);
+
+      </script>
+
 </body>
 </html>
