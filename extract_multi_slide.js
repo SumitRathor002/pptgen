@@ -20,11 +20,6 @@ export async function extractSlideData(htmlContent) {
         try {
             await page.setViewport({ width: 1920, height: 1080 });
             await page.setContent(data, { waitUntil: 'load', timeout: 15000 });
-            try {
-                await page.waitForSelector('#ready', { timeout: 15000 });
-            } catch (readyError) {
-                throw new Error(`#ready element not found in HTML file. Make sure the HTML contains an element with id="ready" to indicate when the page is fully loaded. Original error: ${readyError.message}`);
-            }
 
             // Wait for all resources (images, fonts, etc.) to load
             await page.waitForFunction(() => {
@@ -33,7 +28,7 @@ export async function extractSlideData(htmlContent) {
                 return Promise.all([fonts, images.every(img => img.complete)]);
             }, { timeout: 15000 }).catch(() => console.log('Some resources may not have loaded'));
 
-            const documentInfo = await page.evaluate(() => {
+            let documentInfo = await page.evaluate(() => {
                 const body = document.body;
                 const html = document.documentElement;
                 const actualWidth = Math.max(
@@ -449,6 +444,110 @@ export async function extractSlideData(htmlContent) {
                             maxCols = Math.max(maxCols, colCount);
                         });
                         tableInfo.columnCount = maxCols;
+                        
+                        // Helper function to extract all nested content within a cell
+                        function extractCellContent(cellElement, cellRect) {
+                            const allElements = Array.from(cellElement.querySelectorAll('*'));
+                            const processedInCell = new Set();
+                            const cellContent = [];
+                            
+                            // Process all elements within the cell
+                            allElements.forEach(el => {
+                                const elId = getElementId(el);
+                                if (processedInCell.has(elId)) return;
+                                
+                                const elTag = el.tagName.toLowerCase();
+                                const elRect = el.getBoundingClientRect();
+                                const elStyles = extractComprehensiveStyles(el);
+                                
+                                const elementData = {
+                                    type: elTag,
+                                    rect: {
+                                        x: Math.round((elRect.left - cellRect.left) * 10) / 10,
+                                        y: Math.round((elRect.top - cellRect.top) * 10) / 10,
+                                        width: Math.round(elRect.width * 10) / 10,
+                                        height: Math.round(elRect.height * 10) / 10
+                                    },
+                                    styles: elStyles,
+                                    className: el.className || '',
+                                    id: el.id || ''
+                                };
+                                
+                                // Handle specific element types
+                                if (elTag === 'img') {
+                                    elementData.mediaInfo = {
+                                        src: el.src || '',
+                                        alt: el.alt || '',
+                                        title: el.title || '',
+                                        naturalWidth: el.naturalWidth || 0,
+                                        naturalHeight: el.naturalHeight || 0
+                                    };
+                                } else if (elTag === 'a') {
+                                    elementData.linkInfo = {
+                                        href: el.href || '',
+                                        target: el.target || '',
+                                        text: el.textContent.trim()
+                                    };
+                                } else if (elTag === 'canvas' && (el.classList.contains('chartjs-chart') || el.closest('.chart'))) {
+                                    let chartConfig = null;
+                                    try {
+                                        const chartData = el.getAttribute('data-chart');
+                                        if (chartData) {
+                                            chartConfig = JSON.parse(chartData);
+                                        }
+                                    } catch(e) {
+                                        console.log('Could not parse chart data for cell canvas', el.id);
+                                        chartConfig = el.getAttribute('data-chart');
+                                    }
+                                    elementData.chartInfo = {
+                                        chartId: el.id || '',
+                                        chartClass: el.className || '',
+                                        chartData: chartConfig,
+                                        width: Math.round(elRect.width),
+                                        height: Math.round(elRect.height),
+                                        attributeWidth: el.width || el.getAttribute('width') || 0,
+                                        attributeHeight: el.height || el.getAttribute('height') || 0
+                                    };
+                                } else if (elTag === 'svg') {
+                                    elementData.svgInfo = {
+                                        svgContent: el.outerHTML,
+                                        viewBox: el.getAttribute('viewBox') || '',
+                                        width: el.getAttribute('width') || elRect.width,
+                                        height: el.getAttribute('height') || elRect.height
+                                    };
+                                } else if (['ul', 'ol'].includes(elTag)) {
+                                    elementData.listInfo = getListInfo(el, slideContainer);
+                                } else if (elTag === 'div' || elTag === 'span' || elTag === 'p') {
+                                    // Check for inline group
+                                    const inlineGroup = getInlineGroup(el, slideContainer, new Set());
+                                    if (inlineGroup) {
+                                        elementData.inlineGroup = inlineGroup;
+                                    } else {
+                                        // Extract direct text content
+                                        const directText = Array.from(el.childNodes)
+                                            .filter(node => node.nodeType === Node.TEXT_NODE)
+                                            .map(node => node.textContent.trim())
+                                            .join(' ')
+                                            .trim();
+                                        if (directText) {
+                                            elementData.text = directText;
+                                        }
+                                    }
+                                } else {
+                                    // For other elements, extract text content
+                                    const text = el.textContent ? el.textContent.trim() : '';
+                                    if (text) {
+                                        elementData.text = text;
+                                    }
+                                }
+                                
+                                cellContent.push(elementData);
+                                processedInCell.add(elId);
+                            });
+                            
+                            return cellContent;
+                        }
+                        
                         tableInfo.rows = rows.map((row, rowIndex) => {
                             const cells = Array.from(row.querySelectorAll('td, th'));
                             const rowRect = row.getBoundingClientRect();
@@ -476,6 +575,10 @@ export async function extractSlideData(htmlContent) {
                                     const cellRect = cell.getBoundingClientRect();
                                     const inlineGroup = getInlineGroup(cell, slideContainer, new Set());
                                     const text = inlineGroup ? '' : getTextContent(cell, new Set());
+                                    
+                                    // Extract all nested HTML content within the cell
+                                    const htmlContent = extractCellContent(cell, cellRect);
+                                    
                                     return {
                                         type: cell.tagName.toLowerCase(),
                                         text: text,
@@ -489,7 +592,9 @@ export async function extractSlideData(htmlContent) {
                                         colSpan: cell.colSpan || 1,
                                         rowSpan: cell.rowSpan || 1,
                                         cellIndex,
-                                        inlineGroup
+                                        inlineGroup,
+                                        htmlContent: htmlContent,
+                                        hasContent: htmlContent.length > 0
                                     };
                                 })
                             };

@@ -42,16 +42,65 @@ def SubElement(parent, tagname, **kwargs):
     return element
 
 
-def _set_cell_border(cell, border_color="000000", border_width='12700'):
+def makeParaBulletPointed(para, bullet_char="•", bullet_font="Arial", bullet_size_pt=None):
+    """Apply bullet formatting to a paragraph.
+    Works for both slide text boxes and table cells.
+    
+    Args:
+        para: Paragraph object to apply bullets to
+        bullet_char: Character to use as bullet (default: •)
+        bullet_font: Font for bullet character (default: Arial)
+        bullet_size_pt: Size of bullet in points (optional, uses text size if None)
+    """
+    try:
+        pPr = para._p.get_or_add_pPr()
+        
+        # Set margins and indentation (in EMUs: 914400 EMUs = 1 inch)
+        # marL: left margin, indent: first line indent (negative for hanging indent)
+        pPr.set('marL', '228600')  # ~0.25 inch left margin
+        pPr.set('indent', '-228600')  # Hanging indent
+        
+        # Remove any existing bullet formatting
+        for child in list(pPr):
+            if 'bu' in child.tag.lower():
+                pPr.remove(child)
+        
+        # Add bullet font with proper namespace
+        buFont = OxmlElement('a:buFont')
+        buFont.set('typeface', bullet_font)
+        buFont.set('charset', '0')
+        pPr.append(buFont)
+        
+        # Add bullet character
+        buChar = OxmlElement('a:buChar')
+        buChar.set('char', bullet_char)
+        pPr.append(buChar)
+        
+        # Optionally set bullet size relative to text
+        if bullet_size_pt:
+            buSzPts = OxmlElement('a:buSzPts')
+            buSzPts.set('val', str(int(bullet_size_pt * 100)))  # Size in 1/100th of a point
+            pPr.append(buSzPts)
+        
+        return True
+    except Exception as e:
+        print(f"Error applying bullet formatting: {e}")
+        return False
+
+
+def _set_cell_border(cell, border_color="808080", border_width='12700'):
+    """Apply uniform border to all 4 sides of a cell - more reliable for identical borders"""
     tc = cell._tc
     tcPr = tc.get_or_add_tcPr()
-    for lines in ['a:lnL','a:lnR','a:lnT','a:lnB']:
-        # Every time before a node is inserted, the nodes with the same tag should be removed.
+    
+    for lines in ['a:lnL', 'a:lnR', 'a:lnT', 'a:lnB']:
+        # Remove existing border elements with same tag
         tag = lines.split(":")[-1]
         for e in tcPr.getchildren():
             if tag in str(e.tag):
                 tcPr.remove(e)
-        # end
+        
+        # Create new border element
         ln = SubElement(tcPr, lines, w=border_width, cap='flat', cmpd='sng', algn='ctr')
         solidFill = SubElement(ln, 'a:solidFill')
         srgbClr = SubElement(solidFill, 'a:srgbClr', val=border_color)
@@ -59,25 +108,31 @@ def _set_cell_border(cell, border_color="000000", border_width='12700'):
         round_ = SubElement(ln, 'a:round')
         headEnd = SubElement(ln, 'a:headEnd', type='none', w='med', len='med')
         tailEnd = SubElement(ln, 'a:tailEnd', type='none', w='med', len='med')
+    
     return cell
 
+
 def set_cell_border_enhanced(cell, side, width_px, color_rgb, style='solid'):
-    """Enhanced cell border setting using the new SubElement approach"""
+    """Apply border to individual side of a cell - used for non-uniform borders"""
     if width_px <= 0 or not color_rgb:
         return
 
     # Convert color to hex string
     try:
-        # RGBColor uses r, g, b properties, not red, green, blue
         color_hex = f'{color_rgb.r:02X}{color_rgb.g:02X}{color_rgb.b:02X}'
     except:
-        color_hex = "000000"
+        color_hex = "808080"  # Default gray
     
     # Convert width to EMU (1pt = 12700 EMU, 1px ≈ 0.75pt)
     width_emu = str(int(width_px * 0.75 * 12700))
     
     # Map side to line element
-    side_tag_map = {'left': 'a:lnL', 'right': 'a:lnR', 'top': 'a:lnT', 'bottom': 'a:lnB'}
+    side_tag_map = {
+        'left': 'a:lnL',
+        'right': 'a:lnR',
+        'top': 'a:lnT',
+        'bottom': 'a:lnB'
+    }
     ln_tag = side_tag_map.get(side.lower())
     if not ln_tag:
         return
@@ -86,9 +141,10 @@ def set_cell_border_enhanced(cell, side, width_px, color_rgb, style='solid'):
     tcPr = tc.get_or_add_tcPr()
     
     # Remove existing border if present
-    existing_border = tcPr.find(qn(ln_tag))
-    if existing_border is not None:
-        tcPr.remove(existing_border)
+    tag = ln_tag.split(":")[-1]
+    for e in tcPr.getchildren():
+        if tag in str(e.tag):
+            tcPr.remove(e)
     
     # Create new border
     ln = SubElement(tcPr, ln_tag, w=width_emu, cap='flat', cmpd='sng', algn='ctr')
@@ -106,7 +162,6 @@ def set_cell_border_enhanced(cell, side, width_px, color_rgb, style='solid'):
     round_ = SubElement(ln, 'a:round')
     headEnd = SubElement(ln, 'a:headEnd', type='none', w='med', len='med')
     tailEnd = SubElement(ln, 'a:tailEnd', type='none', w='med', len='med')
-
 def set_cell_border(cell, side, width_px, color_rgb, style='solid'):
     """Apply a border to a table cell side using enhanced method"""
     set_cell_border_enhanced(cell, side, width_px, color_rgb, style)
@@ -488,7 +543,7 @@ def add_overlay_element(slide, element, slide_width, slide_height):
     """Render overlay elements as shapes using their CSS."""
     x = element.get('x', 0)
     y = element.get('y', 0)
-    width = max(1, element.get('width', 10))
+    width = max(1, element.get('width', 100))
     height = max(1, element.get('height', 10))
     styles = element.get('styles', {})
     element_class = element.get('className', '')
@@ -629,32 +684,19 @@ def add_list_paragraphs(text_frame, list_info, level=0, counters=None, element=N
         default_font_name = item_styles.get('fontFamily', 'Segoe UI').split(',')[0].strip('"\'')
         default_color = parse_color(item_styles.get('color'))
 
-        # Per-item bullet info
-        item_bullet = item.get('bulletInfo') or {}
-        per_bullet_char = None
-        per_bullet_color = None
-        if item_bullet:
-            # bulletInfo.content holds the ::before content (if any)
-            per_bullet_char = item_bullet.get('content') or item_bullet.get('text') or None
-            per_styles = item_bullet.get('styles') or {}
-            per_bullet_color = parse_color(per_styles.get('color') or per_styles.get('backgroundColor') or per_styles.get('borderColor') or '')
-
         if item.get('inlineGroup') and item['inlineGroup'].get('inlineElements'):
             inline_elements = item['inlineGroup']['inlineElements']
             first = True
-            bullet_added = False
             for inline_element in inline_elements:
                 if inline_element.get('type') == 'br':
                     if p is not None:
                         p = text_frame.add_paragraph()
+                        # Apply bullet formatting with proper size
+                        makeParaBulletPointed(p, bullet_char, bullet_font, bullet_size_pt)
                         p.level = level
                         p.space_after = Pt(space_after_pt)
                         p.line_spacing = line_spacing
-                        indent_pt = 18 * level
-                        p.left_indent = Pt(indent_pt)
-                        p.first_line_indent = Pt(-18)
                     first = True
-                    bullet_added = False
                     continue
                 element_text = inline_element.get('text', '')
                 if p is None:
@@ -662,42 +704,12 @@ def add_list_paragraphs(text_frame, list_info, level=0, counters=None, element=N
                         p = text_frame.paragraphs[0]
                     else:
                         p = text_frame.add_paragraph()
+                    # Apply bullet formatting with proper size
+                    makeParaBulletPointed(p, bullet_char, bullet_font, bullet_size_pt)
                     p.level = level
                     p.space_after = Pt(space_after_pt)
                     p.line_spacing = line_spacing
-                    indent_pt = 18 * level
-                    p.left_indent = Pt(indent_pt)
-                    p.first_line_indent = Pt(-18)
-                if not bullet_added:
-                    if is_ordered:
-                        counters[counter_key] += 1
-                        if list_style_type == 'decimal':
-                            marker_str = f"{counters[counter_key]}."
-                        elif list_style_type == 'lower-alpha':
-                            marker_str = f"{chr(96 + counters[counter_key])}."
-                        elif list_style_type == 'upper-alpha':
-                            marker_str = f"{chr(64 + counters[counter_key])}."
-                        else:
-                            marker_str = f"{counters[counter_key]}."
-                        marker_run = p.add_run()
-                        marker_run.text = marker_str + ' '
-                        marker_run.font.name = default_font_name
-                        marker_run.font.size = Pt(default_font_size_pt)
-                        if default_color:
-                            marker_run.font.color.rgb = default_color
-                    else:
-                        bullet_run = p.add_run()
-                        # Prefer per-item bullet char if recorded, else list-level bullet
-                        bullet_text = per_bullet_char if per_bullet_char else bullet_char
-                        bullet_run.text = (bullet_text or bullet_char) + ' '
-                        bullet_run.font.name = bullet_font
-                        bullet_run.font.size = Pt(bullet_size_pt)
-                        # Use per-item color if present, else list-level color
-                        if per_bullet_color:
-                            bullet_run.font.color.rgb = per_bullet_color
-                        elif bullet_color:
-                            bullet_run.font.color.rgb = bullet_color
-                    bullet_added = True
+                
                 if first:
                     element_text = element_text.lstrip()
                 if not element_text.strip():
@@ -723,38 +735,12 @@ def add_list_paragraphs(text_frame, list_info, level=0, counters=None, element=N
                 p = text_frame.paragraphs[0]
             else:
                 p = text_frame.add_paragraph()
+            # Apply bullet formatting with proper size
+            makeParaBulletPointed(p, bullet_char, bullet_font, bullet_size_pt)
             p.level = level
             p.space_after = Pt(space_after_pt)
             p.line_spacing = line_spacing
-            indent_pt = 18 * level
-            p.left_indent = Pt(indent_pt)
-            p.first_line_indent = Pt(-18)
-            if is_ordered:
-                counters[counter_key] += 1
-                if list_style_type == 'decimal':
-                    marker_str = f"{counters[counter_key]}."
-                elif list_style_type == 'lower-alpha':
-                    marker_str = f"{chr(96 + counters[counter_key])}."
-                elif list_style_type == 'upper-alpha':
-                    marker_str = f"{chr(64 + counters[counter_key])}."
-                else:
-                    marker_str = f"{counters[counter_key]}."
-                marker_run = p.add_run()
-                marker_run.text = marker_str + ' '
-                marker_run.font.name = default_font_name
-                marker_run.font.size = Pt(default_font_size_pt)
-                if default_color:
-                    marker_run.font.color.rgb = default_color
-            else:
-                bullet_run = p.add_run()
-                bullet_text = per_bullet_char if per_bullet_char else bullet_char
-                bullet_run.text = (bullet_text or bullet_char) + ' '
-                bullet_run.font.name = bullet_font
-                bullet_run.font.size = Pt(bullet_size_pt)
-                if per_bullet_color:
-                    bullet_run.font.color.rgb = per_bullet_color
-                elif bullet_color:
-                    bullet_run.font.color.rgb = bullet_color
+
             run = p.add_run()
             run.text = item.get('text', '').strip()
             font = run.font
@@ -812,9 +798,382 @@ def add_list_element(slide, element, slide_width, slide_height, parent_has_shado
         print(f"Failed to add list: {e}")
 
 
+def add_link_element(slide, element, slide_width, slide_height, parent_has_shadow=False):
+    """Add a hyperlink element to the slide (handles both direct and linkInfo style)"""
+    # Support both direct and linkInfo structure
+    link_info = element.get('linkInfo', {})
+    link_href = link_info.get('href') or element.get('href', '')
+    link_text = link_info.get('text') or element.get('text', '').strip()
+    if not link_text:
+        return
+
+    x = element.get('x', 0)
+    y = element.get('y', 0)
+    width = max(1, element.get('width', 100))
+    height = max(1, element.get('height', 20))
+    x = max(0, min(x, slide_width - width))
+    y = max(0, min(y, slide_height - height))
+    styles = element.get('styles', {})
+
+    try:
+        textbox = slide.shapes.add_textbox(
+            pixels_to_emu(x), pixels_to_emu(y),
+            pixels_to_emu(width), pixels_to_emu(height)
+        )
+        text_frame = textbox.text_frame
+        text_frame.word_wrap = True
+        text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
+        text_frame.clear()
+        p = text_frame.paragraphs[0]
+        run = p.add_run()
+        run.text = link_text
+        font = run.font
+        font_size_px = safe_float(styles.get('fontSize', '12').replace('px', ''))
+        font.name = styles.get('fontFamily', 'Arial').split(',')[0].strip('"\'')
+        font.size = Pt(max(6, get_font_size_pt(font_size_px)))
+        font.bold = styles.get('fontWeight', '400') in ['bold', '600', '700', '800', '900']
+        font.italic = styles.get('fontStyle', 'normal') == 'italic'
+        link_color = parse_color(styles.get('color', '#0066cc'))
+        if link_color:
+            font.color.rgb = link_color
+        else:
+            font.color.rgb = RGBColor(0, 102, 204)
+        text_decoration = styles.get('textDecoration', 'underline')
+        if 'underline' in text_decoration:
+            font.underline = True
+        if link_href:
+            try:
+                hyperlink = run.hyperlink
+                hyperlink.address = link_href
+            except Exception as hyperlink_error:
+                print(f"Failed to add hyperlink functionality: {hyperlink_error}")
+        text_align = styles.get('textAlign', 'left')
+        if text_align == 'center':
+            p.alignment = PP_ALIGN.CENTER
+        elif text_align == 'right':
+            p.alignment = PP_ALIGN.RIGHT
+        else:
+            p.alignment = PP_ALIGN.LEFT
+        textbox.fill.background()
+        textbox.line.fill.background()
+        textbox.shadow.inherit = False
+    except Exception as e:
+        print(f"Failed to add link element: {e}")
+
+def process_table_cell_content(slide, html_content, cell_x, cell_y, cell_width, cell_height, slide_width, slide_height, is_table_cell=False):
+    """Process HTML content within a table cell and render elements"""
+    if not html_content:
+        return False
+    
+    has_renderable_content = False
+    for content_elem in html_content:
+        elem_type = content_elem.get('type')
+        if elem_type == 'br':
+            continue
+        
+        # Skip links in table cells - they'll be handled as cell text with hyperlinks
+        if elem_type == 'a' and is_table_cell:
+            continue
+            
+        elem_rect = content_elem.get('rect', {})
+        rel_x = elem_rect.get('x', 0)
+        rel_y = elem_rect.get('y', 0)
+        elem_width = max(1, elem_rect.get('width', 10))
+        elem_height = max(1, elem_rect.get('height', 10))
+        abs_x = cell_x + rel_x
+        abs_y = cell_y + rel_y
+        abs_x = max(cell_x, min(abs_x, cell_x + cell_width - elem_width))
+        abs_y = max(cell_y, min(abs_y, cell_y + cell_height - elem_height))
+        abs_x = max(0, min(abs_x, slide_width - elem_width))
+        abs_y = max(0, min(abs_y, slide_height - elem_height))
+        content_elem['x'] = abs_x
+        content_elem['y'] = abs_y
+        content_elem['width'] = elem_width
+        content_elem['height'] = elem_height
+        if elem_type == 'img':
+            add_image_element(slide, content_elem, slide_width, slide_height)
+            has_renderable_content = True
+        elif elem_type == 'canvas' and content_elem.get('chartInfo'):
+            add_chart_element(slide, content_elem, slide_width, slide_height)
+            has_renderable_content = True
+        elif elem_type == 'a' and not is_table_cell:
+            add_link_element(slide, content_elem, slide_width, slide_height)
+            has_renderable_content = True
+        elif elem_type in ['ul', 'ol']:
+            add_list_element(slide, content_elem, slide_width, slide_height)
+            has_renderable_content = True
+        elif elem_type == 'div':
+            if content_elem.get('text', '').strip():
+                add_text_element(slide, content_elem, slide_width, slide_height)
+                has_renderable_content = True
+            elif (has_any_border(content_elem.get('styles', {})) or
+                  parse_color(content_elem.get('styles', {}).get('backgroundColor'))):
+                styles = content_elem.get('styles', {})
+                add_bg_shape(slide, styles, abs_x, abs_y, elem_width, elem_height)
+                has_renderable_content = True
+        elif elem_type == 'span':
+            if content_elem.get('text', '').strip():
+                add_text_element(slide, content_elem, slide_width, slide_height)
+                has_renderable_content = True
+        elif content_elem.get('shapeInfo'):
+            add_shape_element(slide, content_elem, slide_width, slide_height)
+            has_renderable_content = True
+    return has_renderable_content
+
+
 def set_cell_border(cell, side, width_px, color_rgb, style='solid'):
     """Apply a border to a table cell side using enhanced method"""
     set_cell_border_enhanced(cell, side, width_px, color_rgb, style)
+
+def apply_cell_css_borders(cell, cell_styles):
+    """Apply CSS-specified borders to a table cell with uniform border optimization"""
+    
+    # Default border color (gray)
+    DEFAULT_BORDER_COLOR = '808080'
+    
+    # Get border properties for all sides
+    sides = ['Top', 'Right', 'Bottom', 'Left']
+    border_props = {}
+    
+    for side in sides:
+        width_key = f'border{side}Width'
+        style_key = f'border{side}Style'
+        color_key = f'border{side}Color'
+        
+        width_str = cell_styles.get(width_key, '0px')
+        style_val = cell_styles.get(style_key, 'none')
+        color_str = cell_styles.get(color_key, '')
+        
+        # Parse width (convert from px to numeric)
+        width_px = safe_float(width_str.replace('px', '')) if width_str else 0
+        
+        # Use default color instead of parsing CSS color
+        border_color = DEFAULT_BORDER_COLOR
+        
+        border_props[side.lower()] = {
+            'width': width_px,
+            'style': style_val,
+            'color': border_color
+        }
+    
+    # Check if all borders are uniform (same width, style, and color)
+    first_side = border_props['top']
+    is_uniform = all(
+        border_props[side]['width'] == first_side['width'] and
+        border_props[side]['style'] == first_side['style'] and
+        border_props[side]['color'] == first_side['color']
+        for side in ['top', 'right', 'bottom', 'left']
+    )
+    
+    # Check if border should be applied (width > 0 and style not 'none')
+    has_border = (
+        first_side['width'] > 0 and 
+        first_side['style'] not in ['none', 'hidden']
+    )
+    
+    if is_uniform and has_border:
+        # Use optimized uniform border function
+        width_px = first_side['width']
+        border_color = first_side['color']
+        
+        # Convert width to EMU (1pt = 12700 EMU, 1px ≈ 0.75pt)
+        width_emu = str(int(width_px * 0.75 * 12700))
+        
+        _set_cell_border(cell, border_color=border_color, border_width=width_emu)
+    else:
+        # Apply borders individually for non-uniform cases
+        side_names = ['top', 'right', 'bottom', 'left']
+        
+        for side_name in side_names:
+            props = border_props[side_name]
+            width_px = props['width']
+            style_val = props['style']
+            border_color = props['color']
+            
+            # Apply border if width > 0 and style is not 'none'
+            if width_px > 0 and style_val not in ['none', 'hidden']:
+                # Convert hex string to RGBColor for consistency
+                try:
+                    color_int = int(border_color, 16)
+                    r = (color_int >> 16) & 0xFF
+                    g = (color_int >> 8) & 0xFF
+                    b = color_int & 0xFF
+                    color_rgb = RGBColor(r, g, b)
+                    set_cell_border_enhanced(cell, side_name, width_px, color_rgb, style_val)
+                except:
+                    # Fallback if color conversion fails
+                    pass
+
+
+def add_table_content(slide, content_data, content_type, cell_x, cell_y, cell_width, cell_height, slide_width, slide_height):
+    """Add content (images, links, or charts) within a table cell with proper positioning"""
+    try:
+        if content_type == 'table_image':
+            img_src = content_data.get('src', '')
+            if not img_src:
+                return
+            
+            # Calculate absolute position within the slide
+            img_rect = content_data.get('rect', {})
+            rel_x = img_rect.get('x', 0)
+            rel_y = img_rect.get('y', 0)
+            img_width = max(1, img_rect.get('width', 20))
+            img_height = max(1, img_rect.get('height', 20))
+            
+            # Center image vertically in cell
+            vertical_center_offset = (cell_height - img_height) / 2
+            
+            # Position relative to cell with vertical centering
+            abs_x = cell_x + rel_x
+            abs_y = cell_y + vertical_center_offset
+            
+            # Ensure image stays within cell bounds
+            abs_x = max(cell_x, min(abs_x, cell_x + cell_width - img_width))
+            abs_y = max(cell_y, min(abs_y, cell_y + cell_height - img_height))
+            
+            # Ensure image stays within slide bounds
+            abs_x = max(0, min(abs_x, slide_width - img_width))
+            abs_y = max(0, min(abs_y, slide_height - img_height))
+            
+            styles = content_data.get('styles', {})
+            natural_width = content_data.get('naturalWidth', img_width)
+            natural_height = content_data.get('naturalHeight', img_height)
+            
+            border_radius_str = styles.get('borderRadius', '0px')
+            radius_ratio = parse_border_radius(border_radius_str, img_width, img_height)
+            radius_display = radius_ratio * min(img_width, img_height)
+            has_radius = radius_display > 0
+            
+            temp_path = None
+            if img_src.startswith('data:'):
+                _, data = img_src.split(',', 1)
+                img_data_bytes = base64.b64decode(data)
+                temp_path = 'temp_table_image.png'
+                with open(temp_path, 'wb') as f:
+                    f.write(img_data_bytes)
+            elif img_src.startswith('http'):
+                response = requests.get(img_src, timeout=10)
+                if response.status_code == 200:
+                    temp_path = 'temp_table_image.png'
+                    with open(temp_path, 'wb') as f:
+                        f.write(response.content)
+                else:
+                    print(f"Failed to download table image: {img_src}")
+                    return
+            else:
+                if os.path.exists(img_src):
+                    temp_path = img_src
+                else:
+                    print(f"Table image file not found: {img_src}")
+                    return
+            
+            # Verify image before adding
+            with Image.open(temp_path) as img:
+                img.verify()
+            
+            image_to_add = temp_path
+            if has_radius:
+                scale_x = natural_width / img_width if img_width > 0 else 1
+                radius_natural = int(radius_display * scale_x)
+                temp_rounded = 'temp_table_rounded.png'
+                make_rounded_image(temp_path, temp_rounded, radius_natural)
+                image_to_add = temp_rounded
+            
+            # Add image with calculated position
+            picture = slide.shapes.add_picture(
+                image_to_add,
+                pixels_to_emu(abs_x), pixels_to_emu(abs_y),
+                pixels_to_emu(img_width), pixels_to_emu(img_height)
+            )
+            picture.shadow.inherit = False
+            
+            # Handle borders if present
+            has_border = is_uniform_border(styles)
+            if has_border:
+                border_width = safe_float(styles.get('borderTopWidth', '0px'))
+                border_color = parse_color(styles.get('borderTopColor'))
+                if border_color and border_width > 0:
+                    shape_type = MSO_SHAPE.ROUNDED_RECTANGLE if has_radius else MSO_SHAPE.RECTANGLE
+                    border_shape = slide.shapes.add_shape(
+                        shape_type,
+                        pixels_to_emu(abs_x), pixels_to_emu(abs_y),
+                        pixels_to_emu(img_width), pixels_to_emu(img_height)
+                    )
+                    if has_radius:
+                        border_shape.adjustments[0] = radius_ratio
+                    border_shape.fill.background()
+                    border_shape.line.width = Pt(border_width)
+                    border_shape.line.color.rgb = border_color
+                    border_shape.shadow.inherit = False
+                    
+                    # Move border shape behind picture
+                    sp = border_shape._sp
+                    parent = sp.getparent()
+                    parent.remove(sp)
+                    pic_sp = picture._sp
+                    idx = list(parent).index(pic_sp)
+                    parent.insert(idx, sp)
+            
+            # Clean up temporary files
+            if image_to_add != temp_path and os.path.exists(image_to_add):
+                os.remove(image_to_add)
+            if temp_path != img_src and os.path.exists(temp_path):
+                os.remove(temp_path)
+
+        elif content_type == 'table_link':
+            # For links, we'll return the link data to be processed within the cell text
+            # This function will now just return the link data for cell processing
+            return {
+                'href': content_data.get('href', ''),
+                'text': content_data.get('text', '').strip(),
+                'styles': content_data.get('styles', {})
+            }
+        elif content_type == 'table_chart':
+            chart_data = content_data.get('chartData')
+            if not chart_data:
+                return
+            
+            # Calculate absolute position within the slide
+            chart_rect = content_data.get('rect', {})
+            rel_x = chart_rect.get('x', 0)
+            rel_y = chart_rect.get('y', 0)
+            chart_width = max(10, chart_rect.get('width', 200))
+            chart_height = max(10, chart_rect.get('height', 150))
+            
+            # Center chart vertically in cell
+            vertical_center_offset = (cell_height - chart_height) / 2
+            
+            # Position relative to cell with vertical centering
+            abs_x = cell_x + rel_x
+            abs_y = cell_y + vertical_center_offset
+            
+            # Ensure chart stays within cell bounds
+            abs_x = max(cell_x, min(abs_x, cell_x + cell_width - chart_width))
+            abs_y = max(cell_y, min(abs_y, cell_y + cell_height - chart_height))
+            
+            # Ensure chart stays within slide bounds
+            abs_x = max(0, min(abs_x, slide_width - chart_width))
+            abs_y = max(0, min(abs_y, slide_height - chart_height))
+            
+            # Create a temporary element structure for the chart
+            chart_element = {
+                'chartInfo': {
+                    'chartData': chart_data,
+                    'width': chart_width,
+                    'height': chart_height
+                },
+                'x': abs_x,
+                'y': abs_y,
+                'width': chart_width,
+                'height': chart_height
+            }
+            
+            # Use the existing add_chart_element function
+            add_chart_element(slide, chart_element, slide_width, slide_height)
+                    
+    except Exception as e:
+        print(f"Failed to add table content ({content_type}): {e}")
+        return None
 
 def add_table_element(slide, element, slide_width, slide_height, parent_has_shadow=False):
     table_info = element.get('tableInfo', {})
@@ -892,7 +1251,7 @@ def add_table_element(slide, element, slide_width, slide_height, parent_has_shad
                         if idx < cols:
                             table.columns[idx].width = pixels_to_emu(max(8, per_remaining))
 
-        # --- row heights with consistent sizing ---
+        # --- row heights with consistent sizing and content height consideration ---
         for row_data in table_info['rows']:
             r_index = row_data['index']
             if r_index >= rows:
@@ -914,7 +1273,21 @@ def add_table_element(slide, element, slide_width, slide_height, parent_has_shad
             # Get rendered height from rect
             rendered_height = row_data.get('rect', {}).get('height', 25)
             
-            # Choose the most appropriate height
+            # Calculate maximum content height in this row by checking htmlContent
+            max_content_height = 0
+            for cell_data in row_data.get('cells', []):
+                html_content = cell_data.get('htmlContent', [])
+                for content_elem in html_content:
+                    if content_elem.get('type') == 'br':
+                        continue
+                    elem_rect = content_elem.get('rect', {})
+                    elem_height = elem_rect.get('height', 0)
+                    # Add relative y position to get total height needed
+                    total_height = elem_rect.get('y', 0) + elem_height
+                    if total_height > max_content_height:
+                        max_content_height = total_height
+            
+            # Choose the most appropriate height considering content
             if specified_height:
                 # Use CSS specified height as primary for consistency with HTML
                 final_height = specified_height
@@ -922,51 +1295,102 @@ def add_table_element(slide, element, slide_width, slide_height, parent_has_shad
                 # Fall back to rendered height
                 final_height = rendered_height
             
-            final_height = max(20, min(final_height, 100))
+            # If there are nested elements taller than the current height, adjust
+            if max_content_height > 0:
+                # Add padding for content (8px top + 8px bottom = 16px total)
+                required_height_for_content = max_content_height + 16
+                final_height = max(final_height, required_height_for_content)
+            
+            final_height = max(20, min(final_height, 300))  # Increased max height for charts
             
             table.rows[r_index].height = pixels_to_emu(final_height)
 
-        # Apply default borders to ALL table cells
-        default_border_color = "808080"  # Gray color
-        default_border_width = '9525'    # 0.75pt in EMU
+        # Create a simple grid to track occupied cells for rowspan
+        occupied_cells = set()
         
-        # Apply borders to every single cell
-        for r in range(rows):
-            for c in range(cols):
-                try:
-                    pptx_cell = table.cell(r, c)
-                    _set_cell_border(pptx_cell, border_color=default_border_color, border_width=default_border_width)
-                except Exception as e:
-                    print(f"Error applying border to cell ({r}, {c}): {e}")
-
-        # Populate & style cells with enhanced empty cell handling
+        # Track elements to add after table creation
+        table_cell_html_content = []
+        
+        # Populate & style cells
         for row_data in table_info['rows']:
             row_index = row_data['index']
             if row_index >= rows:
                 continue
-            row_bg_color = parse_color(row_data.get('styles', {}).get('backgroundColor'))
+                
+            current_col = 0
             for cell_data in row_data.get('cells', []):
-                cell_index = cell_data.get('cellIndex')
-                if cell_index is None or cell_index >= cols:
-                    continue
-                pptx_cell = table.cell(row_index, cell_index)
-
-                # Merge spans
+                # Skip occupied columns in this row
+                while current_col < cols and (row_index, current_col) in occupied_cells:
+                    current_col += 1
+                
+                if current_col >= cols:
+                    break
+                    
                 col_span = max(1, cell_data.get('colSpan', 1))
                 row_span = max(1, cell_data.get('rowSpan', 1))
+                
+                # Mark all cells that will be occupied by this cell's rowspan/colspan
+                for r in range(row_index, min(rows, row_index + row_span)):
+                    for c in range(current_col, min(cols, current_col + col_span)):
+                        occupied_cells.add((r, c))
+                
+                pptx_cell = table.cell(row_index, current_col)
+
+                # Handle merges with rowspan and colspan
                 if col_span > 1 or row_span > 1:
                     try:
                         end_row = min(rows - 1, row_index + row_span - 1)
-                        end_col = min(cols - 1, cell_index + col_span - 1)
+                        end_col = min(cols - 1, current_col + col_span - 1)
+                        
+                        # Perform the merge
                         pptx_cell = pptx_cell.merge(table.cell(end_row, end_col))
-                        # Reapply borders after merge
-                        _set_cell_border(pptx_cell, border_color=default_border_color, border_width=default_border_width)
                     except Exception as e:
-                        print(f"Error merging cell ({row_index}, {cell_index}): {e}")
+                        print(f"Error merging cell ({row_index}, {current_col}) with span {row_span}x{col_span}: {e}")
+
+                # Apply CSS-specified borders to this cell
+                cell_styles = cell_data.get('styles', {})
+                apply_cell_css_borders(pptx_cell, cell_styles)
+
+                # Calculate absolute cell position for nested elements
+                cell_rect = cell_data.get('rect', {})
+                abs_cell_x = x + (cell_rect.get('x', 0) - rect.get('x', 0))
+                abs_cell_y = y + (cell_rect.get('y', 0) - rect.get('y', 0))
+                cell_width = cell_rect.get('width', 50)
+                cell_height = cell_rect.get('height', 20)
+                
+                # Check if cell has HTML content
+                html_content = cell_data.get('htmlContent', [])
+                has_html_content = bool(html_content)
+                
+                # Check if cell has link element
+                has_link = False
+                link_element = None
+                if has_html_content:
+                    for content_elem in html_content:
+                        if content_elem.get('type') == 'a':
+                            has_link = True
+                            link_element = content_elem
+                            break
+                
+                # Store non-link HTML content for processing after table creation
+                if has_html_content:
+                    # Filter out link elements - they'll be handled as cell text
+                    non_link_content = [elem for elem in html_content if elem.get('type') != 'a']
+                    if non_link_content:
+                        table_cell_html_content.append({
+                            'html_content': non_link_content,
+                            'cell_x': abs_cell_x,
+                            'cell_y': abs_cell_y,
+                            'cell_width': cell_width,
+                            'cell_height': cell_height
+                        })
+
+                if pptx_cell is None:
+                    print(f"Warning: pptx_cell is None for row {row_index}, cell {current_col}")
+                    continue
 
                 text_frame = pptx_cell.text_frame
                 text_frame.word_wrap = True
-                cell_styles = cell_data.get('styles', {})
 
                 vertical_align = (cell_styles.get('verticalAlign') or '').strip().lower()
                 if vertical_align == 'top':
@@ -974,9 +1398,8 @@ def add_table_element(slide, element, slide_width, slide_height, parent_has_shad
                 elif vertical_align == 'bottom':
                     pptx_cell.vertical_anchor = MSO_ANCHOR.BOTTOM
                 else:
-                    pptx_cell.vertical_anchor = MSO_ANCHOR.MIDDLE  # default
+                    pptx_cell.vertical_anchor = MSO_ANCHOR.MIDDLE
 
-                # Enhanced padding with consistent values
                 padding_left = safe_float(cell_styles.get('paddingLeft', '6px'))
                 padding_right = safe_float(cell_styles.get('paddingRight', '6px'))
                 padding_top = safe_float(cell_styles.get('paddingTop', '4px'))
@@ -986,7 +1409,7 @@ def add_table_element(slide, element, slide_width, slide_height, parent_has_shad
                 text_frame.margin_top = pixels_to_emu(padding_top)
                 text_frame.margin_bottom = pixels_to_emu(padding_bottom)
 
-                # Background
+                row_bg_color = parse_color(row_data.get('styles', {}).get('backgroundColor'))
                 bg_color_cell = parse_color(cell_styles.get('backgroundColor'))
                 if bg_color_cell:
                     pptx_cell.fill.solid()
@@ -997,86 +1420,135 @@ def add_table_element(slide, element, slide_width, slide_height, parent_has_shad
                 else:
                     pptx_cell.fill.background()
 
-                # Enhanced text content handling for empty cells
-                text_frame.clear()
-                p = text_frame.paragraphs[0]
-                text_align = cell_styles.get('textAlign', 'left')
-                p.alignment = PP_ALIGN.CENTER if text_align == 'center' else PP_ALIGN.RIGHT if text_align == 'right' else PP_ALIGN.LEFT
-
-                # Get cell text content
-                cell_text = ""
-                if cell_data.get('inlineGroup') and cell_data['inlineGroup'].get('inlineElements'):
-                    # Handle inline formatted content
-                    first = True
-                    for inline_element in cell_data['inlineGroup']['inlineElements']:
-                        if inline_element.get('type') == 'br':
-                            p = text_frame.add_paragraph()
-                            p.alignment = PP_ALIGN.CENTER if text_align == 'center' else PP_ALIGN.RIGHT if text_align == 'right' else PP_ALIGN.LEFT
-                            first = True
-                            continue
-                        t = inline_element.get('text', '')
-                        if first:
-                            t = t.lstrip()
-                        if not t.strip():
-                            continue
-                        first = False
+                # Handle link as cell text with hyperlink
+                if has_link and link_element:
+                    link_info = link_element.get('linkInfo', {})
+                    link_href = link_info.get('href') or link_element.get('href', '')
+                    link_text = link_info.get('text') or link_element.get('text', '').strip()
+                    link_styles = link_element.get('styles', {})
+                    
+                    if link_text:
+                        text_frame.clear()
+                        p = text_frame.paragraphs[0]
+                        text_align = cell_styles.get('textAlign', 'left')
+                        p.alignment = PP_ALIGN.CENTER if text_align == 'center' else PP_ALIGN.RIGHT if text_align == 'right' else PP_ALIGN.LEFT
+                        
                         run = p.add_run()
-                        run.text = t
-                        cell_text += t
-                        inline_styles = inline_element.get('styles', {})
+                        run.text = link_text
+                        
+                        # Apply link formatting
                         font = run.font
-                        fs_px = safe_float(inline_styles.get('fontSize', '16'))
-                        font.size = Pt(max(6, get_font_size_pt(fs_px)))
-                        font.name = inline_styles.get('fontFamily', 'Arial').split(',')[0].strip('"\'')
-                        font.bold = inline_styles.get('fontWeight', '400') in ['bold', '600', '700', '800', '900']
-                        font.italic = inline_styles.get('fontStyle', 'normal') == 'italic'
-                        clr = parse_color(inline_styles.get('color') or cell_styles.get('color'))
-                        if clr:
-                            font.color.rgb = clr
-                    # Trim trailing spaces
-                    if text_frame.paragraphs and text_frame.paragraphs[-1].runs:
-                        last_run = text_frame.paragraphs[-1].runs[-1]
-                        last_run.text = last_run.text.rstrip()
+                        font_size_px = safe_float(link_styles.get('fontSize', '12').replace('px', ''))
+                        font.size = Pt(max(6, get_font_size_pt(font_size_px)))
+                        font.name = link_styles.get('fontFamily', 'Arial').split(',')[0].strip('"\'')
+                        font.bold = link_styles.get('fontWeight', '400') in ['bold', '600', '700', '800', '900']
+                        font.italic = link_styles.get('fontStyle', 'normal') == 'italic'
+                        
+                        # Apply link color
+                        link_color = parse_color(link_styles.get('color', '#0066cc'))
+                        if link_color:
+                            font.color.rgb = link_color
+                        else:
+                            font.color.rgb = RGBColor(0, 102, 204)
+                        
+                        # Add underline
+                        text_decoration = link_styles.get('textDecoration', 'underline')
+                        if 'underline' in text_decoration:
+                            font.underline = True
+                        
+                        # Add hyperlink functionality
+                        if link_href:
+                            try:
+                                hyperlink = run.hyperlink
+                                hyperlink.address = link_href
+                            except Exception as hyperlink_error:
+                                print(f"Failed to add hyperlink to table cell: {hyperlink_error}")
+                        
+                        p.space_before = Pt(0)
+                        p.space_after = Pt(0)
+                        p.line_spacing = 1.0
                 else:
-                    # Handle plain text content
+                    # Handle regular cell text (no link)
                     cell_text = (cell_data.get('text') or '').strip()
-                
-                # Enhanced empty cell handling
-                if not cell_text:
-                    # For empty cells, add a non-breaking space to maintain consistent height
-                    run = p.add_run()
-                    run.text = "\u00A0"  # Non-breaking space
-                    font = run.font
-                    fs_px = safe_float(cell_styles.get('fontSize', '10'))
-                    font.size = Pt(max(6, get_font_size_pt(fs_px)))
-                    font.name = cell_styles.get('fontFamily', 'Arial').split(',')[0].strip('"\'')
-                    # Make the non-breaking space transparent or same color as background
-                    clr = parse_color(cell_styles.get('color', '#000000'))
-                    if clr:
-                        font.color.rgb = clr
-                else:
-                    # Add the actual content
-                    run = p.add_run()
-                    run.text = cell_text
-                    font = run.font
-                    fs_px = safe_float(cell_styles.get('fontSize', '10'))
-                    font.size = Pt(max(6, get_font_size_pt(fs_px)))
-                    font.name = cell_styles.get('fontFamily', 'Arial').split(',')[0].strip('"\'')
-                    font.bold = cell_styles.get('fontWeight', '400') in ['bold', '600', '700', '800', '900']
-                    font.italic = cell_styles.get('fontStyle', 'normal') == 'italic'
-                    clr = parse_color(cell_styles.get('color'))
-                    if clr:
-                        font.color.rgb = clr
+                    has_only_br = has_html_content and all(
+                        elem.get('type') == 'br' for elem in html_content
+                    )
+                    
+                    if (not has_html_content or has_only_br) and cell_text:
+                        text_frame.clear()
+                        p = text_frame.paragraphs[0]
+                        text_align = cell_styles.get('textAlign', 'left')
+                        p.alignment = PP_ALIGN.CENTER if text_align == 'center' else PP_ALIGN.RIGHT if text_align == 'right' else PP_ALIGN.LEFT
 
-                # Ensure consistent paragraph spacing
-                p.space_before = Pt(0)
-                p.space_after = Pt(0)
-                p.line_spacing = 1.0
+                        if cell_data.get('inlineGroup') and cell_data['inlineGroup'].get('inlineElements'):
+                            first = True
+                            for inline_element in cell_data['inlineGroup']['inlineElements']:
+                                if inline_element.get('type') == 'br':
+                                    p = text_frame.add_paragraph()
+                                    p.alignment = PP_ALIGN.CENTER if text_align == 'center' else PP_ALIGN.RIGHT if text_align == 'right' else PP_ALIGN.LEFT
+                                    first = True
+                                    continue
+                                t = inline_element.get('text', '')
+                                if first:
+                                    t = t.lstrip()
+                                if not t.strip():
+                                    continue
+                                first = False
+                                run = p.add_run()
+                                run.text = t
+                                inline_styles = inline_element.get('styles', {})
+                                font = run.font
+                                fs_px = safe_float(inline_styles.get('fontSize', '16'))
+                                font.size = Pt(max(6, get_font_size_pt(fs_px)))
+                                font.name = inline_styles.get('fontFamily', 'Arial').split(',')[0].strip('"\'')
+                                font.bold = inline_styles.get('fontWeight', '400') in ['bold', '600', '700', '800', '900']
+                                font.italic = inline_styles.get('fontStyle', 'normal') == 'italic'
+                                clr = parse_color(inline_styles.get('color') or cell_styles.get('color'))
+                                if clr:
+                                    font.color.rgb = clr
+                            if text_frame.paragraphs and text_frame.paragraphs[-1].runs:
+                                last_run = text_frame.paragraphs[-1].runs[-1]
+                                last_run.text = last_run.text.rstrip()
+                        else:
+                            run = p.add_run()
+                            run.text = cell_text
+                            font = run.font
+                            fs_px = safe_float(cell_styles.get('fontSize', '10'))
+                            font.size = Pt(max(6, get_font_size_pt(fs_px)))
+                            font.name = cell_styles.get('fontFamily', 'Arial').split(',')[0].strip('"\'')
+                            font.bold = cell_styles.get('fontWeight', '400') in ['bold', '600', '700', '800', '900']
+                            font.italic = cell_styles.get('fontStyle', 'normal') == 'italic'
+                            clr = parse_color(cell_styles.get('color'))
+                            if clr:
+                                font.color.rgb = clr
+
+                        p.space_before = Pt(0)
+                        p.space_after = Pt(0)
+                        p.line_spacing = 1.0
+                    else:
+                        text_frame.clear()
+                
+                current_col += col_span
+        
+        # Process non-link HTML content for all cells after table is created
+        for content_data in table_cell_html_content:
+            process_table_cell_content(
+                slide,
+                content_data['html_content'],
+                content_data['cell_x'],
+                content_data['cell_y'],
+                content_data['cell_width'],
+                content_data['cell_height'],
+                slide_width,
+                slide_height,
+                is_table_cell=True
+            )
         
         return table_shape
     except Exception as e:
         print(f"Failed to add table: {e}")
         return None
+
 
 def add_image_element(slide, element, slide_width, slide_height, parent_has_shadow=False):
     media_info = element.get('mediaInfo', {})
@@ -1217,7 +1689,7 @@ def add_text_element(slide, element, slide_width, slide_height, parent_has_shado
         
         # For headings with ::before pseudo elements, adjust position
         if padding_left > 0:
-            x += max(0, padding_left - 8)  # Smaller offset to prevent too much gap
+            x += max(0, padding_left - 8)   # Smaller offset to prevent too much gap
             width = max(1, width - padding_left + 8)  # Adjust width accordingly
     
     box_shadow = styles.get('boxShadow', 'none')
@@ -1227,6 +1699,7 @@ def add_text_element(slide, element, slide_width, slide_height, parent_has_shado
     border_radius = parse_border_radius(border_radius_str, width, height)
     has_radius = border_radius > 0
     has_border = is_uniform_border(styles)
+   
     has_any_border_sides = has_any_border(styles)
    
     try:
@@ -1331,6 +1804,7 @@ def parse_linear_gradient(gradient_str, total_width):
         for i in range(len(stops) - 1):
             color_text, start_pct = stops[i]
             _, end_pct = stops[i + 1]
+           
             start_pct = float(start_pct)
             end_pct = float(end_pct)
             if end_pct <= start_pct:
@@ -1373,6 +1847,7 @@ def add_pseudo_element(slide, element, slide_width, slide_height):
                         shape = slide.shapes.add_shape(
                             MSO_SHAPE.RECTANGLE,
                             pixels_to_emu(x + seg_x),
+                           
                             pixels_to_emu(y),
                             pixels_to_emu(seg_w),
                             pixels_to_emu(height)
@@ -1419,7 +1894,7 @@ def add_pseudo_element(slide, element, slide_width, slide_height):
             font_bullet.name = styles.get('fontFamily', 'Meiryo').split(',')[0].strip('"\'')
             font_bullet.size = Pt(max(6, get_font_size_pt(font_size_px)))
             font_bullet.bold = styles.get('fontWeight', '400') in ['bold', '700', '800', '900']
-            font_bullet.italic = styles.get('fontStyle') == 'italic'
+            font_bullet.italic = styles.get('fontStyle', 'italic')
             color = parse_color(styles.get('color', 'black'))
             if color:
                 font_bullet.color.rgb = color
@@ -1470,7 +1945,7 @@ def add_pseudo_element(slide, element, slide_width, slide_height):
             font.name = styles.get('fontFamily', 'Meiryo').split(',')[0].strip('"\'')
             font.size = Pt(max(6, get_font_size_pt(font_size_px)))
             font.bold = styles.get('fontWeight', '400') in ['bold', '700', '800', '900']
-            font.italic = styles.get('fontStyle') == 'italic'
+            font.italic = styles.get('fontStyle', 'italic')
             color = parse_color(styles.get('color', 'black'))
             if color:
                 font.color.rgb = color
@@ -1603,6 +2078,7 @@ def add_chart_element(slide, element, slide_width, slide_height):
         
         # Check if all data values are negative for bar charts
         all_negative = False
+        has_negative_values = False
         if chart_type_str == 'bar':
             datasets = chart_config.get('data', {}).get('datasets', [])
             if datasets:
@@ -1611,12 +2087,16 @@ def add_chart_element(slide, element, slide_width, slide_height):
                     data_values = dataset.get('data', [])
                     all_values.extend([val for val in data_values if isinstance(val, (int, float))])
                 
-                if all_values and all(val < 0 for val in all_values):
-                    all_negative = True
+                if all_values:
+                    has_negative_values = any(val < 0 for val in all_values)
+                    all_negative = all(val < 0 for val in all_values)
         
         # Map chart types with better handling
         if chart_type_str == 'pie':
             chart_type = XL_CHART_TYPE.PIE
+        elif chart_type_str == 'doughnut':
+            # Doughnut charts in PowerPoint are rendered as pie charts with a hole size
+            chart_type = XL_CHART_TYPE.DOUGHNUT
         elif chart_type_str == 'line':
             datasets = chart_config.get('data', {}).get('datasets', [])
             has_fill = any(dataset.get('fill') is not None and dataset.get('fill') != False for dataset in datasets)
@@ -1645,6 +2125,17 @@ def add_chart_element(slide, element, slide_width, slide_height):
             else:
                 processed_labels.append(str(label))
         
+        # Reverse category order for horizontal bar charts to match HTML rendering
+        is_horizontal_bar = chart_type == XL_CHART_TYPE.BAR_CLUSTERED
+        if is_horizontal_bar:
+            processed_labels = list(reversed(processed_labels))
+        
+        # For doughnut/pie charts without labels, use empty strings for categories
+        if chart_type_str in ['pie', 'doughnut'] and not processed_labels:
+            datasets = data.get('datasets', [])
+            if datasets and datasets[0].get('data'):
+                processed_labels = [''] * len(datasets[0]['data'])
+        
         chart_data.categories = processed_labels
         
         # Enhanced dataset handling to prevent label display issues
@@ -1653,6 +2144,10 @@ def add_chart_element(slide, element, slide_width, slide_height):
             # Get the series label but don't use it if it should be hidden
             series_label = dataset.get('label', f'Series {i+1}')
             series_data = dataset.get('data', [])
+            
+            # Reverse data order for horizontal bar charts to match category order
+            if is_horizontal_bar:
+                series_data = list(reversed(series_data))
             
             # For single series charts where legend is explicitly disabled, use empty label
             plugins = options.get('plugins', {})
@@ -1674,6 +2169,26 @@ def add_chart_element(slide, element, slide_width, slide_height):
             chart_data
         )
         chart = graphic_frame.chart
+
+        # Configure doughnut hole size (cutout percentage)
+        if chart_type_str == 'doughnut':
+            try:
+                cutout_str = options.get('cutout', '50%')
+                # Parse cutout percentage (e.g., "70%" -> 70)
+                if isinstance(cutout_str, str) and cutout_str.endswith('%'):
+                    cutout_pct = int(cutout_str.rstrip('%'))
+                else:
+                    cutout_pct = int(cutout_str)
+                
+                # PowerPoint uses hole size (0-90), where Chart.js uses cutout percentage
+                # Convert: hole_size = cutout_pct (clamped to 10-90 for safety)
+                hole_size = max(10, min(90, cutout_pct))
+                
+                # Access the doughnut chart's hole size property
+                plot = chart.plots[0]
+                plot.hole_size = hole_size
+            except Exception as e:
+                print(f"Error setting doughnut hole size: {e}")
 
         # Enhanced Legend handling with accurate font configuration
         plugins = options.get('plugins', {})
@@ -1865,12 +2380,20 @@ def add_chart_element(slide, element, slide_width, slide_height):
             scales = options.get('scales', {})
             is_horizontal_bar = chart_type == XL_CHART_TYPE.BAR_CLUSTERED
             
-            # Get axis configurations
-            category_scale = scales.get('y' if is_horizontal_bar else 'x', {})
-            value_scale = scales.get('x' if is_horizontal_bar else 'y', {})
-            category_axis = chart.value_axis if is_horizontal_bar else chart.category_axis
-            value_axis = chart.category_axis if is_horizontal_bar else chart.value_axis
+            # CORRECTED: For horizontal bars, x is value axis and y is category axis
+            # For vertical charts, x is category axis and y is value axis
+            if is_horizontal_bar:
+                value_scale = scales.get('x', {})
+                category_scale = scales.get('y', {})
+                value_axis = chart.value_axis
+                category_axis = chart.category_axis
+            else:
+                value_scale = scales.get('y', {})
+                category_scale = scales.get('x', {})
+                value_axis = chart.value_axis
+                category_axis = chart.category_axis
 
+            # Configure value axis
             try:
                 # Handle special case for all-negative bar charts
                 if all_negative and chart_type_str == 'bar':
@@ -1907,99 +2430,95 @@ def add_chart_element(slide, element, slide_width, slide_height):
                 step_size = ticks.get('stepSize')
                 if step_size:
                     value_axis.major_unit = float(step_size)
-
-                # Remove tick marks for bar charts
-                if chart_type_str == 'bar':
+                
+                # Handle value axis visibility and styling
+                if value_scale.get('display', True) == False:
+                    value_axis.visible = False
+                    value_axis.has_major_gridlines = False
+                else:
+                    # Configure tick labels if axis is visible
+                    if value_axis.tick_labels:
+                        tick_font = ticks.get('font', {})
+                        if tick_font.get('size'):
+                            # Apply font scaling factor to value axis tick labels
+                            original_tick_size = tick_font['size']
+                            scaled_tick_size = max(6, int(original_tick_size * FONT_SCALE_FACTOR))
+                            value_axis.tick_labels.font.size = Pt(scaled_tick_size)
+                        
+                        # Handle font family for axis labels
+                        if tick_font.get('family'):
+                            font_family = tick_font['family'].strip()
+                            if font_family in ['Meiryo UI', 'Meiryo']:
+                                value_axis.tick_labels.font.name = 'Arial'
+                            else:
+                                value_axis.tick_labels.font.name = font_family
+                        
+                        tick_color = parse_color(ticks.get('color', '#888888'))
+                        if tick_color:
+                            value_axis.tick_labels.font.color.rgb = tick_color
+                
+                # Hide axis line if border is not displayed
+                if value_scale.get('border', {}).get('display') is False:
+                    value_axis.format.line.fill.background()
+                
+                # Remove tick marks for both horizontal and vertical bar charts
+                if chart_type in [XL_CHART_TYPE.BAR_CLUSTERED, XL_CHART_TYPE.COLUMN_CLUSTERED]:
                     try:
-                        # Remove major and minor tick marks using XML manipulation
                         axis_element = value_axis._element
                         major_tick = axis_element.find(qn('c:majorTickMark'))
                         if major_tick is not None:
                             major_tick.set('val', 'none')
                         else:
-                            major_tick_elem = SubElement(axis_element, 'c:majorTickMark', val='none')
+                            SubElement(axis_element, 'c:majorTickMark', val='none')
                         
                         minor_tick = axis_element.find(qn('c:minorTickMark'))
                         if minor_tick is not None:
                             minor_tick.set('val', 'none')
                         else:
-                            minor_tick_elem = SubElement(axis_element, 'c:minorTickMark', val='none')
+                            SubElement(axis_element, 'c:minorTickMark', val='none')
                     except Exception as tick_error:
                         print(f"Error removing value axis tick marks: {tick_error}")
-
-                if value_axis.tick_labels:
-                    tick_font = ticks.get('font', {})
-                    if tick_font.get('size'):
-                        # Apply font scaling factor to value axis tick labels
-                        original_tick_size = tick_font['size']
-                        scaled_tick_size = max(6, int(original_tick_size * FONT_SCALE_FACTOR))
-                        value_axis.tick_labels.font.size = Pt(scaled_tick_size)
-                    
-                    # Handle font family for axis labels
-                    if tick_font.get('family'):
-                        font_family = tick_font['family'].strip()
-                        if font_family in ['Meiryo UI', 'Meiryo']:
-                            value_axis.tick_labels.font.name = 'Arial'
-                        else:
-                            value_axis.tick_labels.font.name = font_family
-                    
-                    tick_color = parse_color(ticks.get('color', '#888888'))
-                    if tick_color:
-                        value_axis.tick_labels.font.color.rgb = tick_color
-                
-                # Handle axis visibility
-                if value_scale.get('display', True) == False:
-                    value_axis.visible = False
-                
-                # Hide axis line if border is not displayed
-                if value_scale.get('border', {}).get('display') is False:
-                    value_axis.format.line.fill.background()
 
             except Exception as e:
                 print(f"Error configuring value axis: {e}")
             
-            # Enhanced Category axis configuration with font scaling
+            # Configure category axis
             try:
                 cat_ticks = category_scale.get('ticks', {})
                 
-                # Category axis visibility should only depend on scale display setting, not datalabels
+                # Category axis visibility
                 if category_scale.get('display', True) == False:
                     category_axis.visible = False
                 else:
-                    # Configure category axis labels when they should be visible
                     category_axis.visible = True
                     
-                    # Remove tick marks for bar charts
-                    if chart_type_str == 'bar':
+                    # Remove tick marks for both horizontal and vertical bar charts on category axis
+                    if chart_type in [XL_CHART_TYPE.BAR_CLUSTERED, XL_CHART_TYPE.COLUMN_CLUSTERED]:
                         try:
-                            # Remove major and minor tick marks using XML manipulation
                             axis_element = category_axis._element
                             major_tick = axis_element.find(qn('c:majorTickMark'))
                             if major_tick is not None:
                                 major_tick.set('val', 'none')
                             else:
-                                major_tick_elem = SubElement(axis_element, 'c:majorTickMark', val='none')
+                                SubElement(axis_element, 'c:majorTickMark', val='none')
                         
                             minor_tick = axis_element.find(qn('c:minorTickMark'))
                             if minor_tick is not None:
                                 minor_tick.set('val', 'none')
                             else:
-                                minor_tick_elem = SubElement(axis_element, 'c:minorTickMark', val='none')
+                                SubElement(axis_element, 'c:minorTickMark', val='none')
                         except Exception as tick_error:
                             print(f"Error removing category axis tick marks: {tick_error}")
                     
                     if category_axis.tick_labels:
                         tick_font = cat_ticks.get('font', {})
                         if tick_font.get('size'):
-                            # Apply font scaling factor to category axis tick labels
                             original_cat_size = tick_font['size']
                             scaled_cat_size = max(6, int(original_cat_size * FONT_SCALE_FACTOR))
                             category_axis.tick_labels.font.size = Pt(scaled_cat_size)
                         else:
-                            # Default font size for category labels with scaling
                             category_axis.tick_labels.font.size = Pt(int(8 * FONT_SCALE_FACTOR))
                         
-                        # Handle font family for category axis labels
                         if tick_font.get('family'):
                             font_family = tick_font['family'].strip()
                             if font_family in ['Meiryo UI', 'Meiryo']:
@@ -2011,66 +2530,73 @@ def add_chart_element(slide, element, slide_width, slide_height):
                         if tick_color:
                             category_axis.tick_labels.font.color.rgb = tick_color
                         
-                        # Handle label rotation properly
+                        # Handle label rotation
                         max_rotation = cat_ticks.get('maxRotation', 0)
                         min_rotation = cat_ticks.get('minRotation', 0)
                         if max_rotation == 0 and min_rotation == 0:
-                            category_axis.tick_labels.orientation = 0  # Horizontal
+                            category_axis.tick_labels.orientation = 0
                         elif max_rotation > 0:
                             category_axis.tick_labels.orientation = max_rotation
                         
-                        # Enhanced x-axis positioning for bar charts with negative values
-                        if chart_type_str == 'bar':
+                        # Position labels for horizontal bars with negative values
+                        if is_horizontal_bar:
                             try:
-                                # Access the axis element and set tick label position using XML
                                 axis_element = category_axis._element
                                 
-                                # Check if there are any negative values in the dataset
-                                has_negative_values = False
-                                datasets = chart_config.get('data', {}).get('datasets', [])
-                                for dataset in datasets:
-                                    data_values = dataset.get('data', [])
-                                    if any(isinstance(val, (int, float)) and val < 0 for val in data_values):
-                                        has_negative_values = True
-                                        break
-                                
                                 if has_negative_values:
-                                    # For charts with negative values, position x-axis at top
-                                    tick_lbl_pos = axis_element.find(qn('c:tickLblPos'))
-                                    if tick_lbl_pos is not None:
-                                        tick_lbl_pos.set('val', 'high')  # Position at top
-                                    else:
-                                        tick_lbl_pos_elem = SubElement(axis_element, 'c:tickLblPos', val='high')
-                                    
-                                    # Set distance from axis for top positioning
-                                    category_axis.tick_labels.offset = 500
-                                    
-                                    # Set axis crossing to automatic high for negative data
-                                    crosses = axis_element.find(qn('c:crosses'))
-                                    if crosses is not None:
-                                        crosses.set('val', 'autoZero')
-                                    else:
-                                        crosses_elem = SubElement(axis_element, 'c:crosses', val='autoZero')
-                                else:
-                                    # For normal charts, position x-axis at bottom
                                     tick_lbl_pos = axis_element.find(qn('c:tickLblPos'))
                                     if tick_lbl_pos is not None:
                                         tick_lbl_pos.set('val', 'low')
                                     else:
-                                        tick_lbl_pos_elem = SubElement(axis_element, 'c:tickLblPos', val='low')
+                                        SubElement(axis_element, 'c:tickLblPos', val='low')
                                     
-                                    # Set distance from axis (500 points)
-                                    category_axis.tick_labels.offset = 500
-                                
+                                    crosses = axis_element.find(qn('c:crosses'))
+                                    if crosses is not None:
+                                        crosses.set('val', 'autoZero')
+                                    else:
+                                        SubElement(axis_element, 'c:crosses', val='autoZero')
+                                else:
+                                    tick_lbl_pos = axis_element.find(qn('c:tickLblPos'))
+                                    if tick_lbl_pos is not None:
+                                        tick_lbl_pos.set('val', 'low')
+                                    else:
+                                        SubElement(axis_element, 'c:tickLblPos', val='low')
                             except Exception as tick_pos_error:
-                                print(f"Error setting tick label position: {tick_pos_error}")
+                                print(f"Error setting tick label position for horizontal bars: {tick_pos_error}")
+                        
+                        # Position labels for vertical bars (COLUMN_CLUSTERED) with negative values
+                        elif chart_type == XL_CHART_TYPE.COLUMN_CLUSTERED:
+                            try:
+                                axis_element = category_axis._element
+                                
+                                if has_negative_values:
+                                    # Move labels to top when there are negative values
+                                    tick_lbl_pos = axis_element.find(qn('c:tickLblPos'))
+                                    if tick_lbl_pos is not None:
+                                        tick_lbl_pos.set('val', 'high')
+                                    else:
+                                        SubElement(axis_element, 'c:tickLblPos', val='high')
+                                    
+                                    crosses = axis_element.find(qn('c:crosses'))
+                                    if crosses is not None:
+                                        crosses.set('val', 'autoZero')
+                                    else:
+                                        SubElement(axis_element, 'c:crosses', val='autoZero')
+                                else:
+                                    # Keep labels at bottom for all positive values
+                                    tick_lbl_pos = axis_element.find(qn('c:tickLblPos'))
+                                    if tick_lbl_pos is not None:
+                                        tick_lbl_pos.set('val', 'low')
+                                    else:
+                                        SubElement(axis_element, 'c:tickLblPos', val='low')
+                            except Exception as tick_pos_error:
+                                print(f"Error setting tick label position for vertical bars: {tick_pos_error}")
                 
                 # Handle axis line display
                 border_config = category_scale.get('border', {})
                 if border_config.get('display') is False:
                     category_axis.format.line.fill.background()
                 elif border_config.get('display') is True:
-                    # Ensure axis line is visible and apply color if specified
                     border_color = parse_color(border_config.get('color', '#666666'))
                     if border_color:
                         category_axis.format.line.color.rgb = border_color
@@ -2078,43 +2604,84 @@ def add_chart_element(slide, element, slide_width, slide_height):
             except Exception as e:
                 print(f"Error configuring category axis: {e}")
 
-        # Enhanced gridline configuration
-        try:
-            if chart_type_str != 'pie':
-                y_grid = value_scale.get('grid', {})
-                x_grid = category_scale.get('grid', {})
-                
-                # Value axis gridlines
-                if y_grid.get('display', True) == False:
-                    value_axis.has_major_gridlines = False
+            # Configure gridlines (corrected for horizontal bars)
+            try:
+                if is_horizontal_bar:
+                    # For horizontal bars: x-axis (value) has gridlines, y-axis (category) typically doesn't
+                    value_grid = value_scale.get('grid', {})
+                    category_grid = category_scale.get('grid', {})
                 else:
+                    # For vertical charts: y-axis (value) has gridlines, x-axis (category) typically doesn't
+                    value_grid = value_scale.get('grid', {})
+                    category_grid = category_scale.get('grid', {})
+
+                # Value axis gridlines
+                if value_grid.get('display', False):
                     value_axis.has_major_gridlines = True
-                    grid_color_str = y_grid.get('color')
+                    grid_color_str = value_grid.get('color')
                     if grid_color_str:
                         grid_color = parse_color(grid_color_str)
                         if grid_color:
                             value_axis.major_gridlines.format.line.color.rgb = grid_color
+                else:
+                    value_axis.has_major_gridlines = False
 
                 # Category axis gridlines
-                if x_grid.get('display', True) == False:
-                    category_axis.has_major_gridlines = False
-                else:
+                if category_grid.get('display', False):
                     category_axis.has_major_gridlines = True
-                    grid_color_str = x_grid.get('color')
+                    grid_color_str = category_grid.get('color')
                     if grid_color_str:
                         grid_color = parse_color(grid_color_str)
                         if grid_color:
                             category_axis.major_gridlines.format.line.color.rgb = grid_color
+                else:
+                    category_axis.has_major_gridlines = False
                         
-        except Exception as e:
-            print(f"Error configuring gridlines: {e}")
+            except Exception as e:
+                print(f"Error configuring gridlines: {e}")
+            
+            # Configure bar gap and overlap for better bar width control
+            if chart_type in [XL_CHART_TYPE.BAR_CLUSTERED, XL_CHART_TYPE.COLUMN_CLUSTERED]:
+                try:
+                    plot = chart.plots[0]
+                    
+                    # Extract categoryPercentage and barPercentage from datasets
+                    datasets = data.get('datasets', [])
+                    category_percentage = 0.8  # Chart.js default
+                    
+                    if datasets and len(datasets) > 0:
+                        # Get from first dataset (typically all datasets share these values)
+                        category_percentage = datasets[0].get('categoryPercentage', 0.8)
+                    
+                    # Convert Chart.js percentages to PowerPoint gap_width
+                    # Chart.js categoryPercentage controls the space used by the category group
+                    # gap_width in PowerPoint is the percentage of space BETWEEN categories
+                    # Formula: gap_width = (1 - categoryPercentage) / categoryPercentage * 100
+                    if category_percentage > 0:
+                        gap_width = int((1 - category_percentage) / category_percentage * 100)
+                        # Clamp to reasonable range (PowerPoint accepts 0-500)
+                        gap_width = max(0, min(500, gap_width))
+                        plot.gap_width = gap_width
+                    
+                    # Convert barPercentage to overlap for clustered charts
+                    # For single series, overlap doesn't matter
+                    # For multiple series, barPercentage controls bar width within the category group
+                    if len(datasets) > 1:
+                        # overlap in PowerPoint: negative = gap, 0 = touching, positive = overlapping
+                        # We'll set to 0 for now as Chart.js barPercentage is more about individual bar width
+                        plot.overlap = 0
+                    else:
+                        plot.overlap = 0
+                        
+                except Exception as e:
+                    print(f"Error configuring bar width: {e}")
 
         # Enhanced color application for series/points
         try:
-            datasets = data.get('datasets', [])
+            datasets_original = data.get('datasets', [])  # Use original order for colors
             for i, series in enumerate(chart.series):
-                if i < len(datasets):
-                    dataset = datasets[i]
+                if i < len(datasets_original):
+                    dataset = datasets_original[i]
                     
                     # Line/Area chart colors
                     if chart_type in [XL_CHART_TYPE.LINE, XL_CHART_TYPE.LINE_MARKERS, XL_CHART_TYPE.AREA, XL_CHART_TYPE.AREA_STACKED]:
@@ -2136,9 +2703,14 @@ def add_chart_element(slide, element, slide_width, slide_height):
                                 # If backgroundColor is transparent or not set, don't fill
                                 series.format.fill.background()
 
-                    # Bar/Column/Pie chart colors
-                    elif chart_type in [XL_CHART_TYPE.COLUMN_CLUSTERED, XL_CHART_TYPE.BAR_CLUSTERED, XL_CHART_TYPE.PIE]:
+                    # Bar/Column/Pie/Doughnut chart colors
+                    elif chart_type in [XL_CHART_TYPE.COLUMN_CLUSTERED, XL_CHART_TYPE.BAR_CLUSTERED, XL_CHART_TYPE.PIE, XL_CHART_TYPE.DOUGHNUT]:
                         background_colors = dataset.get('backgroundColor', [])
+                        
+                        # Reverse colors for horizontal bars to match reversed data
+                        if is_horizontal_bar:
+                            background_colors = list(reversed(background_colors))
+                        
                         for j, point in enumerate(series.points):
                             if j < len(background_colors):
                                 color = parse_color(background_colors[j])
@@ -2158,7 +2730,7 @@ def add_chart_element(slide, element, slide_width, slide_height):
     except Exception as e:
         print(f"Failed to add chart: {e}")
         return
-
+    
 
 def add_shape_element(slide, element, slide_width, slide_height):
     """Enhanced shape rendering with proper text support and expanded clip-path mapping"""
@@ -2339,7 +2911,7 @@ def add_shape_element(slide, element, slide_width, slide_height):
             
             font_family = styles.get('fontFamily', 'Arial')
             if font_family:
-                # Clean font family string (remove quotes and extra info)
+                # Clean font family string and handle special fonts
                 font_family = font_family.split(',')[0].strip('"\'')
                 font.name = font_family
             
@@ -2488,6 +3060,8 @@ def create_pptx_from_json(json_path, output_path=None):
                 add_table_element(slide, element, slide_width, slide_height, parent_has_shadow)
             elif element_type == 'img':
                 add_image_element(slide, element, slide_width, slide_height, parent_has_shadow)
+            elif element_type == 'a':
+                add_link_element(slide, element, slide_width, slide_height, parent_has_shadow)
             elif element_type == 'canvas':
                 add_chart_element(slide, element, slide_width, slide_height)
             elif element_type == 'span':
