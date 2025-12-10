@@ -89,7 +89,7 @@ def create_pptx_from_slides_data(slides_data, reference_id=0):
     return prs
 
 def process_element_recursive(slide, element, slide_width, slide_height, processed_text_content, table_positions, parent_has_shadow=False, img_dict={}, reference_id=0):
-    """Recursively process element hierarchy from Extract.js structure.
+    """Recursively process element hierarchy.
     
     Parameters:
         slide: pptx Slide object.

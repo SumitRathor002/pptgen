@@ -868,12 +868,12 @@ def add_table_content(slide, content_data, content_type, cell_x, cell_y, cell_wi
         img_width = max(1, img_width)
         img_height = max(1, img_height)
 
-        # Get position - use element x/y directly if available (absolute coords from Extract.js)
+        # Get position - use element x/y directly if available
         elem_x = content_data.get('x')
         elem_y = content_data.get('y')
         
         if elem_x is not None and elem_y is not None:
-            # Use absolute positioning from Extract.js extraction
+            # Use absolute positioning
             abs_x = elem_x
             abs_y = elem_y
         else:
